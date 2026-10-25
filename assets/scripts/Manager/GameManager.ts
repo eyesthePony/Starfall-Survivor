@@ -1,7 +1,8 @@
-import { _decorator, Component } from 'cc';
+import { _decorator, Component, view } from 'cc';
 import { EventBus } from '../Core/EventBus';
 import { GameConstants } from '../Core/GameConstants';
 import { AudioManager } from '../Core/AudioManager';
+import { GameData } from '../Core/GameData';
 const { ccclass} = _decorator;
 
 @ccclass('GameManager')
@@ -14,6 +15,9 @@ export class GameManager extends Component {
 
     onLoad() {
         GameManager.instance = this;
+        const size = view.getVisibleSize();
+        GameData.screenWidth = size.width;
+        GameData.screenHeight = size.height;
         EventBus.on(GameConstants.EVENT_TYPE.GAME_OVER, this.onGameOver, this);
         EventBus.on(GameConstants.EVENT_TYPE.GAME_RESTART, this.onGameRestart, this);
         EventBus.on(GameConstants.EVENT_TYPE.GAME_RESUME,this.onGameResume,this);

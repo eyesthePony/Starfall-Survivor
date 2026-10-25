@@ -4,26 +4,28 @@ import { BasePlane } from '../BasePlane';
 import{BulletManager} from '../../../Manager/BulletManager';
 import { EventBus } from '../../../Core/EventBus';
 import { GameConstants } from '../../../Core/GameConstants';
+import { GameData } from '../../../Core/GameData';
 const { ccclass, property} = _decorator;
 
-@ccclass('player')
-export class player extends  BasePlane {
+@ccclass('PlayerPlane')
+export class PlayerPlane extends  BasePlane {
 
    
     @property(Node) 
     muzzle: Node = null!; // 枪口位置
-    private scrWidth = 0;
-    private scrHeight = 0;
+
     private halfW = 0;      // 飞机半宽
     private halfH = 0;      // 飞机半高
     private isSelected = false;
+       // 默认1秒无敌，子类可以覆盖
+    protected invincibiltyDuration:number = 1;
+       //飞机无敌时间倒计时
+    protected _invincibleTimer: number = 0;
    
 
 
     onLoad() {
-        const size = view.getVisibleSize();
-        this.scrWidth = size.width;
-        this.scrHeight = size.height;
+
 
         // 拿飞机自身的尺寸
         const ut = this.getComponent(UITransform)!;
@@ -51,18 +53,21 @@ export class player extends  BasePlane {
         // 3. 重置逻辑状态
         this._isDead = false;
         this._fireTimer = 0;
-        this.hp = 100; // 恢复满血
+        this.hp = this._maxHp; // 恢复满血
         this._invincibleTimer = 0
         
         // 4. 回到屏幕底部正中间
-        const size = view.getVisibleSize();
-        this.node.setPosition(0, -size.height / 2 + 150, 0);
+        this.node.setPosition(0, -GameData.screenHeight / 2 + 150, 0);
     }
 
     
 
     update(deltaTime: number) {
         if(this._isDead) return;
+         // 无敌倒计时，基类统一处理
+        if (this._invincibleTimer > 0) {
+            this._invincibleTimer -= deltaTime;
+        }
         // 执行基类update：无敌计时、开火计时、死亡判断
         super.update(deltaTime);
         
@@ -113,8 +118,8 @@ export class player extends  BasePlane {
         let newY = pos.y + delta.y;
 
         // 边界钳制
-        const maxX = this.scrWidth / 2 - this.halfW;
-        const maxY = this.scrHeight / 2 - this.halfH;
+        const maxX = GameData.screenWidth/ 2 - this.halfW;
+        const maxY = GameData.screenHeight / 2 - this.halfH;
         newX = Math.max(-maxX, Math.min(maxX, newX));
         newY = Math.max(-maxY, Math.min(maxY, newY));
 
@@ -133,6 +138,17 @@ export class player extends  BasePlane {
         // 事件里传的 otherCollider.node 就是玩家节点，判断一下是不是自己
         if (playerNode !== this.node) return;
         this.takeDamage(damage);
+    }
+
+    public takeDamage(damage: number): void {
+        if (this._invincibleTimer > 0) return;
+        if (this.hp <= 0) return; 
+        this.hp -= damage;
+        this._invincibleTimer = this.invincibiltyDuration; 
+
+        if (this.hp <= 0) {
+            this.onDeath();
+        }
     }
 
        // 虚方法，子类重写

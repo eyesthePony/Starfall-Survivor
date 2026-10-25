@@ -1,4 +1,5 @@
 
+
 export class GameConstants {
 
     // ========== 事件名称 ==========
@@ -41,10 +42,18 @@ export class GameConstants {
         BATTLE: 'BattleScene'
     }
 
+    public static ENEMY_CATEGORY = {
+        NORMAL:'normal',
+        BOSS:'boss',
+    }
+
     //敌机类型
     public static ENEMY_TYPE = {
         NORMAL:'normal',
-        BOSS:'boss',
+    }
+
+    public static BOSS_TYPE = {
+        ICE_BOSS: "ice_boss",
     }
 
     public static BULLET_TYPE = {
@@ -63,6 +72,18 @@ export class GameConstants {
         BULLET:"bullet",
     };
 
+    public static BOSS_SKILL = {
+        SINE_MOVE:"SineMove",
+        RING_FIRE:"RingFire",
+        SPIRAL_FIRE:"SpiralFire",
+    };
+
+    public static ANIMATOR_TYPE = {
+        SPIN_ANIMATOR : "SpinAnimator",
+        FLOAT_ANIMATOR : "FloatAnimator",
+        PULSE_ANIMATOR : "PulseAnimator",
+    }
+
     // ========== 子弹阵营/分组 ==========
     public static ITEM_GROUP = {
         ENEMY_BULLET: 8,     // 敌方子弹组
@@ -71,6 +92,7 @@ export class GameConstants {
         SELF_PLANE: 2,       // 我方机组
     };
 
- 
 
 }
+
+

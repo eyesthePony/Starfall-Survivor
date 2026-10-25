@@ -3,6 +3,9 @@ import { PoolManager } from '../Core/PoolManager';
 import { EventBus } from '../Core/EventBus';
 import { GameConstants } from '../Core/GameConstants';
 import { BasePlane } from '../Entity/plane/BasePlane';
+import { GameData } from '../Core/GameData';
+import { BOSS_CONFIG } from '../Core/BossConfig';
+import { BaseBoss } from '../Entity/plane/enemy/BaseBoss';
 const { ccclass, property } = _decorator;
 
 @ccclass('EnemyManager')
@@ -19,15 +22,14 @@ export class EnemyManager extends Component {
     @property({ tooltip: "生成间隔（秒）" })
     spawnRate = 1;
 
-    private scrWidth = 0;
+   
     private topY = 0;
    
 
     onLoad() {
         EnemyManager._instance = this;
-        const size = view.getVisibleSize();
-        this.scrWidth = size.width;
-        this.topY = size.height / 2;
+
+        this.topY = GameData.screenHeight / 2;
         EventBus.on(GameConstants.EVENT_TYPE.GAME_RESET,this.onGameReset,this);
         EventBus.on(GameConstants.EVENT_TYPE.GAME_STATE_CHANGED,this.onStateChanged,this);
         EventBus.on(GameConstants.EVENT_TYPE.ENEMY_KILLED, this.onEnemyRecycle, this);
@@ -36,9 +38,6 @@ export class EnemyManager extends Component {
     }
 
     static get instance():EnemyManager{
-        if(!this._instance){
-            this._instance = new EnemyManager();
-        }
         return this._instance;
     }
 
@@ -81,24 +80,32 @@ export class EnemyManager extends Component {
        plane.takeDamage(damage);
     }
 
-    public spawnEnemy(enemyType:string) {
+    public spawnBoss(enemyType:string){
+        const cfg = BOSS_CONFIG[enemyType];
+        if(!cfg)  {console.warn(`[EnemyManager] 未知 Boss: ${enemyType}`); return false; }
+
+        if (!this.bossPrefab) {console.warn(`[EnemyManager] Boss预制体未赋值`);return false;}
+        
+        const node = PoolManager.instance.getNode(this.bossPrefab, this.node);
+        const boss = node.getComponent(BaseBoss);
+        
+        boss.init(cfg, new Vec3(0, this.topY + 120, 0));
+        return true;   
+    }
+
+    public spawnNormalEnemy(enemyType:string) {
         let prefabToSpawn:Prefab = null;
         let spawnX = 0; // 默认 X 坐标为 0（屏幕中间）
 
-        //生成不同类型敌机
-        switch(enemyType){
-            case GameConstants.ENEMY_TYPE.BOSS:
-                prefabToSpawn = this.bossPrefab;
-                break;
-            case GameConstants.ENEMY_TYPE.NORMAL:
-            default: // 防止配表写错导致崩溃，默认按普通怪处理
-                prefabToSpawn = this.normalEnemyPrefab;
-                // 普通怪：随机 X，范围在屏幕内缩一点
-                const halfW = 50;
-                const minX = -this.scrWidth / 2 + halfW;
-                const maxX = this.scrWidth / 2 - halfW;
-                spawnX = minX + Math.random() * (maxX - minX);
-        }
+        
+        prefabToSpawn = this.normalEnemyPrefab;
+        // 普通怪：随机 X，范围在屏幕内缩一点
+        const halfW = 50;
+        const minX = -GameData.screenWidth/ 2 + halfW;
+        const maxX = GameData.screenWidth / 2 - halfW;
+        spawnX = minX + Math.random() * (maxX - minX);
+      
+            
 
         if (!prefabToSpawn) return;
 

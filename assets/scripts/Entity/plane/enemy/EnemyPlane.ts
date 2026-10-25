@@ -5,12 +5,12 @@ import { EventBus } from '../../../Core/EventBus';
 import { GameConstants } from '../../../Core/GameConstants';
 import { EffectManager } from '../../../Core/EffectManager';
 import { AudioManager } from '../../../Core/AudioManager';
+import { GameData } from '../../../Core/GameData';
 const { ccclass} = _decorator;
 
 @ccclass('EnemyPlane')
 export class EnemyPlane extends BasePlane  {
     
-    private scrHeight = 0;
     private halfH = 0;      // 飞机半高
     private bottomY = 0;
    
@@ -21,9 +21,9 @@ export class EnemyPlane extends BasePlane  {
      *获取飞机尺寸来判断飞机出界
      */
     onLoad() {
-        const size = view.getVisibleSize();
-        this.scrHeight = size.height;   //屏幕高度
-        this.bottomY = -this.scrHeight / 2;   //底部的Y坐标
+   
+
+        this.bottomY = -GameData.screenHeight / 2;   //底部的Y坐标
 
         const ut = this.getComponent(UITransform)!; //获取飞机的组件
         this.halfH = ut.height / 2;                 //飞机高度的一半
@@ -38,13 +38,11 @@ export class EnemyPlane extends BasePlane  {
      */
     public init(position: Vec3) {
         this.node.setPosition(position);//设置初始位置
-        this._invincibleTimer = 0; //设置被击中无敌时间倒计时
         this._maxHp = 10;          //设置血量上限
         this.hp = 10;              //设置血量
         this._isDead = false;      //死亡判断重置
         this._fireTimer = 0;          //开火时间
         this.fireCd = 1;         //开火间隔
-        this.invincibiltyDuration = 0; //无敌时间
         this._shootDir.y = -1;
         this.enabled = true; 
     }

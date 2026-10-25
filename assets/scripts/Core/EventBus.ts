@@ -42,7 +42,7 @@ export class EventBus {
                 continue;
             }
             if(handlerList[i].handler === objHandler.handler && handlerList[i].target === objHandler.target){
-                handlerList.splice(i, 1);
+                handlerList[i] = null;
                 break;
             }
         }
@@ -57,7 +57,7 @@ export class EventBus {
         }
 
         let list = handlerList.slice();
-        for (let i = 0; i < list.length; i++) {
+        for (let i = list.length - 1; i >= 0; --i) {
             if (list[i]) {
                 list[i].handler.apply(list[i].target, args);
             }

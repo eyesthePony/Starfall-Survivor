@@ -18,16 +18,13 @@ export class BasePlane extends Component {
     @property
     fireCd: number = 0.2;
 
-    // 默认1秒无敌，子类可以覆盖
-    protected invincibiltyDuration:number = 1;
 
     //飞机是否死亡
     protected _isDead: boolean = false;
 
     //飞机开火倒计时
     protected _fireTimer: number = 0;
-    //飞机无敌时间倒计时
-    protected _invincibleTimer: number = 0;
+ 
 
     //飞机子弹方向
     protected _shootDir:Vec3;
@@ -40,10 +37,8 @@ export class BasePlane extends Component {
 
     // 对外受伤接口
     public takeDamage(damage: number) {
-        if (this._invincibleTimer > 0) return;
         if (this.hp <= 0) return; 
         this.hp -= damage;
-        this._invincibleTimer = this.invincibiltyDuration; 
 
         if (this.hp <= 0) {
             this.onDeath();
@@ -58,10 +53,7 @@ export class BasePlane extends Component {
 
 
     update(deltaTime: number) {
-        // 无敌倒计时，基类统一处理
-        if (this._invincibleTimer > 0) {
-            this._invincibleTimer -= deltaTime;
-        }
+       
         this._fireTimer -= deltaTime;
     
         // 自动开火，子类重写 shoot() 就行

@@ -10,12 +10,12 @@ export class background extends Component {
 
     private bgs: Node[] = [];
     private bgHeight = 0;
-    private screenHeight = 0;
+  
 
     onLoad() {
         // 用逻辑单位
-        const size = view.getVisibleSize();
-        this.screenHeight = size.height;
+
+
 
         this.bgs = this.node.children;
 

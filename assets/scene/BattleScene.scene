@@ -1016,7 +1016,7 @@
       "__expectedType__": "cc.Prefab"
     },
     "bossPrefab": {
-      "__uuid__": "f15be305-08a0-48a9-b85e-30a16e937d13",
+      "__uuid__": "a32e82b7-0a3d-479f-98fb-27bde185c0c7",
       "__expectedType__": "cc.Prefab"
     },
     "spawnRate": 1,

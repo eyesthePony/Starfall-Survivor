@@ -2,12 +2,12 @@
   "ver": "1.1.45",
   "importer": "prefab",
   "imported": true,
-  "uuid": "0503d8f9-35e5-48e2-be0f-489444e1f5a6",
+  "uuid": "a32e82b7-0a3d-479f-98fb-27bde185c0c7",
   "files": [
     ".json"
   ],
   "subMetas": {},
   "userData": {
-    "syncNodeName": "PurpleBoss"
+    "syncNodeName": "BaseBoss"
   }
 }

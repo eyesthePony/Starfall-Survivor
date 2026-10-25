@@ -2,6 +2,7 @@ import { EventBus } from '../../Core/EventBus';
 import { GameConstants } from '../../Core/GameConstants';
 import { _decorator, Collider2D, Component, Contact2DType, Vec3, view } from 'cc';
 import { BasePlane } from '../plane/BasePlane';
+import { GameData } from '../../Core/GameData';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseBullet')
@@ -58,9 +59,8 @@ export class BaseBullet extends Component {
 
         
             // ========== 屏幕边界检测 飞出屏幕回收 ==========
-        const ws = view.getVisibleSize();
-        const w = ws.width / 2;
-        const h = ws.height / 2;
+        const w = GameData.screenWidth / 2;
+        const h = GameData.screenHeight / 2;
         const margin = 300;   // ← 够大就行
         // 移动后重新取
         const cur = this.node.position;
