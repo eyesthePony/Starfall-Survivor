@@ -80,7 +80,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
             { 
                 // 阶段1：缓慢的冰环
                 skills: [
-                    {name:GameConstants.BOSS_SKILL.SINE_MOVE, params: { amplitude: 250, frequency: 0.5 } },
+                    {name:GameConstants.BOSS_SKILL.SINE_MOVE, params: { amplitude: 250, frequency: 0.2 } },
                     { name: GameConstants.BOSS_SKILL.RING_FIRE,  params: { bulletCount: 16, damage: 10, speed: 300,interval: 2.0 }},
                 ]
             },
@@ -89,7 +89,13 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                 skills: [{ name:GameConstants.BOSS_SKILL.SPIRAL_FIRE, params: { arms: 2, damage: 8 ,interval: 0.15} },
 
                 ] 
-            }
+            },
+            { 
+                // 阶段3：狂暴四螺旋
+                skills: [{ name:GameConstants.BOSS_SKILL.SPIRAL_FIRE, params: { arms: 4, damage: 8 ,interval: 0.05} },
+
+                ] 
+            },
         ]
     },
 };

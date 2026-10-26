@@ -18,8 +18,8 @@ export class SpiralFire extends BaseFire {
   
 
     // 每次切换到该阶段启用时，重置角度
-    onEnable() {
-        super.onEnable(); // 重置父类的开火计时器
+    public reset() {
+        super.reset(); // 重置父类的开火计时器
         this._spiralAngle = 0; 
     }
 

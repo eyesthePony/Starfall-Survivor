@@ -64,7 +64,9 @@ export class EnemyManager extends Component {
             const enemy = enemies[i].getComponent(BasePlane);
             if(enemy){
                 enemy.enabled = isEnabled;
-            }   
+            }
+            const boss = enemies[i].getComponent(BaseBoss);
+            if (boss) boss.setPaused(isEnabled);   
         }
     }
 

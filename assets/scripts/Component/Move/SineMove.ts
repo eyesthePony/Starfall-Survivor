@@ -10,11 +10,14 @@ export class SineMove extends Component {
     private _baseX = 0;
     private _baseY = 0;
     
-    onEnable(){
-        this._time = 0;
-        this._baseX = this.node.position.x;   // ← 记录当前 X
-        this._baseY = this.node.position.y;   // ← 记录当前 Y，不是 0
+    private _needInit = true;   
+    
+
+    public reset() {
+        this._needInit = true;
     }
+
+  
 
     public applyConfig(params?: Record<string, any>) {
         if (!params) return;
@@ -24,6 +27,12 @@ export class SineMove extends Component {
 
 
     protected update(dt: number): void {
+        if (this._needInit) {
+            this._needInit = false;
+            this._time = 0;
+            this._baseX = this.node.position.x;   // ← 第一次跑时记录
+            this._baseY = this.node.position.y;
+        }
         
         this._time += dt * this._frequency * Math.PI * 2;
         this._time %= (Math.PI * 2);

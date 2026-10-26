@@ -1,10 +1,11 @@
-import { _decorator, BoxCollider2D, CircleCollider2D, Collider2D, Component, Node, resources, Sprite, SpriteFrame, tween, UITransform, Vec3, view } from 'cc';
+import { _decorator, BoxCollider2D, CircleCollider2D, Collider2D, Component, Node, resources, Sprite, SpriteFrame, Vec3,} from 'cc';
 import { BasePlane } from '../BasePlane';
 import { EventBus } from '../../../Core/EventBus';
 import { GameConstants } from '../../../Core/GameConstants';
 import { GameData } from '../../../Core/GameData';
 import { BossConfigData, BossHitBoxConfig, BossPartConfig } from '../../../Core/BossConfig';
 import { AnimatorMap, SkillMap } from '../../../Core/SkillMap';
+import { BossEnterMove } from '../../../Component/Move/BossEnterMove';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseBoss')
@@ -12,31 +13,46 @@ export class BaseBoss extends BasePlane{
 
     //boss阶段
     protected _phaseIndex:number = 0;
+    //所有需要弹幕的组件
     private _skillMap: Map<string, Component> = new Map();
+    //boss配置数据，贴图，弹幕
     private _config:BossConfigData = null;
+
+    //boss入场动画
+    private _enterMove: BossEnterMove | null = null
 
     //正在入场，boss无敌
     protected _isEntering = true;
 
+    protected onLoad() {
+        //获得入场组件
+        this._enterMove = this.getComponent(BossEnterMove);
+        if (!this._enterMove) {
+            this._enterMove = this.addComponent(BossEnterMove);
+        }
+        this._enterMove.enabled = false;   // 等 play() 再启用
+          
+    }
+
     public init(cfg:BossConfigData , pos: Vec3) {
-        if(!cfg){console.warn(`cfg为空`);return;};
+        if(!cfg){console.warn(`cfg为空`);return;}; 
+        if (this._enterMove) this._enterMove.enabled = false; //避免入场时重开，进入pool，为true
         this._config = cfg;
         this.node.setPosition(pos);//设置初始位置
-        const s = cfg.scale ?? 1;
+        const s = cfg.scale ?? 1;   //设置节点放缩
         this.node.setScale(s, s, 1);  
         this._isDead = false;      //死亡判断重置
         this._phaseIndex = 0;       //重置阶段
         this._isEntering = true; //重置开场 
-        this.enabled = true; 
-        this._maxHp = cfg.maxHp;
-        this.hp = this._maxHp
-        this.assemble();
-        this.setupCollider();     // ← 挂碰撞
-        this.ensureSkills();
-         // 清空可能残留的 Tween 动画
-        tween(this.node).stop();
+        this.enabled = true;       
+        this._maxHp = cfg.maxHp;   //初始化最大血量
+        this.hp = this._maxHp;      //初始化现有血量
+        this.assemble();          //组装贴图
+        this.setupCollider();     // ←挂碰撞
+        this.ensureSkills();      //获取弹幕组件
         
-        this.enterScreen();
+        this.enterScreen();      //开启入场动画
+        
     }
 
     //构建碰撞体
@@ -78,11 +94,16 @@ export class BaseBoss extends BasePlane{
             //创建贴图节点
             const part = parts[i];
             const node = new Node(part.name);
+            //设置父节点为baseboss
             node.parent = this.node;
+            //设置贴图初始位置
             node.setPosition(part.x ?? 0, part.y ?? 0, 0);  
+            //放缩贴图
             const ps = part.scale ?? 1;
-            node.setScale(ps, ps, 1);                         
+            node.setScale(ps, ps, 1);      
+            //将图片组件加入贴图节点           
             const sp = node.addComponent(Sprite);
+            //设置大小模式
             sp.sizeMode = Sprite.SizeMode.TRIMMED;
             //加载贴图并赋予节点
             resources.load(`${part.texture}/spriteFrame`,SpriteFrame,(err, sf) => {
@@ -101,29 +122,24 @@ export class BaseBoss extends BasePlane{
         }
     }
 
+    //加载弹幕、移动组件
     private ensureSkills() {
-
         this._skillMap.clear();
-        // 收集 name → params（同一技能多阶段出现，取第一次）
-        const skillParams = new Map<string, any>();
+        // 收集组件name，不重复
+        const needed = new Set<string>();
         for (const phase of this._config.phases) {
-            for (const skill of phase.skills) {
-                if (!skillParams.has(skill.name)) {
-                    skillParams.set(skill.name, skill.params);
-                }
-            }
+            for (const skill of phase.skills) needed.add(skill.name);
         }
 
-        for (const [name, params] of skillParams) {
-            const Cls = SkillMap[name];
+        for (const name of needed) {
+            const Cls = SkillMap[name];  //获取Component的名称
             if (!Cls) { console.warn(`[BaseBoss] 未知技能: ${name}`); continue; }
 
-            let comp: any = this.getComponent(Cls);
+            let comp: any = this.getComponent(Cls);  //获取组件或者添加
             if (!comp) comp = this.addComponent(Cls);
 
-            comp.applyConfig?.(params);   // ← 注入参数
             comp.enabled = false;
-            this._skillMap.set(name, comp);
+            this._skillMap.set(name, comp);   //添加入本地Map
         }
         
     }
@@ -140,7 +156,11 @@ export class BaseBoss extends BasePlane{
         // 再开当前阶段的
         for (const skill of phase.skills) {
             const comp = this._skillMap.get(skill.name);
-            if (comp) comp.enabled = true;
+            if (comp) {
+                (comp as any).applyConfig?.(skill.params);   // ← 按当前阶段的 params 注入
+                (comp as any).reset?.();          //初始化组件
+                comp.enabled = true;
+            }
         }
     }
 
@@ -163,24 +183,49 @@ export class BaseBoss extends BasePlane{
         // 2秒慢慢飘进来
         // 停在距离屏幕顶端往下大约 200 像素的位置
         // 假设屏幕中心是 0，顶部就是 height / 2
-        const targetY = GameData.screenHeight/ 2; 
-        const targetPos = new Vec3(0, targetY - 220, 0);
-        tween(this.node)
-        .to(2, { position: targetPos }, { easing: 'sineOut' })
-        .call(() => {
-            this._isEntering = false; //入场结束，可以射击和被伤害了
-            this.onEnterComplete();
-        })
-        .start();
+        const targetY = GameData.screenHeight / 2;
+        const target = new Vec3(0, targetY - 220, 0);
+        this._enterMove?.play(2, target, () => {
+            this._isEntering = false;
+            this.onEnterComplete();  //入场完成后，需要做什么
+        });
+    }
+
+    //游戏暂停，暂停所有组件
+    setPaused(isEnabled: boolean) {
+
+        if (!isEnabled) {
+            this.suspend();
+        } else {
+            this.resume();
+        }
+    }
+
+    private suspend(){
+        if (this._enterMove) this._enterMove.enabled = false;   // 入场停
+        for (const c of this._skillMap.values()) if (c) c.enabled = false;
+    }
+
+    private resume(){
+        if (this._isEntering) {
+                if (this._enterMove) this._enterMove.enabled = true; // 入场恢复
+            } else {
+                const phase = this._config.phases[this._phaseIndex];  //当前节点所需组件恢复
+                for (const skill of phase.skills) {                 
+                    const comp = this._skillMap.get(skill.name);
+                    if (comp) comp.enabled = true;
+                }
+            }
     }
 
     update(deltaTime: number) {
+
     }
 
     
-    // 留给子类重写：入场结束后干嘛？
+    // 入场结束后
     protected onEnterComplete() {
-        this.activatePhase(0);
+        this.activatePhase(0);  //开启一阶段
     }
 
     
@@ -192,11 +237,10 @@ export class BaseBoss extends BasePlane{
         else this.checkPhase();
     }
 
-
+    //boss死亡，停掉所有组件
     protected onDeath(): void {
         if(this._isDead) return;
         this._isDead = true;
-        tween(this.node).stop(); 
         this._skillMap.forEach(c => { if (c) c.enabled = false; });   // ← 加
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.ENEMY_KILLED, this.node);
     }

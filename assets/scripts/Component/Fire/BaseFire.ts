@@ -17,7 +17,7 @@ export abstract class BaseFire extends Component {
 
     protected _bulletType = GameConstants.BULLET_TYPE.NORMAL;
 
-    protected onEnable(): void {
+    public reset(): void {
         this._timer = 0;
     }
 

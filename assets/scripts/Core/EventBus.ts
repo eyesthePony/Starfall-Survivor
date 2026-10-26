@@ -57,7 +57,7 @@ export class EventBus {
         }
 
         let list = handlerList.slice();
-        for (let i = list.length - 1; i >= 0; --i) {
+        for (let i = 0; i < list.length; ++i) {
             if (list[i]) {
                 list[i].handler.apply(list[i].target, args);
             }
