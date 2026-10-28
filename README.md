@@ -2,7 +2,7 @@
 
 **Earth_Demo** is a **Roguelike auto-fire bullet-hell shooter** built with Cocos Creator.
 
-In the game, the player focuses on maneuvering their ship to dodge dense bullet patterns, while the ship automatically locks onto and attacks enemies. The project is currently in the early core-gameplay phase: the underlying architecture is complete, and full wave spawning plus boss encounters are already implemented.
+In the game, the player focuses on maneuvering their ship to dodge dense bullet patterns, while the ship automatically attacks enemies. The project currently features a complete gameplay loop: wave spawning, boss encounters, and a **data-driven Roguelike upgrade system (pick 1 of 3)**.
 
 ---
 
@@ -12,86 +12,84 @@ All TypeScript source code lives under `assets/scripts`. The architecture follow
 
 ```text
 assets/scripts/
-├── Core/           # Core infrastructure (constants, events, pooling, config)
+├── Core/           # Core infrastructure (constants, events, pooling, configs)
 ├── Component/      # Reusable behavior components (skills, movement, animation)
 │   ├── Fire/       #   Fire skills: BaseFire / RingFire / SpiralFire
-│   ├── Move/       #   Movement skills: SineMove
+│   ├── Move/       #   Movement skills: SineMove / BossEnterMove
 │   └── Animator/   #   Visual animators: Spin / Float / Pulse
 ├── Entity/         # Game entities (planes, bullets, etc.)
 ├── Manager/        # Global game managers
 └── UI/             # UI components and panels
 ```
+🏗️ Core Systems
+1. Core (Infrastructure)
+EventBus: A global event bus that decouples Managers, Entities, and UI (e.g. enemy killed, player hit, game reset).
 
-## 🏗️ Core Systems
+PoolManager: A generic node object pool reducing instantiate/destroy overhead.
 
-### 1. Core (Infrastructure)
+GameConstants / GameData / LevelConfig / BossConfig / CardConfig: Data-driven configuration files for constants, player stats, level waves, boss designs, and Roguelike upgrade cards.
 
-Foundational services that support the rest of the game.
+2. Component (Reusable Behavior Layer)
+BaseFire / RingFire / SpiralFire: Fire skills with configurable intervals, damage, and bullet patterns.
 
-- **EventBus**: A global event bus that decouples Managers from Entities (e.g. enemy killed, player hit, game reset).
-- **PoolManager**: A generic node object pool that drastically reduces `instantiate` / `destroy` overhead.
-- **AudioManager / EffectManager**: Wrappers for audio playback and visual effects.
-- **GameConstants / GameData / LevelConfig**: Constant enums, global data, and level wave configuration tables.
-- **BossConfig**: A data table describing each boss's HP, visual parts, collider, phased skills and their parameters.
-- **SkillMap**: A mapping from skill name to component class, used by `BaseBoss` to dynamically attach components at runtime.
+SineMove / BossEnterMove: Movement skills for patrolling and boss entrances.
 
-### 2. Component (Reusable Behavior Layer)
+SpinAnimator / FloatAnimator / PulseAnimator: Visual animations for boss parts.
 
-Behavior components decoupled from entities. They receive parameters via `BossConfig` and are attached at runtime by `BaseBoss`:
+3. Entity (Entity Layer)
+BasePlane: Base class encapsulating HP, damage interface, and basic fire timing.
 
-- **Skill components** (Fire / Move): attached to the `BaseBoss` node, toggled by phase configuration.
-- **Animator components**: attached to individual boss part nodes, running independently per part.
+BaseBullet: Handles direction-based movement, boundary checks, and collision.
 
-Available components:
+PlayerPlane: Features auto-firing, multi-bullet spread, invincibility frames, and dynamic stat upgrades.
 
-- **BaseFire**: Base class for fire skills. Handles interval timing, shot direction, damage / speed parameters. Subclasses only implement `fire()`.
-- **RingFire / SpiralFire**: Circular spread and double-spiral bullet patterns.
-- **SineMove**: Sine-wave horizontal patrol with configurable amplitude and frequency.
-- **SpinAnimator / FloatAnimator / PulseAnimator**: Rotation / floating / breathing-scale visual animations.
+EnemyPlane: Normal enemy logic.
 
-### 3. Entity (Entity Layer)
+BaseBoss: Universal boss carrier. Appearance and skills are fully data-driven via BossConfig. All bosses share one BaseBoss.prefab.
 
-Concrete objects in the game, designed with OOP and polymorphism.
+4. Manager (Manager Layer)
+BulletManager: Centralized bullet pooling and recycling.
 
-- **BasePlane**: Base class for planes. Encapsulates HP, death state, damage interface, and basic fire timing (used by normal enemies). Subclasses implement movement and firing as needed.
-- **BaseBullet**: Base class for bullets. Handles direction-based movement, screen-boundary checks, and collision callbacks.
-- **PlayerPlane**: The player's ship (auto-firing, damage handling).
-- **EnemyPlane**: Normal enemy logic (straight movement, out-of-bounds recycling).
-- **BaseBoss**: Universal boss carrier. It only owns the skeleton of 「HP / entry / phase switching / death」. Its appearance is assembled at runtime from `BossConfig.parts` (texture + scale + animation), and its skills are dynamically attached and toggled per phase from `BossConfig.phases`. **All bosses share one `BaseBoss.prefab` — adding a new boss requires zero code changes.**
+EnemyManager: Spawns, initializes, and recycles enemies and bosses.
 
-### 4. Manager (Manager Layer)
+GameManager: Core state machine (Ready / Playing / Paused / Over).
 
-Global scheduling and game flow control.
+WaveManager: Parses level configs and controls enemy spawn cadence.
 
-- **BulletManager** (`BulletManager.ts`): Centralized bullet pooling and recycling, supports both factions (player / enemy).
-- **EnemyManager** (`EnemyPlaneManager.ts`): Spawns, initializes, and recycles enemies (normal + boss) via the object pool.
-- **GameManager**: Core state machine (Ready / Playing / Paused / Over). Coordinates cross-system behavior and dispatches victory and settle events.
-- **WaveManager**: Parses the level config (`LevelConfig`) and controls enemy spawn cadence, wave interval, and the end-of-stage boss.
+UpgradeManager: The brain of the Roguelike system. Listens to ENEMY_KILLED, calculates EXP, handles level-ups, and applies selected upgrades to the player.
 
-### 5. UI (UI Layer)
+5. UI (UI Layer)
+PlayerHealthUI: Dynamically renders health blocks based on current/max HP.
 
-In-game interactive panels and buttons (start panel, pause panel, result panel, etc.).
+BossHealthUI: Top-screen boss health bar with smooth transitions.
 
-## 🎮 Technical Highlights
+ExpBarUI: Top-screen experience bar and level indicator.
 
-- **Object Pooling**: All high-frequency bullets and enemies go through the object pool, keeping the frame rate stable during long sessions.
-- **Data-Driven Waves**: Level spawn sequences, delays, and enemy types are fully defined in `LevelConfig`, with no changes to core logic required.
-- **Event-Driven**: Collision detection does not modify HP directly; instead, events are emitted and dispatched by Managers, fully decoupling combat presentation from core logic.
-- **Data-Driven Boss**: A single `BaseBoss` prefab powers every boss. `BossConfig` describes visual parts, collider, per-phase skills and their parameters; `BaseBoss` assembles textures at runtime, injects skill parameters, and switches phases at HP thresholds. Adding a new boss is just a new config entry — no new prefab or class required.
+UpgradePanel: The "Pick 1 of 3" upgrade panel. Handles random card drawing and pause/resume logic.
 
-## 🚀 Planned Features
+PausePanel / ResultPanels: Game flow UI components.
 
-Earth_Demo is growing toward a full Roguelike space-survival game. Upcoming features include:
+🎮 Technical Highlights
+Object Pooling: High-frequency bullets and enemies use object pooling for stable performance.
 
-- [ ] **Unique Bullet Patterns**: On top of the existing circular spread and double-spiral, add fan spreads, homing missiles, laser sweeps, and more.
-- [ ] **Life & Research Resource Systems**: Introduce persistent meta-progression.
-- [ ] **Planet Development**: Build bases and upgrade the tech tree.
-- [ ] **Spaceship Exploration & Gathering**: Explore star systems on the world map and harvest rare minerals.
-- [ ] **Defense Against Pirate Attacks**: Besides taking the offensive, defend against random pirate raids and protect your planet's resources.
+Event-Driven Architecture: Collisions and UI updates are fully decoupled via EventBus. Logic entities do not directly reference UI nodes.
 
-## 🛠️ Development Setup
+Data-Driven Boss: A single BaseBoss prefab powered by BossConfig (visual parts, colliders, phased skills). Adding a new boss requires zero code changes.
 
-1. Install Cocos Creator 3.8 or later.
-2. Clone this repository and import it via Cocos Dashboard.
-3. Open `Scenes/HallScene.scene` (lobby) or `Scenes/BattleScene.scene` (battle) to preview the core gameplay.
-4. Click the **Play** button in the editor.
+Data-Driven Roguelike Upgrades: The UpgradeManager handles EXP and triggers the UpgradePanel. Upgrades are defined in CardConfig and applied directly to PlayerPlane's dynamic stats (damage, fire rate, bullet count).
+
+Dynamic UI Rendering: Health bars and EXP bars dynamically generate their nodes based on the player's current maxHp and upgrade states.
+
+🚀 Planned Features
+□ Unique Bullet Patterns: Expand weapon varieties (homing missiles, lasers, etc.).
+□ Visual & Audio Feedback: Hit effects, screen shake, and sound effects.
+□ Meta-progression: Permanent upgrades outside of runs.
+□ More Bosses and Enemies: Utilizing the data-driven architecture.
+🛠️ Development Setup
+Install Cocos Creator 3.8 or later.
+
+Clone this repository and import it via Cocos Dashboard.
+
+Open Scenes/HallScene.scene (lobby) or Scenes/BattleScene.scene (battle) to preview the core gameplay.
+
+Click the Play button in the editor.

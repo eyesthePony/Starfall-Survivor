@@ -29,6 +29,8 @@ export class BasePlane extends Component {
     //飞机子弹方向
     protected _shootDir:Vec3;
 
+    public expReward: number = 10; // 击败敌机获取经验，默认给 10 点
+
 
     // 公开只读属性，外部可以查但改不了
     public get isDead(): boolean {

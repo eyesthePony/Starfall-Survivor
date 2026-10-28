@@ -10,7 +10,7 @@ const { ccclass, property} = _decorator;
 @ccclass('PlayerPlane')
 export class PlayerPlane extends  BasePlane {
 
-   
+    public static instance: PlayerPlane = null!;
     @property(Node) 
     muzzle: Node = null!; // 枪口位置
 
@@ -21,12 +21,19 @@ export class PlayerPlane extends  BasePlane {
     protected invincibiltyDuration:number = 1;
        //飞机无敌时间倒计时
     protected _invincibleTimer: number = 0;
+
+    public bulletDamage: number = 10;    // 子弹伤害
+    public bulletSpeed: number = 500;    // 子弹速度
+    public bulletCount: number = 1;      // 每次发射的子弹数量
+    private bulletSpacing: number = 30; //并排的子弹间隔
+    
    
 
 
     onLoad() {
-
-
+        PlayerPlane.instance = this;
+        this._maxHp = GameData.playerMaxHp;
+        this.hp = this._maxHp;
         // 拿飞机自身的尺寸
         const ut = this.getComponent(UITransform)!;
         this.halfW = ut.width * ut.anchorX;         // 锚点左侧宽度
@@ -53,11 +60,36 @@ export class PlayerPlane extends  BasePlane {
         // 3. 重置逻辑状态
         this._isDead = false;
         this._fireTimer = 0;
+        this._maxHp = GameData.playerMaxHp;
         this.hp = this._maxHp; // 恢复满血
         this._invincibleTimer = 0
-        
+         // ✅ 重开时，属性也要恢复初始值（非常重要！）
+        this.bulletDamage = 10;
+        this.bulletSpeed = 500;
+        this.bulletCount = 1;
+        this.fireCd = 0.2;
         // 4. 回到屏幕底部正中间
         this.node.setPosition(0, -GameData.screenHeight / 2 + 150, 0);
+    }
+
+     public applyUpgrade(cardId: string) {
+        switch (cardId) {
+            case GameConstants.CARD_ID.DMG_UP:
+                this.bulletDamage += 5;
+                console.log(`[升级] 伤害提升！当前伤害：${this.bulletDamage}`);
+                break;
+                
+            case GameConstants.CARD_ID.SPD_UP:
+                this.fireCd *= 0.85; // 间隔缩短 15%
+                console.log(`[升级] 射速提升！当前间隔：${this.fireCd}`);
+                // 你的 BasePlane 里控制开火的是 _fireTimer 和某个间隔属性，记得去改
+                break;
+
+            case GameConstants.CARD_ID.BULLET_UP:
+                this.bulletCount += 2;
+                console.log(`[升级] 弹幕增加！当前子弹数：${this.bulletCount}`);
+                break;
+        }
     }
 
     
@@ -131,7 +163,19 @@ export class PlayerPlane extends  BasePlane {
     }
 
     shoot(){
-        BulletManager.instance.spawnBullet(GameConstants.BULLET_TYPE.NORMAL,true, this.muzzle.worldPosition, this._shootDir, 10, 500);
+        //子弹发射位置
+        const basePos = this.muzzle.worldPosition;
+        for (let i = 0; i < this.bulletCount; i++) {
+            //由于多个子弹并排发射，计算每个子弹偏移中间子弹的位置
+            const offsetX = (i - (this.bulletCount - 1) / 2) * this.bulletSpacing;
+            //得到设置偏移位置
+            const spawnPos = new Vec3(basePos.x + offsetX, basePos.y, basePos.z);
+            BulletManager.instance.spawnBullet(GameConstants.BULLET_TYPE.NORMAL,
+                true, 
+                spawnPos, 
+                this._shootDir, this.bulletDamage, this.bulletSpeed);
+        }
+       
     }
 
     onHit(playerNode: Node, damage:number){
@@ -143,7 +187,8 @@ export class PlayerPlane extends  BasePlane {
     public takeDamage(damage: number): void {
         if (this._invincibleTimer > 0) return;
         if (this.hp <= 0) return; 
-        this.hp -= damage;
+        this.hp -= 1;
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.PLAYER_HP_CHANGED,this.hp);
         this._invincibleTimer = this.invincibiltyDuration; 
 
         if (this.hp <= 0) {
@@ -165,5 +210,8 @@ export class PlayerPlane extends  BasePlane {
         EventBus.off(GameConstants.EVENT_TYPE.GAME_RESET,this.onGameReset,this);
         EventBus.off(GameConstants.EVENT_TYPE.GAME_STATE_CHANGED, this.onStateChanged, this);
         EventBus.off(GameConstants.EVENT_TYPE.ENEMY_BULLET_HIT, this.onHit, this);
+        if (PlayerPlane.instance === this) {
+            PlayerPlane.instance = null!;
+        }
     }
 }

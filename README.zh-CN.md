@@ -1,97 +1,97 @@
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-**Earth_Demo** 是一款基于 Cocos Creator 开发的 **Roguelike 自动开火弹幕射击游戏 (Auto-fire Bullet-hell)**。
+**Earth_Demo** 是一款基于 Cocos Creator 开发的 **Roguelike 自动开火弹幕射击游戏**。
 
-在游戏中，玩家专注于操控战机移动以躲避密集的弹幕，而战机会自动锁定并攻击敌人。目前项目正处于早期核心玩法开发阶段，底层架构已搭建完毕，并实现了完整的波次刷怪与 Boss 战机制。
+在游戏中，玩家专注于操控战机移动以躲避密集的弹幕，而战机会自动攻击敌人。项目目前已具备完整的核心玩法循环：波次刷怪、Boss 战，以及**数据驱动的 Roguelike 升级系统（三选一强化）**。
 
 ---
 
 ## 📂 目录结构 (Directory Structure)
 
-项目的 TypeScript 源码均位于 `assets/scripts` 目录下，整体架构遵循**高内聚、低耦合**的原则进行模块划分：
+项目的 TypeScript 源码均位于 `assets/scripts` 目录下，整体架构遵循**高内聚、低耦合**的原则：
 
 ```text
 assets/scripts/
 ├── Core/           # 核心底层系统（常量、事件、对象池、配置表）
 ├── Component/      # 可复用行为组件（技能、移动、动画）
 │   ├── Fire/       #   开火技能：BaseFire / RingFire / SpiralFire
-│   ├── Move/       #   移动技能：SineMove
+│   ├── Move/       #   移动技能：SineMove / BossEnterMove
 │   └── Animator/   #   视觉动画：Spin / Float / Pulse
 ├── Entity/         # 游戏实体（飞机、子弹等）
 ├── Manager/        # 游戏全局管理器
 └── UI/             # 用户界面组件与面板
 ```
+🏗️ 核心模块解析 (Core Systems)
+1. Core (基础设施层)
+EventBus: 全局事件总线，用于解耦管理器、实体与 UI 之间的通信。
 
-## 🏗️ 核心模块解析 (Core Systems)
+PoolManager: 通用节点对象池，极大减少实例化与销毁带来的性能开销。
 
-### 1. Core (基础设施层)
+各类 Config: 包括 GameConstants（常量）、GameData（玩家数据）、LevelConfig（波次）、BossConfig（Boss 数据）以及 CardConfig（强化卡牌池）。
 
-提供支撑游戏运行的基础服务。
+2. Component (可复用行为层)
+BaseFire / RingFire / SpiralFire: 开火技能基类及环形、螺旋弹幕实现。
 
-- **EventBus**: 全局事件总线，用于解耦各个 Manager 与 Entity 之间的通信（如：敌人死亡、玩家受击、游戏重置）。
-- **PoolManager**: 通用节点对象池，极大减少实例化（Instantiate）与销毁（Destroy）带来的性能开销。
-- **AudioManager / EffectManager**: 封装音频播放与视觉特效。
-- **GameConstants / GameData / LevelConfig**: 常量枚举、全局数据与关卡波次配置表。
-- **BossConfig**: Boss 配置表，用数据描述每个 Boss 的血量、外观部件、碰撞体、阶段技能及参数。
-- **SkillMap**: 技能名到组件类的映射，供 `BaseBoss` 在运行时按配置动态挂载组件。
+SineMove / BossEnterMove: 正弦移动与 Boss 入场移动组件。
 
-### 2. Component (可复用行为层)
+SpinAnimator / FloatAnimator / PulseAnimator: Boss 部件的旋转、浮动、呼吸等视觉动画。
 
-与实体解耦的行为组件，通过 `BossConfig` 注入参数，由 `BaseBoss` 在运行时动态挂载：
+3. Entity (实体层)
+BasePlane: 飞机基类，封装血量、受击接口与基础开火计时。
 
-- **技能类**（Fire / Move）：挂载到 `BaseBoss` 节点上，由阶段配置控制开/关。
-- **动画类**（Animator）：挂载到 Boss 的贴图部件节点上，随部件独立运行。
+BaseBullet: 处理子弹位移、边界检测及碰撞回调。
 
-具体组件：
+PlayerPlane: 玩家战机，支持自动开火、散弹并排发射、无敌帧以及动态属性强化。
 
-- **BaseFire**: 开火技能基类，封装开火间隔计时、弹道方向、伤害/速度参数，子类只需实现 `fire()`。
-- **RingFire / SpiralFire**: 环形散射、螺旋双发两种弹幕模式。
-- **SineMove**: 正弦左右巡逻，支持振幅、频率配置。
-- **SpinAnimator / FloatAnimator / PulseAnimator**: 旋转 / 浮动 / 呼吸缩放三种视觉动画。
+EnemyPlane: 普通敌机。
 
-### 3. Entity (实体层)
+BaseBoss: 通用 Boss 载体。外观与技能完全由 BossConfig 驱动，所有 Boss 共用一个 BaseBoss.prefab。
 
-游戏中的具体表现对象，采用面向对象与多态设计。
+4. Manager (管理器层)
+BulletManager: 统一管理子弹的对象池。
 
-- **BasePlane**: 飞机基类，封装血量、死亡状态、受击接口与基础开火计时（普通怪使用），子类按需实现移动与开火逻辑。
-- **BaseBullet**: 子弹基类，处理基于方向与速度的位移、屏幕边界检测及碰撞回调。
-- **PlayerPlane**: 玩家专属战机（自动开火、受击逻辑）。
-- **EnemyPlane**: 普通敌机逻辑（如直线移动、出界回收）。
-- **BaseBoss**: Boss 通用载体。本身只有「血量 / 入场 / 阶段切换 / 死亡」骨架，外观由 `BossConfig.parts` 动态组装（贴图 + 缩放 + 动画），技能由 `BossConfig.phases` 按阶段动态挂载与开关。**所有 Boss 共用一个 `BaseBoss.prefab`，新增 Boss 零代码改动。**
+EnemyManager: 负责敌机与 Boss 的生成、初始化及回收。
 
-### 4. Manager (管理器层)
+GameManager: 核心状态机（准备、游玩、暂停、失败）。
 
-负责全局资源的调度与游戏流程控制。
+WaveManager: 解析关卡配置，控制刷怪节奏。
 
-- **BulletManager** (`BulletManager.ts`): 统一管理子弹的对象池生成与回收，支持不同阵营（敌我）的子弹分发。
-- **EnemyManager** (`EnemyPlaneManager.ts`): 负责各类敌机（普通怪、Boss）的生成、初始化及对象池回收。
-- **GameManager**: 控制游戏的核心状态机（准备、进行中、暂停、失败），协调各系统联动，并派发胜利与结算事件。
-- **WaveManager**: 解析关卡配置文件 (`LevelConfig`)，控制敌人的刷新节奏、波次间隔与关底 Boss 出现。
+UpgradeManager: 肉鸽系统大脑。监听击杀事件、计算经验值、处理升级触发，并将玩家选择的强化卡牌应用给 PlayerPlane。
 
-### 5. UI (界面层)
+5. UI (界面层)
+PlayerHealthUI: 玩家血条。根据当前血量与最大血量动态生成并更新方块/爱心状态。
 
-包含游戏内的各种交互面板与按钮（如：开始面板、暂停面板、结算面板）。
+BossHealthUI: Boss 血条。顶部平滑过渡的进度条，入场显示，死亡隐藏。
 
-## 🎮 技术特点 (Technical Highlights)
+ExpBarUI: 顶部经验条与等级数字显示。
 
-- **对象池驱动 (Object Pooling)**: 高频刷新的子弹与敌机全面接入对象池，确保游戏长时间运行下帧率稳定。
-- **数据驱动波次 (Data-Driven Waves)**: 通过 `LevelConfig` 配置文件灵活定制关卡的刷怪序列、延迟与类型，无需修改核心逻辑。
-- **事件驱动 (Event-Driven)**: 碰撞检测不直接修改血量，而是发出事件交由 Manager 统一调度，彻底分离战斗表现与核心逻辑。
-- **配置驱动的 Boss (Data-Driven Boss)**: 用一个 `BaseBoss` 预制体承载所有 Boss。`BossConfig` 描述外观部件、碰撞体、分阶段技能及参数；`BaseBoss` 在运行时动态组装贴图、注入技能参数、按血量阈值切换阶段。新增 Boss 只需增加一条配置，无需新建预制体或写新类。
+UpgradePanel: 三选一强化面板。负责随机抽卡、UI 渲染，以及处理游戏暂停与恢复流程。
 
-## 🚀 未来规划 (Planned Features)
+PausePanel / ResultPanels: 暂停与结算等流程控制 UI。
 
-Earth_Demo 正在向一个完整的 Roguelike 太空生存游戏迈进，接下来计划开发的功能包括：
+🎮 技术特点 (Technical Highlights)
+对象池驱动 (Object Pooling): 高频刷新的子弹与敌机全面接入对象池，确保帧率稳定。
 
-- [ ] **专属弹幕模式 (Unique Bullet Patterns)**: 在已有的环形散射、螺旋双发基础上，扩展扇形散射、追踪导弹、激光扫射等模式。
-- [ ] **生命与研发资源系统 (Life & Research Resource Systems)**: 引入局外的永久成长线。
-- [ ] **星球开发 (Planet Development)**: 建立基地，升级科技树。
-- [ ] **飞船探索与资源采集 (Spaceship Exploration & Gathering)**: 在大地图中探索星系，采集稀有矿物。
-- [ ] **抵御海盗袭击 (Defense Against Pirate Attacks)**: 除了主动出击，还要面对随机到来的太空海盗袭击，保护星球资源。
+事件驱动 (Event-Driven): 碰撞与 UI 更新完全通过 EventBus 解耦，逻辑实体不直接引用 UI 节点。
 
-## 🛠️ 开发环境 (Development Setup)
+配置驱动的 Boss (Data-Driven Boss): 仅用一份 BossConfig 数据即可驱动所有 Boss 的外观拼装与阶段技能。新增 Boss 零代码改动。
 
-1. 安装 Cocos Creator 3.8 或更高版本。
-2. 克隆本项目并导入 Cocos Dashboard。
-3. 打开 `Scenes/HallScene.scene`（大厅）或直接打开 `Scenes/BattleScene.scene`（战斗场景）预览核心玩法。
-4. 点击编辑器顶部的 Play 按钮即可运行。
+数据驱动的肉鸽系统 (Data-Driven Roguelike): UpgradeManager 独立管理经验与等级，通过 UpgradePanel 弹出随机卡牌，玩家选择后直接强化 PlayerPlane 的动态属性（伤害、射速、子弹数量）。
+
+动态 UI 渲染: 血条与经验条能根据玩家当前的最大血量上限和升级状态，动态生成与调整 UI 节点。
+
+🚀 未来规划 (Planned Features)
+□ 专属弹幕模式: 扩展更多武器形态（追踪导弹、激光等）。
+□ 视听反馈优化: 接入受击特效、屏幕震动与音效。
+□ 局外成长系统: 引入永久升级机制。
+□ 更多敌人与 Boss: 充分利用现有的数据驱动架构扩充内容。
+🛠️ 开发环境 (Development Setup)
+安装 Cocos Creator 3.8 或更高版本。
+
+克隆本项目并导入 Cocos Dashboard。
+
+打开 Scenes/HallScene.scene（大厅）或直接打开 Scenes/BattleScene.scene（战斗场景）。
+
+点击编辑器顶部的 Play 按钮即可运行。
+
+

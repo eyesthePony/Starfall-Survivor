@@ -19,9 +19,6 @@ export class EnemyManager extends Component {
     @property(Prefab)
     bossPrefab: Prefab = null!;
 
-    @property({ tooltip: "生成间隔（秒）" })
-    spawnRate = 1;
-
    
     private topY = 0;
    
@@ -51,13 +48,13 @@ export class EnemyManager extends Component {
     private onStateChanged(state:string){
         // 游戏开始，启动飞机
         if(state === GameConstants.GAME_STATE.PLAYING){
-            this.setEnemiesEabled(true);
+            this.setEnemiesEnabled(true);
         }else{//游戏暂停，关闭飞机。
-            this.setEnemiesEabled(false);
+            this.setEnemiesEnabled(false);
         }
     }
 
-    private setEnemiesEabled(isEnabled:boolean){
+    private setEnemiesEnabled(isEnabled:boolean){
         const enemies = this.node.children;
 
         for(let i = enemies.length - 1;i >= 0;--i){

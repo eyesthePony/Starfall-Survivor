@@ -5,6 +5,8 @@ export class GameData  {
 
     static screenWidth: number = 720;
     static screenHeight: number = 1280;
+
+    static playerMaxHp: number = 5; 
 }
 
 

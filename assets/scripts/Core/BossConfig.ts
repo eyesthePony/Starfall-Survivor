@@ -31,6 +31,7 @@ export interface BossPhaseConfig {
 }
 
 export interface BossConfigData {
+    name:string;
     maxHp: number;
     moveSpeed: number;
     scale:number;
@@ -43,6 +44,7 @@ export interface BossConfigData {
 
 export const BOSS_CONFIG:Record<string,BossConfigData> = {
     [GameConstants.BOSS_TYPE.ICE_BOSS]: {
+        name:"唐奎碎冰冰",
         maxHp: 1000,
         moveSpeed: 1.5,
         scale: 0.3,
@@ -81,7 +83,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                 // 阶段1：缓慢的冰环
                 skills: [
                     {name:GameConstants.BOSS_SKILL.SINE_MOVE, params: { amplitude: 250, frequency: 0.2 } },
-                    { name: GameConstants.BOSS_SKILL.RING_FIRE,  params: { bulletCount: 16, damage: 10, speed: 300,interval: 2.0 }},
+                    { name: GameConstants.BOSS_SKILL.RING_FIRE,  params: { bulletCount: 16, damage: 10, speed: 300,interval: 1.0 }},
                 ]
             },
             { 

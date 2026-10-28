@@ -28,6 +28,8 @@ export class background extends Component {
         // 假设锚点在中心，bg1 在 0，bg2 在 bgHeight
         this.bgHeight = this.bgs[0].getComponent(UITransform).height;
 
+        const screenHeight = view.getVisibleSize().height;
+
         this.bgs[0].setPosition(0, 0);
         this.bgs[1].setPosition(0, this.bgHeight);
 
@@ -44,16 +46,24 @@ export class background extends Component {
     }
 
     update(dt: number) {
-        const dy = this.speed * dt;
-        const pos1 = this.bgs[0].position;
-        const pos2 = this.bgs[1].position;
-        this.bgs[0].setPosition(pos1.x, pos1.y - dy, pos1.z);
-        this.bgs[1].setPosition(pos2.x, pos2.y - dy, pos2.z);  
-        // 移出屏幕底部，挪到另一张上面
-        if (this.bgs[0].position.y <= -this.bgHeight) {
-            this.bgs[0].setPosition(pos1.x, this.bgs[1].position.y + this.bgHeight, pos1.z);
-        }else if (this.bgs[1].position.y <= -this.bgHeight) {
-            this.bgs[1].setPosition(pos2.x, this.bgs[0].position.y + this.bgHeight, pos2.z);
+         const dy = this.speed * dt;
+        
+        for (let i = 0; i < this.bgs.length; i++) {
+            const bg = this.bgs[i];
+            const pos = bg.position;
+            
+            // 1. 统一向下移动
+            bg.setPosition(pos.x, pos.y - dy, pos.z);
+
+            // 2. 只要图完全移出屏幕底部，立刻挪到另一张图的上方
+            if (bg.position.y <= -this.bgHeight) {
+                const otherBg = this.bgs[1 - i];
+                
+                // ★ 修改点：故意重叠 2 个像素，防止出现黑线
+                // ★ 修改点：用 Math.round 取整，避免浮点数产生小缝隙
+                const targetY = otherBg.position.y + this.bgHeight - 2; 
+                bg.setPosition(pos.x, Math.round(targetY), pos.z);
+            }
         }
     }
 

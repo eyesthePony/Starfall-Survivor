@@ -36,6 +36,7 @@ export class BaseBoss extends BasePlane{
 
     public init(cfg:BossConfigData , pos: Vec3) {
         if(!cfg){console.warn(`cfg为空`);return;}; 
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BOSS_HIDE_HP_BAR);
         if (this._enterMove) this._enterMove.enabled = false; //避免入场时重开，进入pool，为true
         this._config = cfg;
         this.node.setPosition(pos);//设置初始位置
@@ -226,6 +227,7 @@ export class BaseBoss extends BasePlane{
     // 入场结束后
     protected onEnterComplete() {
         this.activatePhase(0);  //开启一阶段
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BOSS_SHOW_HP_BAR,this._config.name,this._maxHp);
     }
 
     
@@ -233,6 +235,7 @@ export class BaseBoss extends BasePlane{
     public takeDamage(damage: number) {
         if (this._isEntering || this._isDead) return;
         this.hp -= damage;
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BOSS_HP_CHANGED,this.hp);
         if (this.hp <= 0) this.onDeath();
         else this.checkPhase();
     }
@@ -243,6 +246,7 @@ export class BaseBoss extends BasePlane{
         this._isDead = true;
         this._skillMap.forEach(c => { if (c) c.enabled = false; });   // ← 加
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.ENEMY_KILLED, this.node);
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BOSS_HIDE_HP_BAR);
     }
 
 
