@@ -13,6 +13,8 @@ export class UpgradePanel extends Component {
     private _pendingCount: number = 0; // 需要选几次
 
     private _currentCards: CardConfigData[] = [];
+
+    private _isSelecting: boolean = false; // 选卡锁，避免连点多次强化。
     
     
     protected onLoad(): void {
@@ -25,6 +27,7 @@ export class UpgradePanel extends Component {
     }
 
     show(count: number = 1){
+        this._isSelecting = false; 
         this.node.active = true;  
         this._pendingCount = count;
         this.refreshCards();
@@ -35,13 +38,21 @@ export class UpgradePanel extends Component {
     }
 
     onCardClick(index:number){
+        if (this._isSelecting) return; //已经选了，不能选
         const selectedCard = this._currentCards[index];
         if (!selectedCard) return;
+
+        this._isSelecting = true; //已经选了，设为true
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.CARD_SELECTED, selectedCard.id); // 发出选卡信号
         this._pendingCount--;
         if (this._pendingCount > 0) {
             // 如果还有次数，理论上应该重新刷卡片文字，现在先直接返回
             this.refreshCards();
+            // 在下一帧（或极短延迟后）解锁，防止连点
+            this.scheduleOnce(() => {
+                this._isSelecting = false;
+            }, 0.2); // 0.2秒的锁，足够防止连点，又不会影响正常操作
+
             return; 
         }
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.GAME_RESUME);

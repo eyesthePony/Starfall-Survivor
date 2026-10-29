@@ -75,7 +75,7 @@ export class PlayerPlane extends  BasePlane {
      public applyUpgrade(cardId: string) {
         switch (cardId) {
             case GameConstants.CARD_ID.DMG_UP:
-                this.bulletDamage += 5;
+                this.bulletDamage += 100;
                 console.log(`[升级] 伤害提升！当前伤害：${this.bulletDamage}`);
                 break;
                 

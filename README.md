@@ -1,6 +1,6 @@
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-**Earth_Demo** is a **Roguelike auto-fire bullet-hell shooter** built with Cocos Creator.
+**Starfall Survivor** is a **Roguelike auto-fire bullet-hell shooter** built with Cocos Creator.
 
 In the game, the player focuses on maneuvering their ship to dodge dense bullet patterns, while the ship automatically attacks enemies. The project currently features a complete gameplay loop: wave spawning, boss encounters, and a **data-driven Roguelike upgrade system (pick 1 of 3)**.
 

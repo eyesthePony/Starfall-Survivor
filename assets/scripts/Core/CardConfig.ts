@@ -13,20 +13,20 @@ export const CARD_CONFIG:CardConfigData[] = [
     // 伤害强化
     {
         id:  GameConstants.CARD_ID.DMG_UP,
-        name: '强力弹头',
-        desc: '子弹伤害 +5',
+        name: '强力大奎头',
+        desc: '由于黄昊天帮助，唐奎伤害 +100',
     },
     // 射速强化
     {
         id: GameConstants.CARD_ID.SPD_UP,
-        name: '快速射击',
-        desc: '开火间隔 -15%',
+        name: '快速唐奎肘击',
+        desc: '由于胡杰的帮忙，唐奎肘击间隔 -15%',
         maxLevel: 5, // 假设射速最多强化 5 次
     },
     {
         id: GameConstants.CARD_ID.BULLET_UP,
-        name: '弹药充足',
-        desc: '每次多发射2颗子弹',
+        name: '奎子充足',
+        desc: '唐奎得到杨丰屹帮助，每次多发射2奎子',
         maxLevel: 5, // 假设射速最多强化 5 次
     }
     

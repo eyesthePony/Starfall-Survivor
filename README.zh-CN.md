@@ -1,6 +1,6 @@
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-**Earth_Demo** 是一款基于 Cocos Creator 开发的 **Roguelike 自动开火弹幕射击游戏**。
+**星陨幸存者** 是一款基于 Cocos Creator 开发的 **Roguelike 自动开火弹幕射击游戏**。
 
 在游戏中，玩家专注于操控战机移动以躲避密集的弹幕，而战机会自动攻击敌人。项目目前已具备完整的核心玩法循环：波次刷怪、Boss 战，以及**数据驱动的 Roguelike 升级系统（三选一强化）**。
 
