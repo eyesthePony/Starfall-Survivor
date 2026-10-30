@@ -10,11 +10,14 @@ export class BulletManager extends Component {
 
     static instance: BulletManager = null!;   
 
-    @property(Prefab)
-    normalPlayerBulletPrefab: Prefab = null;
+    @property({ type: Prefab, tooltip: "玩家普通子弹" })
+    normalPlayerBulletPrefab: Prefab = null!;
 
-    @property(Prefab)
-    normalEnemyBulletPrefab:Prefab = null;
+    @property({ type: Prefab, tooltip: "敌人普通子弹" })
+    normalEnemyBulletPrefab: Prefab = null!;
+
+    @property({ type: Prefab, tooltip: "冰霜子弹" })
+    iceBulletPrefab: Prefab = null!;
 
     
 
@@ -57,6 +60,9 @@ export class BulletManager extends Component {
     public spawnBullet(bulletType:string,isPlayerBullet: boolean, spawnPos: Vec3, dir: Vec3, damage: number, speed: number): void {
         let bulletprefab = null;
         switch(bulletType){
+            case GameConstants.BULLET_TYPE.ICE:
+                bulletprefab = this.iceBulletPrefab; 
+                break;
             case GameConstants.BULLET_TYPE.NORMAL:
             default:
                 if(isPlayerBullet){

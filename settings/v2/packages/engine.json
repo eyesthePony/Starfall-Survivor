@@ -36,7 +36,7 @@
         "_value": false
       },
       "physics": {
-        "_value": true,
+        "_value": false,
         "_option": "physics-ammo"
       },
       "physics-ammo": {
@@ -136,7 +136,6 @@
       "intersection-2d",
       "particle-2d",
       "physics-2d-builtin",
-      "physics-ammo",
       "profiler",
       "spine",
       "tiled-map",

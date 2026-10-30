@@ -20,7 +20,7 @@ export class Pause extends Component {
     }
 
     private onClick() {
-        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.PLAYER_PAUSE_CLICK);
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.GAME_PAUSE);
     }
     
     onDestroy() {

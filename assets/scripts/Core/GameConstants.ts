@@ -13,6 +13,7 @@ export class GameConstants {
         //敌机
         ENEMY_KILLED: "enemyKilled",             //飞机被玩家消灭死亡(加分)
         ENEMY_ESCAPED: "enemyEscaped",  // 敌机飞出底部（不加分）
+        LEVEL_UP:'levelUp',         //玩家升级
         
         
        
@@ -29,7 +30,7 @@ export class GameConstants {
         GAME_REVIVE: 'GAME_REVIVE',         // 复活
         GAME_SETTLE: 'GAME_SETTLE',         // 结算
         GAME_STATE_CHANGED:'GAME_STATE_CHANGED',//游戏状态切换了
-        PLAYER_PAUSE_CLICK:"playerPauseClick",               //玩家点击暂停按钮
+   
 
 
         // ========== 数据与 UI 刷新 ==========
@@ -41,21 +42,28 @@ export class GameConstants {
         BOSS_HP_CHANGED: "bossHpChanged",    // boss血量改变
         EXP_CHANGED:'expChanged',        //经验改变
         SHOW_UPGRADE_PANEL:"showUpgradePanel", //显示选卡界面
-        CARD_SELECTED:"cardSelected"       //选择了卡片
+        CARD_SELECTED:"cardSelected" ,      //选择了卡片
+
+
+        START_PLACING_BUILDING: "startPlacingBuilding", // 开始放置建筑 (传参: buildingId 或 index)
+        CANCEL_PLACING_BUILDING: "cancelPlacingBuilding", // 取消放置建筑
     };
 
     public static CARD_ID = {
         DMG_UP: 'dmg_up',
         SPD_UP: 'spd_up',
         BULLET_UP:'bullet_up',
+        MOVE_UP:'move_up',
     };
 
     //gamemanager里的游戏状态变量，作为GAME_STATE_CHANGED的参数传递给其他模块。
     public static GAME_STATE = {
-         READY:'ready' ,
-         PLAYING: 'playing' ,
-         OVER:'over',
-         PAUSE:'pause',
+        READY:'ready' ,
+        PLAYING: 'playing' ,
+        OVER:'over',
+        PAUSE:'pause',
+        VICTORY:"victory",
+        UPGRADING: 'upgrading',   // 升级选卡导致的暂停
     }
 
     //游戏界面分类
@@ -83,6 +91,7 @@ export class GameConstants {
     //子弹类型
     public static BULLET_TYPE = {
         NORMAL:'normal',
+        ICE:'ice',
     }
 
     

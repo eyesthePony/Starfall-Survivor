@@ -23,6 +23,7 @@ export class GameManager extends Component {
         EventBus.on(GameConstants.EVENT_TYPE.GAME_RESUME,this.onGameResume,this);
         EventBus.on(GameConstants.EVENT_TYPE.GAME_PAUSE,this.onGamePause,this);
         EventBus.on(GameConstants.EVENT_TYPE.GAME_VICTORY,this.onGameVictory,this);
+        EventBus.on(GameConstants.EVENT_TYPE.LEVEL_UP, this.onPlayerLevelUp, this);
     }
 
     start(){
@@ -35,6 +36,7 @@ export class GameManager extends Component {
         EventBus.off(GameConstants.EVENT_TYPE.GAME_RESUME,this.onGameResume,this);
         EventBus.off(GameConstants.EVENT_TYPE.GAME_PAUSE,this.onGamePause,this);
         EventBus.off(GameConstants.EVENT_TYPE.GAME_VICTORY,this.onGameVictory,this);
+        EventBus.off(GameConstants.EVENT_TYPE.LEVEL_UP, this.onPlayerLevelUp, this);
     }
 
     private onStateChanged(state:string){
@@ -50,7 +52,7 @@ export class GameManager extends Component {
 
     //游戏胜利，相当于游戏结束
     private onGameVictory() {
-        this.onStateChanged(GameConstants.GAME_STATE.OVER); 
+        this.onStateChanged(GameConstants.GAME_STATE.VICTORY); 
         console.log('[GameManager] 胜利');
     }
 
@@ -66,6 +68,12 @@ export class GameManager extends Component {
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.GAME_RESET);
         this.onStateChanged(GameConstants.GAME_STATE.PLAYING);
         console.log('[GameManager] 重新开始');
+    }
+
+    onPlayerLevelUp(levelUpCount: number){
+        this.onStateChanged(GameConstants.GAME_STATE.UPGRADING);
+        // 通知 UI 弹出选卡界面
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.SHOW_UPGRADE_PANEL, levelUpCount);
     }
 
     onGamePause(){

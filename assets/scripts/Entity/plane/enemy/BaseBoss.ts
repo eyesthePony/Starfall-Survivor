@@ -31,6 +31,7 @@ export class BaseBoss extends BasePlane{
             this._enterMove = this.addComponent(BossEnterMove);
         }
         this._enterMove.enabled = false;   // 等 play() 再启用
+        this.expReward = 1000;
           
     }
 
@@ -48,6 +49,7 @@ export class BaseBoss extends BasePlane{
         this.enabled = true;       
         this._maxHp = cfg.maxHp;   //初始化最大血量
         this.hp = this._maxHp;      //初始化现有血量
+        this.expReward = 1000;
         this.assemble();          //组装贴图
         this.setupCollider();     // ←挂碰撞
         this.ensureSkills();      //获取弹幕组件

@@ -13,14 +13,13 @@ export class BaseBullet extends Component {
     @property({ tooltip: "子弹伤害" })
     public damage: number = 100;
 
-    @property({ tooltip: "最大射程" })
-    public maxDistance: number = 900;
+
 
     @property({ tooltip: "是否是玩家子弹" })
     public playerBullet: boolean = true;
 
     private _direction: Vec3 = new Vec3(0, 1, 0);
-    private _startPos: Vec3 = new Vec3();
+    
 
     private _isDead: boolean = false;   // 防止重复回收
 
@@ -42,8 +41,14 @@ export class BaseBullet extends Component {
         this.damage = damage;
         this.speed = speed;
         this._direction.set(dir);
-        this.node.setWorldPosition(startPos);  // 不是 setPosition
-        this._startPos.set(startPos);   // ← 在这里记，位置已经对
+        this.node.setWorldPosition(startPos);  
+
+
+        const angleRad = Math.atan2(this._direction.y, this._direction.x);
+        const angleDeg = angleRad * 180 / Math.PI;
+        
+        // 减去 90 度，因为美术素材默认是朝上的
+        this.node.angle = angleDeg - 90; 
         this._isDead = false;
         this.enabled = true; 
     }

@@ -16,9 +16,11 @@ export class WaveManager extends Component {
     private _aliveEnemies: number = 0;  // 场上活着几架
     private _spawnTimer = 0;     // 刷怪倒计时
     private _waveDelayTimer = 0; // 波次延迟倒计时
-    
+
+
 
     protected onLoad(): void {
+
         const levelId = GameData.selectedLevel - 1;
         this._levelData = LEVELS[levelId];
         
@@ -26,6 +28,8 @@ export class WaveManager extends Component {
         EventBus.on(GameConstants.EVENT_TYPE.ENEMY_ESCAPED,this.onEnemyDead,this);
         EventBus.on(GameConstants.EVENT_TYPE.ENEMY_KILLED,this.onEnemyDead,this);
         EventBus.on(GameConstants.EVENT_TYPE.GAME_RESET,this.onGameReset,this);
+
+        this.enabled = false;
     }
 
 
@@ -44,7 +48,9 @@ export class WaveManager extends Component {
         }else {
             if(this._aliveEnemies > 0) return;    //如果还存活的飞机大于1，就先不下一波
             if(this._waveIndex >= this._levelData.waves.length){    //没波了 游戏结束
+
                 EventBus.dispatchEvent(GameConstants.EVENT_TYPE.GAME_VICTORY);
+                
                 return ;
             }
             this.startNextWave();    //下一波
@@ -60,14 +66,18 @@ export class WaveManager extends Component {
     }
 
     private spawnEnemy() {   
+        let success = false;
         if(this._waveData.category === GameConstants.ENEMY_CATEGORY.BOSS){
-            EnemyManager.instance.spawnBoss(this._waveData.enemyType);
+            success = EnemyManager.instance.spawnBoss(this._waveData.enemyType);
         }else{
-            EnemyManager.instance.spawnNormalEnemy(this._waveData.enemyType);
+            success = EnemyManager.instance.spawnNormalEnemy(this._waveData.enemyType);
         }
        
         --this._toSpawn;    //还需要生成的飞机-1
-        ++this._aliveEnemies;  //还存活的飞机数量+1
+        if (success) {
+            ++this._aliveEnemies;  //还存活的飞机数量+1
+        }
+
         this._spawnTimer += this._waveData.spawnInterval; // 重置计时器
     }
 
@@ -95,6 +105,7 @@ export class WaveManager extends Component {
         this._spawnTimer = 0;
         this._waveDelayTimer = 0;
         this.enabled = false; // 关掉自己，等 PLAYING 状态来唤醒
+
     }
 
 

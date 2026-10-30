@@ -14,7 +14,6 @@ export class EnemyPlane extends BasePlane  {
     private halfH = 0;      // 飞机半高
     private bottomY = 0;
 
-
     
 
 

@@ -76,18 +76,21 @@ export class PlayerPlane extends  BasePlane {
         switch (cardId) {
             case GameConstants.CARD_ID.DMG_UP:
                 this.bulletDamage += 100;
-                console.log(`[升级] 伤害提升！当前伤害：${this.bulletDamage}`);
+                
                 break;
                 
             case GameConstants.CARD_ID.SPD_UP:
-                this.fireCd *= 0.85; // 间隔缩短 15%
-                console.log(`[升级] 射速提升！当前间隔：${this.fireCd}`);
-                // 你的 BasePlane 里控制开火的是 _fireTimer 和某个间隔属性，记得去改
+                this.fireCd *= 0.5; // 间隔缩短 50%
+
+               
                 break;
 
             case GameConstants.CARD_ID.BULLET_UP:
                 this.bulletCount += 2;
-                console.log(`[升级] 弹幕增加！当前子弹数：${this.bulletCount}`);
+
+                break;
+            case GameConstants.CARD_ID.MOVE_UP:
+                this.bulletSpeed += 1000;
                 break;
         }
     }

@@ -44,37 +44,20 @@ export interface BossConfigData {
 
 export const BOSS_CONFIG:Record<string,BossConfigData> = {
     [GameConstants.BOSS_TYPE.ICE_BOSS]: {
-        name:"唐奎碎冰冰",
+        name:"冰王杨丰屹",
         maxHp: 1000,
         moveSpeed: 1.5,
         scale: 0.3,
-        hitBox: { shape: 'circle', radius: 250 },   
+        hitBox: { shape: 'circle', radius: 450 },   
         // 1. 组装外观
         parts: [
-            { 
-                name: "RingInner", 
-                texture: "textures/boss/ice/ice_ring_inner", 
-                animation: GameConstants.ANIMATOR_TYPE.SPIN_ANIMATOR ,   // 内圈法阵：顺时针快转
-            },
-            { 
-                name: "RingOuter", 
-                texture: "textures/boss/ice/ice_ring_outer", // 资源路径
-                animation: GameConstants.ANIMATOR_TYPE.SPIN_ANIMATOR,            // 外圈法阵：逆时针慢转
-            },   
+              
             { 
                 name: "Body", 
-                texture: "textures/boss/ice/ice_body", 
+                texture: "textures/plane/ice", 
                 animation: GameConstants.ANIMATOR_TYPE.FLOAT_ANIMATOR,          // 身体：上下浮动
     
             },     
-            { 
-                name: "Core", 
-                texture: "textures/boss/ice/ice_core", 
-                animation: GameConstants.ANIMATOR_TYPE.PULSE_ANIMATOR,             // 能量球：呼吸缩放
-                scale: 0.2,
-      
-                
-            },
             
         ],
         // 2. 组装战斗阶段
@@ -83,18 +66,18 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                 // 阶段1：缓慢的冰环
                 skills: [
                     {name:GameConstants.BOSS_SKILL.SINE_MOVE, params: { amplitude: 250, frequency: 0.2 } },
-                    { name: GameConstants.BOSS_SKILL.RING_FIRE,  params: { bulletCount: 16, damage: 10, speed: 300,interval: 1.0 }},
+                    { name: GameConstants.BOSS_SKILL.RING_FIRE,  params: { bulletCount: 16, damage: 10, speed: 300,interval: 1.0,bulletType:GameConstants.BULLET_TYPE.ICE, }},
                 ]
             },
             { 
                 // 阶段2：狂暴双螺旋
-                skills: [{ name:GameConstants.BOSS_SKILL.SPIRAL_FIRE, params: { arms: 2, damage: 8 ,interval: 0.15} },
+                skills: [{ name:GameConstants.BOSS_SKILL.SPIRAL_FIRE, params: { arms: 2, damage: 8 ,interval: 0.15,bulletType:GameConstants.BULLET_TYPE.ICE,} },
 
                 ] 
             },
             { 
                 // 阶段3：狂暴四螺旋
-                skills: [{ name:GameConstants.BOSS_SKILL.SPIRAL_FIRE, params: { arms: 4, damage: 8 ,interval: 0.05} },
+                skills: [{ name:GameConstants.BOSS_SKILL.SPIRAL_FIRE, params: { arms: 4, damage: 8 ,interval: 0.05,bulletType:GameConstants.BULLET_TYPE.ICE,} },
 
                 ] 
             },

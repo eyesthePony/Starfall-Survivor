@@ -106,7 +106,7 @@ export class EnemyManager extends Component {
       
             
 
-        if (!prefabToSpawn) return;
+        if (!prefabToSpawn) return false;
 
         const enemy = PoolManager.instance.getNode(prefabToSpawn, this.node);
         const plane = enemy.getComponent(BasePlane);
@@ -114,6 +114,7 @@ export class EnemyManager extends Component {
         const position = new Vec3(spawnX, this.topY + 100, 0);
         // 从屏幕顶外面生成
         plane.init(position);
+        return true; 
     }
 
     

@@ -20,7 +20,7 @@ export const CARD_CONFIG:CardConfigData[] = [
     {
         id: GameConstants.CARD_ID.SPD_UP,
         name: '快速唐奎肘击',
-        desc: '由于胡杰的帮忙，唐奎肘击间隔 -15%',
+        desc: '由于胡杰的帮忙，唐奎肘击间隔 -50%',
         maxLevel: 5, // 假设射速最多强化 5 次
     },
     {
@@ -28,7 +28,13 @@ export const CARD_CONFIG:CardConfigData[] = [
         name: '奎子充足',
         desc: '唐奎得到杨丰屹帮助，每次多发射2奎子',
         maxLevel: 5, // 假设射速最多强化 5 次
-    }
+    },
+    {
+        id: GameConstants.CARD_ID.MOVE_UP,
+        name: '兵奎神速',
+        desc: '唐奎得到吴锦波帮助，奎子飞行速度+1000',
+        maxLevel: 5, // 假设射速最多强化 5 次
+    },
     
 ];
 
