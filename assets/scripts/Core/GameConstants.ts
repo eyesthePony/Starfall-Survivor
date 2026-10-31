@@ -14,6 +14,8 @@ export class GameConstants {
         ENEMY_KILLED: "enemyKilled",             //飞机被玩家消灭死亡(加分)
         ENEMY_ESCAPED: "enemyEscaped",  // 敌机飞出底部（不加分）
         LEVEL_UP:'levelUp',         //玩家升级
+        REQUEST_HOMING_TARGET: "REQUEST_HOMING_TARGET", //追踪弹寻求目标
+        PLAYER_UPGRADE_WEAPON:'PLAYER_UPGRADE_WEAPON',//升级武器
         
         
        
@@ -60,11 +62,28 @@ export class GameConstants {
     };
 
     public static CARD_ID = {
+        //普通子弹强化
         DMG_UP: 'dmg_up',
         SPD_UP: 'spd_up',
         BULLET_UP:'bullet_up',
         MOVE_UP:'move_up',
+
+        //获得新武器
         LASER:'laser',
+        HOMING_MISSILE: 'homing_missile',
+
+        //激光强化
+        LASER_DMG: 'laser_dmg',
+        LASER_CD: 'laser_cd',
+        //追踪弹强化
+        HOMING_DMG: 'homing_dmg',
+    };
+
+     // 卡牌三大分类
+    public static CARD_TYPE = {
+        WEAPON: 'weapon',   // 获得新武器
+        UPGRADE: 'upgrade', // 强化已有武器
+        STAT: 'stat',       // 基础属性（伤害、血量等）
     };
 
     //gamemanager里的游戏状态变量，作为GAME_STATE_CHANGED的参数传递给其他模块。
@@ -104,6 +123,7 @@ export class GameConstants {
         NORMAL:'normal',
         ICE:'ice',
         LASER:'laser',
+        HOMING: 'homing',
     }
 
     

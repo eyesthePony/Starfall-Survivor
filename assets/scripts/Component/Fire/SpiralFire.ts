@@ -32,6 +32,7 @@ export class SpiralFire extends BaseFire {
         if(params.arms !== undefined) this._arms = params.arms;
         if(params.angleStep !== undefined) this._angleStep = params.angleStep;
         if (params.interval !== undefined) this.interval = params.interval;
+        if(params.isPlayerBullet !== undefined)this._isPlayerBullet = params.isPlayerBullet;
     }
 
     protected fire(): void {
@@ -61,7 +62,7 @@ export class SpiralFire extends BaseFire {
 
             BulletManager.instance.spawnBullet(
                 this._bulletType, 
-                false, 
+                this._isPlayerBullet, 
                 spawnPos, 
                 this._shootDir, 
                 this.damage, 

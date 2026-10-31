@@ -1027,6 +1027,10 @@
       "__uuid__": "dab99e03-7b99-49b0-93a2-78a2a27390a5",
       "__expectedType__": "cc.Prefab"
     },
+    "homingPrefab": {
+      "__uuid__": "1e5f800e-f3a6-4772-972e-bc02fb4cd045",
+      "__expectedType__": "cc.Prefab"
+    },
     "_id": "32hgCFQZlO0KmrzJfiXc8M"
   },
   {

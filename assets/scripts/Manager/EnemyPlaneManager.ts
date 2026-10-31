@@ -34,6 +34,16 @@ export class EnemyManager extends Component {
         EventBus.on(GameConstants.EVENT_TYPE.ENEMY_KILLED, this.onEnemyRecycle, this);
         EventBus.on(GameConstants.EVENT_TYPE.ENEMY_ESCAPED,this.onEnemyRecycle,this);
         EventBus.on(GameConstants.EVENT_TYPE.PLAYER_BULLET_HIT, this.onHit, this);
+        EventBus.on(GameConstants.EVENT_TYPE.REQUEST_HOMING_TARGET, this.onRequestTarget, this);
+    }
+
+    onDestroy() {
+        EventBus.off(GameConstants.EVENT_TYPE.GAME_RESET,this.onGameReset,this);
+        EventBus.off(GameConstants.EVENT_TYPE.GAME_STATE_CHANGED,this.onStateChanged,this);
+        EventBus.off(GameConstants.EVENT_TYPE.ENEMY_KILLED, this.onEnemyRecycle, this);
+        EventBus.off(GameConstants.EVENT_TYPE.ENEMY_ESCAPED,this.onEnemyRecycle,this);
+        EventBus.off(GameConstants.EVENT_TYPE.PLAYER_BULLET_HIT, this.onHit, this);
+        EventBus.off(GameConstants.EVENT_TYPE.REQUEST_HOMING_TARGET, this.onRequestTarget, this);
     }
 
     static get instance():EnemyManager{
@@ -45,6 +55,7 @@ export class EnemyManager extends Component {
         for(let i = enemies.length - 1;i >= 0;--i){
             PoolManager.instance.putNode(enemies[i]);
         }
+        this._activeEnemies.length = 0; 
     }
 
     private onStateChanged(state:string){
@@ -89,7 +100,7 @@ export class EnemyManager extends Component {
         const node = PoolManager.instance.getNode(this.bossPrefab, this.node);
         const boss = node.getComponent(BaseBoss);
         
-        boss.init(cfg, new Vec3(0, this.topY + 120, 0));
+        boss.init(cfg, new Vec3(0, this.topY + 120, 0),hpMultiplier);
         this._activeEnemies.push(boss); // Boss 也是 BasePlane，直接塞进去！
         return true;   
     }
@@ -115,18 +126,45 @@ export class EnemyManager extends Component {
 
         const position = new Vec3(spawnX, this.topY + 100, 0);
         // 从屏幕顶外面生成
-        plane.init(position);
+        plane.init(position,hpMultiplier);
         this._activeEnemies.push(plane); 
         return true; 
     }
 
+     // 收到信号，算出敌人，把结果通过 callback 传回去！
+    private onRequestTarget(pos: Vec3, callback: (target: Node) => void) {
+        const closest = this.getClosestEnemy(pos);
+        callback(closest); // 回调返回给子弹
+    }
+
+    // 算距离方法
+    public getClosestEnemy(pos: Vec3): Node | null {
+        let closestNode: Node | null = null;
+        let minDistSqr = Number.MAX_VALUE; 
+
+        // 直接遍历我们自己维护的数组
+        for (let i = 0; i < this._activeEnemies.length; i++) {
+            const plane = this._activeEnemies[i];
+            
+            // 防御：如果组件没了、节点没了、或者已经死了
+            if (!plane || !plane.node.isValid || !plane.node.active || plane.isDead) {
+                continue;
+            }
+
+            const enemyPos = plane.node.worldPosition;
+            const dx = enemyPos.x - pos.x;
+            const dy = enemyPos.y - pos.y;
+            const distSqr = dx * dx + dy * dy;
+
+            if (distSqr < minDistSqr) {
+                minDistSqr = distSqr;
+                closestNode = plane.node;
+            }
+        }
+        return closestNode;
+    }
+
     
 
-    onDestroy() {
-        EventBus.off(GameConstants.EVENT_TYPE.GAME_RESET,this.onGameReset,this);
-        EventBus.off(GameConstants.EVENT_TYPE.GAME_STATE_CHANGED,this.onStateChanged,this);
-        EventBus.off(GameConstants.EVENT_TYPE.ENEMY_KILLED, this.onEnemyRecycle, this);
-        EventBus.off(GameConstants.EVENT_TYPE.ENEMY_ESCAPED,this.onEnemyRecycle,this);
-        EventBus.off(GameConstants.EVENT_TYPE.PLAYER_BULLET_HIT, this.onHit, this);
-    }
+    
 }

@@ -73,6 +73,8 @@ export class GameManager extends Component {
     }
 
     onPlayerLevelUp(levelUpCount: number){
+         if (this._state === GameConstants.GAME_STATE.OVER || 
+            this._state === GameConstants.GAME_STATE.VICTORY) return;
         this.onStateChanged(GameConstants.GAME_STATE.UPGRADING);
         // 通知 UI 弹出选卡界面
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.SHOW_UPGRADE_PANEL, levelUpCount);
@@ -83,6 +85,8 @@ export class GameManager extends Component {
     }
 
     onGameResume(){
+        if (this._state === GameConstants.GAME_STATE.OVER || 
+            this._state === GameConstants.GAME_STATE.VICTORY) return;
         this.onStateChanged(GameConstants.GAME_STATE.PLAYING);
     }
 

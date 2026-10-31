@@ -19,10 +19,10 @@ export class BaseBullet extends Component {
     @property({ tooltip: "是否是玩家子弹" })
     public playerBullet: boolean = true;
 
-    private _direction: Vec3 = new Vec3(0, 1, 0);
+    protected _direction: Vec3 = new Vec3(0, 1, 0);
     
 
-    private _isDead: boolean = false;   // 防止重复回收
+    protected _isDead: boolean = false;   // 防止重复回收
 
     onLoad() {
         const collider = this.getComponent(Collider2D);
@@ -34,11 +34,9 @@ export class BaseBullet extends Component {
     // 新增：显式初始化
     public init(isPlayerBullet: boolean, dir: Vec3, damage: number, speed: number, startPos: Vec3) {
         this.playerBullet = isPlayerBullet;
-        if(isPlayerBullet){
-            this.getComponent(Collider2D).group = GameConstants.ITEM_GROUP.SELF_BULLET;
-        }else{
-            this.getComponent(Collider2D).group = GameConstants.ITEM_GROUP.ENEMY_BULLET
-        }
+        const collider = this.getComponent(Collider2D);
+        if (!collider) return;
+        collider.group = isPlayerBullet? GameConstants.ITEM_GROUP.SELF_BULLET: GameConstants.ITEM_GROUP.ENEMY_BULLET;
         this.damage = damage;
         this.speed = speed;
         this._direction.set(dir);

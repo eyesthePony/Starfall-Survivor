@@ -20,24 +20,25 @@ export class Laser extends Component {
     public damageInterval: number = 0.1; 
 
     private _isDead: boolean = false;
-    private playerBullet: boolean;
+    private playerBullet: boolean = true;
     
     // 记录当前正在被激光照射的敌人
     private _enemiesInLaser: Set<Node> = new Set(); 
     private _damageTimer: number = 0;
     private _lifeTimer: number = 0;
     private _opacity: UIOpacity = null; // 缓存透明度组件
+    private _boxCollider: BoxCollider2D = null;
 
 
     // 用来记录要跟随的飞机节点
     private _followTarget: Node = null; 
 
     protected onLoad() {
-        const collider = this.getComponent(Collider2D);
-        if (collider) {
-            collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+        this._boxCollider = this.getComponent(BoxCollider2D);
+        if ( this._boxCollider) {
+             this._boxCollider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
             // 👈 监听离开事件，敌人走出去后就不再扣血
-            collider.on(Contact2DType.END_CONTACT, this.onEndContact, this); 
+             this._boxCollider.on(Contact2DType.END_CONTACT, this.onEndContact, this); 
         }
 
          // 👈 必须加上这一行！先获取，没有就添加一个
@@ -55,12 +56,11 @@ export class Laser extends Component {
     public init(isPlayerBullet: boolean, dir: Vec3, damage: number, speed: number, startPos: Vec3,followNode: Node = null) {
         this.playerBullet = isPlayerBullet;
         
-        const collider = this.getComponent(Collider2D);
-        if (collider) {
+        if (this._boxCollider) {
             if(isPlayerBullet){
-                collider.group = GameConstants.ITEM_GROUP.SELF_BULLET;
+                this._boxCollider.group = GameConstants.ITEM_GROUP.SELF_BULLET;
             }else{
-                collider.group = GameConstants.ITEM_GROUP.ENEMY_BULLET;
+                this._boxCollider.group = GameConstants.ITEM_GROUP.ENEMY_BULLET;
             }
         }
 
@@ -93,12 +93,11 @@ export class Laser extends Component {
         }
 
         // 3. 同步拉长碰撞体
-        const boxCollider = this.getComponent(BoxCollider2D);
-        if (boxCollider) {
+        if (this._boxCollider) {
              // 宽度可以设宽一点，比如 40
-            boxCollider.size.set(40, this.maxLength); 
-            boxCollider.offset.set(0, this.maxLength / 2); 
-            boxCollider.apply(); 
+            this._boxCollider.size.set(40, this.maxLength); 
+            this._boxCollider.offset.set(0, this.maxLength / 2); 
+            this._boxCollider.apply(); 
         }
 
         
@@ -150,10 +149,18 @@ export class Laser extends Component {
         // 遍历当前在激光里的所有敌人
         this._enemiesInLaser.forEach(enemyNode => {
             // 防御：如果敌人已经被别的子弹打死了，跳过
-            if (!enemyNode.active || !enemyNode.isValid) return;
+             if (!enemyNode.active || !enemyNode.isValid) {
+                this._enemiesInLaser.delete(enemyNode);
+                return;
+            }
             
             const target = enemyNode.getComponent(BasePlane);
-            if (target && target.isDead) return;
+            // 如果血量见底了，也删掉
+            if (target && target.isDead) {
+                this._enemiesInLaser.delete(enemyNode);
+                return;
+            }
+
 
             // 扣血
             if (this.playerBullet) {
@@ -190,15 +197,15 @@ export class Laser extends Component {
         if (this._isDead) return;
         this._isDead = true;
         this._enemiesInLaser.clear();
-        this._followTarget = null; // 👈 清空目标，防止对象池复用时乱跟
+        this._followTarget = null; // 清空目标，防止对象池复用时乱跟
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BULLET_KILLED, this.node);
     }
 
     protected onDestroy() {
-        const collider = this.getComponent(Collider2D);
-        if (collider) {
-            collider.off(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
-            collider.off(Contact2DType.END_CONTACT, this.onEndContact, this);
+
+        if (this._boxCollider) {
+            this._boxCollider.off(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+            this._boxCollider.off(Contact2DType.END_CONTACT, this.onEndContact, this);
         }
     }
 }

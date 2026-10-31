@@ -23,6 +23,9 @@ export class BulletManager extends Component {
     @property({ type: Prefab, tooltip: "激光" })
     leserPrefab: Prefab = null!;
 
+    @property({ type: Prefab, tooltip: "追踪弹" })
+    homingPrefab: Prefab = null!;
+
     
 
     onLoad() {
@@ -75,6 +78,9 @@ export class BulletManager extends Component {
             case GameConstants.BULLET_TYPE.LASER:
                 bulletprefab = this.leserPrefab; 
                 break;
+            case GameConstants.BULLET_TYPE.HOMING:
+                bulletprefab = this.homingPrefab; 
+                break;
             case GameConstants.BULLET_TYPE.NORMAL:
             default:
                 if(isPlayerBullet){
@@ -94,13 +100,17 @@ export class BulletManager extends Component {
             const laserComp = bulletNode.getComponent(Laser);
             if (laserComp) {
                 laserComp.init(isPlayerBullet, dir, damage, speed, spawnPos,followTarget);
+                return;
             }
         } else {
             const bulletComp = bulletNode.getComponent(BaseBullet);
             if (bulletComp) {
                 bulletComp.init(isPlayerBullet, dir, damage, speed, spawnPos);
+                return;
             }
         }
+        // 兜底：组件缺失，直接回池，不留在场景
+        PoolManager.instance.putNode(bulletNode);
         
     }
 

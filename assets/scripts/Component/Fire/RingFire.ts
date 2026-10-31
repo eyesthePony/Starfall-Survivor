@@ -19,6 +19,7 @@ export class RingFire extends BaseFire{
         if (params.damage !== undefined) this.damage = params.damage;
         if (params.speed !== undefined) this.bulletSpeed = params.speed;
         if (params.interval !== undefined) this.interval = params.interval;
+        if(params.isPlayerBullet !== undefined)this._isPlayerBullet = params.isPlayerBullet;
     }
 
     protected fire(): void {
@@ -29,7 +30,8 @@ export class RingFire extends BaseFire{
             const idx = Math.floor(angle) % 360;
             this._shootDir.set(DirTable[idx].x, DirTable[idx].y, 0);
 
-            BulletManager.instance.spawnBullet(this._bulletType,false,spawnPos,this._shootDir,this.damage,this.bulletSpeed);
+            BulletManager.instance.spawnBullet(this._bulletType,
+                this._isPlayerBullet,spawnPos,this._shootDir,this.damage,this.bulletSpeed);
         }
     }
 }

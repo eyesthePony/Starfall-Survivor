@@ -7,6 +7,8 @@ import { GameConstants } from '../../../Core/GameConstants';
 import { GameData } from '../../../Core/GameData';
 import { LaserFire } from '../../../Component/Fire/LaserFire';
 import { BaseFire } from '../../../Component/Fire/BaseFire';
+import { HomingFire } from '../../../Component/Fire/HomingFire';
+import { CardConfigData } from '../../../Core/CardConfig';
 const { ccclass, property} = _decorator;
 
 @ccclass('PlayerPlane')
@@ -30,7 +32,11 @@ export class PlayerPlane extends  BasePlane {
     private bulletSpacing: number = 30; //并排的子弹间隔
     private _tempVec3:Vec3 = new Vec3(); 
     
-   
+    private _maxX: number = 0;
+    private _maxY: number = 0;
+
+    private _activeWeapons: BaseFire[] = [];
+
 
 
     onLoad() {
@@ -41,6 +47,8 @@ export class PlayerPlane extends  BasePlane {
         const ut = this.getComponent(UITransform)!;
         this.halfW = ut.width * ut.anchorX;         // 锚点左侧宽度
         this.halfH = ut.height * ut.anchorY;        // 锚点下侧高度
+        this._maxX = GameData.screenWidth / 2 - this.halfW;
+        this._maxY = GameData.screenHeight / 2 - this.halfH;
 
         this._shootDir = new Vec3(0, 1, 0);  // 飞机子弹方向
 
@@ -74,40 +82,66 @@ export class PlayerPlane extends  BasePlane {
         // 4. 回到屏幕底部正中间
         this.node.setPosition(0, -GameData.screenHeight / 2 + 150, 0);
         //删除子弹组件
-        const fires = this.getComponents(BaseFire);
-        for (const f of fires) {
-            f.destroy(); // 销毁这些组件
+        for (let i = 0; i < this._activeWeapons.length; i++) {
+            this._activeWeapons[i].destroy();
         }
+        this._activeWeapons.length = 0; 
     }
 
-     public applyUpgrade(cardId: string) {
-        switch (cardId) {
-            case GameConstants.CARD_ID.DMG_UP:
-                this.bulletDamage += 100;
-                
-                break;
-                
-            case GameConstants.CARD_ID.SPD_UP:
-                this.fireCd *= 0.5; // 间隔缩短 50%
+     public applyUpgrade(cardData: CardConfigData) {
+         // 1. 状态类卡（直接加属性）
+        if (cardData.type === GameConstants.CARD_TYPE.STAT) {
+            switch(cardData.id){
+                case GameConstants.CARD_ID.DMG_UP:
+                    this.bulletDamage += 100;
+                    break;
 
-               
-                break;
+                case GameConstants.CARD_ID.SPD_UP:
+                    this.fireCd *= 0.5;
+                    break;
+                case GameConstants.CARD_ID.MOVE_UP:
+                    this.bulletSpeed += 1000;
+                    break;
+                case GameConstants.CARD_ID.BULLET_UP:
+                    this.bulletCount += 2;
+                    break;
 
-            case GameConstants.CARD_ID.BULLET_UP:
-                this.bulletCount += 2;
+            }
 
-                break;
-            case GameConstants.CARD_ID.MOVE_UP:
-                this.bulletSpeed += 1000;
-                break;
-            case GameConstants.CARD_ID.LASER:
-    
-                // 挂载组件，设置基础参数
-                const laser = this.addComponent(LaserFire);
-                laser.applyConfig({spawnPos:this.muzzle.worldPosition,muzzleNode:this.muzzle});
-                console.log("玩家获得了激光！");
-                
-                break;
+            
+            return;
+        }
+        // 2. 武器类卡（获得新武器）
+        if (cardData.type === GameConstants.CARD_TYPE.WEAPON) {
+            if (cardData.targetWeapon ===GameConstants.BULLET_TYPE.LASER) {
+                let laser = this.getComponent(LaserFire);
+                if (!laser) { // 防止重复挂载
+                    laser = this.addComponent(LaserFire);
+                    laser.applyConfig({ muzzleNode: this.muzzle, isPlayerBullet: true });
+                    this._activeWeapons.push(laser);
+                }
+            } 
+            else if (cardData.targetWeapon === GameConstants.BULLET_TYPE.HOMING) {
+                let homing = this.getComponent(HomingFire);
+                if (!homing) {
+                    homing = this.addComponent(HomingFire);
+                    homing.applyConfig({ muzzleNode: this.muzzle, isPlayerBullet: true });
+                    this._activeWeapons.push(homing);
+                }
+            }
+            return;
+        }
+
+        // 3. 强化类卡（升级已有武器）
+        if (cardData.type === GameConstants.CARD_TYPE.UPGRADE) {
+           // 直接遍历当前的武器数组，只要有这个标签，就执行强化！
+            for (let i = 0; i < this._activeWeapons.length; i++) {
+                const weapon = this._activeWeapons[i];
+                if (weapon.weaponType === cardData.targetWeapon) {
+                    weapon.onUpgrade(cardData.id);
+                    break; // 找到了就跳出循环，性能极致
+                }
+            }
         }
     }
 
@@ -136,9 +170,8 @@ export class PlayerPlane extends  BasePlane {
             this.node.pauseSystemEvents(true);   // 彻底屏蔽触摸，防止暂停时还能拖动飞机
         }
 
-        const fires = this.getComponents(BaseFire);
-        for (const f of fires) {
-            f.enabled = isPlaying;
+        for (let i = 0; i < this._activeWeapons.length; i++) {
+            this._activeWeapons[i].enabled = isPlaying;
         }
     }
 
@@ -174,10 +207,8 @@ export class PlayerPlane extends  BasePlane {
         let newY = pos.y + delta.y;
 
         // 边界钳制
-        const maxX = GameData.screenWidth/ 2 - this.halfW;
-        const maxY = GameData.screenHeight / 2 - this.halfH;
-        newX = Math.max(-maxX, Math.min(maxX, newX));
-        newY = Math.max(-maxY, Math.min(maxY, newY));
+        newX = Math.max(-this._maxX, Math.min(this._maxX, newX));
+        newY = Math.max(-this._maxY, Math.min(this._maxY, newY));
 
         this.node.setPosition(newX, newY, pos.z);
     }

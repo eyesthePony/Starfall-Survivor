@@ -17,6 +17,10 @@ export  class BaseFire extends Component {
 
     protected _bulletType = GameConstants.BULLET_TYPE.NORMAL;
 
+    protected _isPlayerBullet:boolean = true;
+
+    public weaponType: string = ''; // 武器的标签
+
     public reset(): void {
         this._timer = 0;
     }
@@ -27,6 +31,10 @@ export  class BaseFire extends Component {
             this._timer -= this.interval;   // ← 保留超出部分，不丢帧
             this.fire();
         }
+    }
+
+    onUpgrade(cardId:string){
+
     }
 
     protected fire(){

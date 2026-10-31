@@ -57,7 +57,7 @@ export class UpgradePanel extends Component {
         if (!selectedCard) return;
 
         this._isSelecting = true; 
-        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.CARD_SELECTED, selectedCard.id); 
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.CARD_SELECTED, selectedCard); 
         
         this._pendingCount--;
         if (this._pendingCount > 0) {
