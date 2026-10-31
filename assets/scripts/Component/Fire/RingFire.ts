@@ -1,7 +1,10 @@
 import { _decorator, Vec3 } from 'cc';
 import { BaseFire } from './BaseFire';
 import { BulletManager } from '../../Manager/BulletManager';
+import { DirTable } from '../../Core/MathUtils';
 const { ccclass, property } = _decorator;
+
+
 
 @ccclass('RingFire')
 export class RingFire extends BaseFire{
@@ -23,8 +26,8 @@ export class RingFire extends BaseFire{
         const averageAngle = 360 / this._bulletCount;
         for(let i=0;i < this._bulletCount; ++i){
             const angle = averageAngle * i;
-            const rad = angle * Math.PI / 180;
-            this._shootDir.set(Math.sin(rad),-Math.cos(rad),0);
+            const idx = Math.floor(angle) % 360;
+            this._shootDir.set(DirTable[idx].x, DirTable[idx].y, 0);
 
             BulletManager.instance.spawnBullet(this._bulletType,false,spawnPos,this._shootDir,this.damage,this.bulletSpeed);
         }

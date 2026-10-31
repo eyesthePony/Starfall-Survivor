@@ -16,10 +16,13 @@ export class WaveManager extends Component {
     private _aliveEnemies: number = 0;  // 场上活着几架
     private _spawnTimer = 0;     // 刷怪倒计时
     private _waveDelayTimer = 0; // 波次延迟倒计时
+    private _loopCount: number = 0; //轮回次数
 
 
 
     protected onLoad(): void {
+
+         
 
         const levelId = GameData.selectedLevel - 1;
         this._levelData = LEVELS[levelId];
@@ -48,10 +51,15 @@ export class WaveManager extends Component {
         }else {
             if(this._aliveEnemies > 0) return;    //如果还存活的飞机大于1，就先不下一波
             if(this._waveIndex >= this._levelData.waves.length){    //没波了 游戏结束
-
-                EventBus.dispatchEvent(GameConstants.EVENT_TYPE.GAME_VICTORY);
-                
-                return ;
+                if (GameData.isEndlessMode) {
+                    // 无尽模式：清空后波数归零，继续循环
+                    this._waveIndex = 0;
+                    this._loopCount++;
+                } else {
+                    // 正常模式：胜利
+                    EventBus.dispatchEvent(GameConstants.EVENT_TYPE.GAME_VICTORY);
+                    return;
+                }
             }
             this.startNextWave();    //下一波
         }
@@ -67,10 +75,11 @@ export class WaveManager extends Component {
 
     private spawnEnemy() {   
         let success = false;
+        const hpMultiplier = 1 + (this._loopCount * 0.5); // 每轮回一次，怪物血量增加 50%
         if(this._waveData.category === GameConstants.ENEMY_CATEGORY.BOSS){
-            success = EnemyManager.instance.spawnBoss(this._waveData.enemyType);
+            success = EnemyManager.instance.spawnBoss(this._waveData.enemyType,hpMultiplier);
         }else{
-            success = EnemyManager.instance.spawnNormalEnemy(this._waveData.enemyType);
+            success = EnemyManager.instance.spawnNormalEnemy(this._waveData.enemyType,hpMultiplier);
         }
        
         --this._toSpawn;    //还需要生成的飞机-1
@@ -105,6 +114,7 @@ export class WaveManager extends Component {
         this._spawnTimer = 0;
         this._waveDelayTimer = 0;
         this.enabled = false; // 关掉自己，等 PLAYING 状态来唤醒
+        this._loopCount = 0;
 
     }
 

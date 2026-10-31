@@ -35,7 +35,7 @@ export class BaseBoss extends BasePlane{
           
     }
 
-    public init(cfg:BossConfigData , pos: Vec3) {
+    public init(cfg:BossConfigData , pos: Vec3,hpMultiplier:number = 1) {
         if(!cfg){console.warn(`cfg为空`);return;}; 
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BOSS_HIDE_HP_BAR);
         if (this._enterMove) this._enterMove.enabled = false; //避免入场时重开，进入pool，为true
@@ -47,7 +47,7 @@ export class BaseBoss extends BasePlane{
         this._phaseIndex = 0;       //重置阶段
         this._isEntering = true; //重置开场 
         this.enabled = true;       
-        this._maxHp = cfg.maxHp;   //初始化最大血量
+        this._maxHp = cfg.maxHp * hpMultiplier;   //初始化最大血量
         this.hp = this._maxHp;      //初始化现有血量
         this.expReward = 1000;
         this.assemble();          //组装贴图
@@ -63,27 +63,30 @@ export class BaseBoss extends BasePlane{
         const hitBox: BossHitBoxConfig = this._config.hitBox;
         if (!hitBox) return;
 
-        // 复用时先移除旧碰撞体（可能上次是 circle，这次是 box）
-        const old = this.getComponent(Collider2D);
-        if (old){
-            old.enabled = false;
-            old.destroy();
-        } 
+        // 提前获取好组件（如果是第一次，用 addComponent；之后直接从节点拿）
+        let box = this.getComponent(BoxCollider2D);
+        let circle = this.getComponent(CircleCollider2D);
 
-        let collider: Collider2D;
+        if (!box) box = this.node.addComponent(BoxCollider2D);
+        if (!circle) circle = this.node.addComponent(CircleCollider2D);
+
+        // 默认先全关
+        box.enabled = false;
+        circle.enabled = false;
+
         if (hitBox.shape === 'circle') {
-            const c = this.node.addComponent(CircleCollider2D);
-            c.radius = hitBox.radius ?? 100;
-            collider = c;
+            circle.radius = hitBox.radius ?? 100;
+            circle.offset.set(hitBox.offsetX ?? 0, hitBox.offsetY ?? 0);
+            circle.group = GameConstants.ITEM_GROUP.ENEMY_PLANE;
+            circle.sensor = true;
+            circle.enabled = true; // 👈 激活
         } else {
-            const b = this.node.addComponent(BoxCollider2D);
-            b.size.set(hitBox.width ?? 100, hitBox.height ?? 100);
-            collider = b;
+            box.size.set(hitBox.width ?? 100, hitBox.height ?? 100);
+            box.offset.set(hitBox.offsetX ?? 0, hitBox.offsetY ?? 0);
+            box.group = GameConstants.ITEM_GROUP.ENEMY_PLANE;
+            box.sensor = true;
+            box.enabled = true; // 👈 激活
         }
-
-        collider.offset.set(hitBox.offsetX ?? 0, hitBox.offsetY ?? 0);
-        collider.group = GameConstants.ITEM_GROUP.ENEMY_PLANE;   // 分组 4
-        collider.sensor = true;   // 飞行射击游戏通常用 sensor，不做物理反弹
     }
 
 
@@ -195,9 +198,9 @@ export class BaseBoss extends BasePlane{
     }
 
     //游戏暂停，暂停所有组件
-    setPaused(isEnabled: boolean) {
-
-        if (!isEnabled) {
+    setPaused(isPaused: boolean) {
+        super.setPaused(isPaused);
+        if (isPaused) {
             this.suspend();
         } else {
             this.resume();

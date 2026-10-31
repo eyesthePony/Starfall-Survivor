@@ -1,7 +1,7 @@
 import { _decorator, Component, Node, Vec3 } from 'cc';
 import { BaseFire } from './BaseFire';
 import { BulletManager } from '../../Manager/BulletManager';
-import { GameConstants } from '../../Core/GameConstants';
+import { DirTable } from '../../Core/MathUtils';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpiralFire')
@@ -48,12 +48,16 @@ export class SpiralFire extends BaseFire {
             // 一个螺旋臂的方向角度
             const armOffset = averageArm * i;
             //根据基准角度偏移
-            const angle = this._spiralAngle + armOffset;
+            let angle = this._spiralAngle + armOffset;
             
-            //将角度化作弧度
-            const rad = angle * Math.PI / 180;
-            //射击方向从（0，-1）逆时针旋转
-            this._shootDir.set(Math.sin(rad), -Math.cos(rad), 0);
+             //  3. 核心优化：计算索引并取模，确保落在 0~359 之间
+            angle = angle % 360;
+            if (angle < 0) angle += 360; // 防御性编程：如果是负数角度，转为正数
+            
+            const idx = Math.round(angle) % 360;
+            
+            // 👈 4. 查表法，0 次三角函数运算！
+            this._shootDir.set(DirTable[idx].x, DirTable[idx].y, 0);
 
             BulletManager.instance.spawnBullet(
                 this._bulletType, 

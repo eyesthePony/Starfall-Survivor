@@ -37,10 +37,10 @@ export class EnemyPlane extends BasePlane  {
      * 
      * 初始化飞机
      */
-    public init(position: Vec3) {
+    public init(position: Vec3,hpMultiplier:number = 1) {
         this.node.setPosition(position);//设置初始位置
-        this._maxHp = 10;          //设置血量上限
-        this.hp = 10;              //设置血量
+        this._maxHp = 10 * hpMultiplier;          //设置血量上限
+        this.hp = this._maxHp;              //设置血量
         this._isDead = false;      //死亡判断重置
         this._fireTimer = 0;          //开火时间
         this.fireCd = 1;         //开火间隔

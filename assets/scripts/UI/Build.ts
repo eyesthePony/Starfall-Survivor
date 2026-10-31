@@ -1,10 +1,15 @@
-import { _decorator, Button, Component, director, Node } from 'cc';
+import { _decorator, Button, Component, } from 'cc';
 import { GameConstants } from '../Core/GameConstants';
 import { EventBus } from '../Core/EventBus';
+import { BuildPanel } from './BuildPanel';
 const { ccclass, property } = _decorator;
 
 @ccclass('Build')
 export class Build extends Component {
+
+    @property(BuildPanel) 
+    buildPanel: BuildPanel = null!;
+    
     onLoad() {
         this.node.on(Button.EventType.CLICK, this.onClick, this);
     }
@@ -14,7 +19,7 @@ export class Build extends Component {
     }
 
     private onClick() {
-        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.START_PLACING_BUILDING, 0);     
+        this.buildPanel.show();
     }
 }
 

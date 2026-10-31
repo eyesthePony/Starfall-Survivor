@@ -35,6 +35,12 @@ export const CARD_CONFIG:CardConfigData[] = [
         desc: '唐奎得到吴锦波帮助，奎子飞行速度+1000',
         maxLevel: 5, // 假设射速最多强化 5 次
     },
+    {
+        id: GameConstants.CARD_ID.LASER,
+        name: '激光打奎',
+        desc: '唐奎得到丁真帮助，奎子能发射激光',
+        maxLevel: 1, // 假设射速最多强化 5 次
+    },
     
 ];
 

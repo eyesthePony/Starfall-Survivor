@@ -3,6 +3,7 @@ import { EventBus } from '../Core/EventBus';
 import { GameConstants } from '../Core/GameConstants';
 import { AudioManager } from '../Core/AudioManager';
 import { GameData } from '../Core/GameData';
+import { DamageStats } from '../Core/DamageStats';
 const { ccclass} = _decorator;
 
 @ccclass('GameManager')
@@ -67,6 +68,7 @@ export class GameManager extends Component {
     private onGameRestart() {
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.GAME_RESET);
         this.onStateChanged(GameConstants.GAME_STATE.PLAYING);
+        DamageStats.instance.clear();
         console.log('[GameManager] 重新开始');
     }
 

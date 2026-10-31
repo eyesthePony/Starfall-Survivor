@@ -8,6 +8,11 @@ export class Start extends Component {
     @property
     levelId:number = 1;
 
+    @property
+    isEndlessMode:boolean = false;
+
+    
+
     onLoad() {
         this.node.on(Button.EventType.CLICK, this.onClick, this);
     }
@@ -18,6 +23,7 @@ export class Start extends Component {
 
     private onClick() {
         GameData.selectedLevel = this.levelId;
+        GameData.isEndlessMode = this.isEndlessMode;
         director.loadScene(GameConstants.GAME_SCENE.BATTLE);
     }
 }

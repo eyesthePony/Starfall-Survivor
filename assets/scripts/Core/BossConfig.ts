@@ -48,7 +48,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
         maxHp: 1000,
         moveSpeed: 1.5,
         scale: 0.3,
-        hitBox: { shape: 'circle', radius: 450 },   
+        hitBox: { shape: 'circle', radius: 350 },   
         // 1. 组装外观
         parts: [
               

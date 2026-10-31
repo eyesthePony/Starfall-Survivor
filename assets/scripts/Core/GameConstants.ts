@@ -43,10 +43,20 @@ export class GameConstants {
         EXP_CHANGED:'expChanged',        //经验改变
         SHOW_UPGRADE_PANEL:"showUpgradePanel", //显示选卡界面
         CARD_SELECTED:"cardSelected" ,      //选择了卡片
+        UPDATE_PLAYER_STATS:'UPDATE_PLAYER_STATS',//更新武器伤害数据
+        REQUEST_DRAW_CARDS:'REQUEST_DRAW_CARDS',//请求卡片
+        DRAW_CARDS_RESULT:'DRAW_CARDS_RESULT',//给卡
+
 
 
         START_PLACING_BUILDING: "startPlacingBuilding", // 开始放置建筑 (传参: buildingId 或 index)
         CANCEL_PLACING_BUILDING: "cancelPlacingBuilding", // 取消放置建筑
+        CLOSE_BUILD_PANEL: 'CLOSE_BUILD_PANEL',
+        // 建造成功事件（真正确认建造时触发）
+        BUILD_CONFIRMED: 'BUILD_CONFIRMED', 
+        CONFIRM_BUILD_CLICK:"CONFIRM_BUILD_CLICK",
+        CANCEL_BUILD_CLICK:'CANCEL_BUILD_CLICK',
+
     };
 
     public static CARD_ID = {
@@ -54,6 +64,7 @@ export class GameConstants {
         SPD_UP: 'spd_up',
         BULLET_UP:'bullet_up',
         MOVE_UP:'move_up',
+        LASER:'laser',
     };
 
     //gamemanager里的游戏状态变量，作为GAME_STATE_CHANGED的参数传递给其他模块。
@@ -92,6 +103,7 @@ export class GameConstants {
     public static BULLET_TYPE = {
         NORMAL:'normal',
         ICE:'ice',
+        LASER:'laser',
     }
 
     
@@ -130,6 +142,12 @@ export class GameConstants {
     };
 
 
+}
+
+export interface SavedBuildingData {
+    id: string;  // 建筑ID（比如 'farm'）
+    col: number; // 列
+    row: number; // 行
 }
 
 

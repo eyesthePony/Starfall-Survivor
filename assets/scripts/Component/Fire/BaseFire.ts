@@ -3,7 +3,7 @@ import { GameConstants } from '../../Core/GameConstants';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseFire')
-export abstract class BaseFire extends Component {
+export  class BaseFire extends Component {
 
     public interval: number = 1.0;   // 开火间隔（秒）
 
@@ -29,7 +29,9 @@ export abstract class BaseFire extends Component {
         }
     }
 
-    protected abstract fire() :void;
+    protected fire(){
+
+    }
 }
 
 

@@ -56,10 +56,11 @@ export class EventBus {
             return;
         }
 
-        let list = handlerList.slice();
-        for (let i = 0; i < list.length; ++i) {
-            if (list[i]) {
-                list[i].handler.apply(list[i].target, args);
+         // 直接遍历原数组，不用 slice()。即使外部在回调里调用了 off，也不会引发致命错误
+        for (let i = 0; i < handlerList.length; ++i) {
+            let item = handlerList[i];
+            if (item && item.handler) {
+                item.handler.apply(item.target, args);
             }
         }
 

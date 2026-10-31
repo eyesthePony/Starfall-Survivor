@@ -19,6 +19,8 @@ export class EnemyManager extends Component {
     @property(Prefab)
     bossPrefab: Prefab = null!;
 
+    private _activeEnemies: BasePlane[] = [];//存活的敌人
+
    
     private topY = 0;
    
@@ -55,19 +57,18 @@ export class EnemyManager extends Component {
     }
 
     private setEnemiesEnabled(isEnabled:boolean){
-        const enemies = this.node.children;
-
-        for(let i = enemies.length - 1;i >= 0;--i){
-            const enemy = enemies[i].getComponent(BasePlane);
-            if(enemy){
-                enemy.enabled = isEnabled;
-            }
-            const boss = enemies[i].getComponent(BaseBoss);
-            if (boss) boss.setPaused(isEnabled);   
+   
+        for (let i = 0; i < this._activeEnemies.length; i++) {
+            this._activeEnemies[i].setPaused(!isEnabled);
         }
+
+        
     }
 
     private onEnemyRecycle(enemyNode: Node) {
+        const plane = enemyNode.getComponent(BasePlane);
+        const idx = this._activeEnemies.indexOf(plane);
+        if (idx !== -1) this._activeEnemies.splice(idx, 1); //  移除
         PoolManager.instance.putNode(enemyNode);
     }
     
@@ -79,7 +80,7 @@ export class EnemyManager extends Component {
        plane.takeDamage(damage);
     }
 
-    public spawnBoss(enemyType:string){
+    public spawnBoss(enemyType:string,hpMultiplier:number = 1){
         const cfg = BOSS_CONFIG[enemyType];
         if(!cfg)  {console.warn(`[EnemyManager] 未知 Boss: ${enemyType}`); return false; }
 
@@ -89,10 +90,11 @@ export class EnemyManager extends Component {
         const boss = node.getComponent(BaseBoss);
         
         boss.init(cfg, new Vec3(0, this.topY + 120, 0));
+        this._activeEnemies.push(boss); // Boss 也是 BasePlane，直接塞进去！
         return true;   
     }
 
-    public spawnNormalEnemy(enemyType:string) {
+    public spawnNormalEnemy(enemyType:string,hpMultiplier:number = 1) {
         let prefabToSpawn:Prefab = null;
         let spawnX = 0; // 默认 X 坐标为 0（屏幕中间）
 
@@ -114,6 +116,7 @@ export class EnemyManager extends Component {
         const position = new Vec3(spawnX, this.topY + 100, 0);
         // 从屏幕顶外面生成
         plane.init(position);
+        this._activeEnemies.push(plane); 
         return true; 
     }
 

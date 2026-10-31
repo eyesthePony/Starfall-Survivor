@@ -15,9 +15,18 @@ export class FloatAnimator extends Component {
     private _time = 0;
     private _basePos: Vec3 = new Vec3();
 
+    private _cosAngle = 0;
+    private _sinAngle = 0;
+
+
     start() {
         this._basePos = this.node.position.clone();
         this._time = Math.random() * 10; // 随机初始相位，防止所有怪同步浮动
+        
+        // 只在初始化算一次，终身受用！
+        const rad = this.angle * Math.PI / 180;
+        this._cosAngle = Math.cos(rad);
+        this._sinAngle = Math.sin(rad);
     }
 
     update(dt: number) {
@@ -26,10 +35,8 @@ export class FloatAnimator extends Component {
         // 用正弦波算出当前应该偏移的比例（范围在 -1 到 1 之间）
         const offsetRatio = Math.sin(this._time) * this.distance;
 
-        // 根据角度计算出 X 和 Y 上的投影
-        const rad = this.angle * Math.PI / 180;
-        const offsetX = Math.cos(rad) * offsetRatio;
-        const offsetY = Math.sin(rad) * offsetRatio;
+        const offsetX = this._cosAngle * offsetRatio; // 直接用缓存
+        const offsetY = this._sinAngle * offsetRatio; // 直接用缓存
 
         this.node.setPosition(
             this._basePos.x + offsetX,

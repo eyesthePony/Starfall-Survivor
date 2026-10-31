@@ -3,6 +3,7 @@ import { BaseBullet } from '../Entity/bullet/BaseBullet';
 import{PoolManager} from '../Core/PoolManager';
 import { EventBus } from '../Core/EventBus';
 import { GameConstants } from '../Core/GameConstants';
+import { Laser } from '../Entity/bullet/Laser';
 const { ccclass, property } = _decorator;
 
 @ccclass('BulletManager')
@@ -18,6 +19,9 @@ export class BulletManager extends Component {
 
     @property({ type: Prefab, tooltip: "冰霜子弹" })
     iceBulletPrefab: Prefab = null!;
+
+    @property({ type: Prefab, tooltip: "激光" })
+    leserPrefab: Prefab = null!;
 
     
 
@@ -51,17 +55,25 @@ export class BulletManager extends Component {
             const bullet = bullets[i].getComponent(BaseBullet);
             if(bullet){
                 bullet.enabled = isEnabled;
+                continue; 
+            }
+            const laser = bullets[i].getComponent(Laser);
+            if (laser) {
+                laser.enabled = isEnabled;
             }
         }
 
     }
 
     
-    public spawnBullet(bulletType:string,isPlayerBullet: boolean, spawnPos: Vec3, dir: Vec3, damage: number, speed: number): void {
+    public spawnBullet(bulletType:string,isPlayerBullet: boolean, spawnPos: Vec3, dir: Vec3, damage: number, speed: number,followTarget: Node = null): void {
         let bulletprefab = null;
         switch(bulletType){
             case GameConstants.BULLET_TYPE.ICE:
                 bulletprefab = this.iceBulletPrefab; 
+                break;
+            case GameConstants.BULLET_TYPE.LASER:
+                bulletprefab = this.leserPrefab; 
                 break;
             case GameConstants.BULLET_TYPE.NORMAL:
             default:
@@ -78,18 +90,22 @@ export class BulletManager extends Component {
         // 从 PoolManager 取，没有就新建
         let bulletNode = PoolManager.instance.getNode(bulletprefab, this.node);
 
-        const bulletComp = bulletNode.getComponent(BaseBullet);
+         if (bulletType === GameConstants.BULLET_TYPE.LASER) {
+            const laserComp = bulletNode.getComponent(Laser);
+            if (laserComp) {
+                laserComp.init(isPlayerBullet, dir, damage, speed, spawnPos,followTarget);
+            }
+        } else {
+            const bulletComp = bulletNode.getComponent(BaseBullet);
+            if (bulletComp) {
+                bulletComp.init(isPlayerBullet, dir, damage, speed, spawnPos);
+            }
+        }
         
-        if (!bulletComp) return;
-        // 一行搞定所有初始化
-        bulletComp.init(isPlayerBullet, dir, damage, speed, spawnPos);
-
     }
 
     // 收到BULLET_KILLED事件，回收子弹
     private onBulletRecycle(bulletNode: Node): void {
-        const bulletComp = bulletNode.getComponent(BaseBullet);
-        if (!bulletComp) return;
         // 放回对应池子
         PoolManager.instance.putNode(bulletNode);
 

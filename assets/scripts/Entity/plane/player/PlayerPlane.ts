@@ -5,6 +5,8 @@ import{BulletManager} from '../../../Manager/BulletManager';
 import { EventBus } from '../../../Core/EventBus';
 import { GameConstants } from '../../../Core/GameConstants';
 import { GameData } from '../../../Core/GameData';
+import { LaserFire } from '../../../Component/Fire/LaserFire';
+import { BaseFire } from '../../../Component/Fire/BaseFire';
 const { ccclass, property} = _decorator;
 
 @ccclass('PlayerPlane')
@@ -26,6 +28,7 @@ export class PlayerPlane extends  BasePlane {
     public bulletSpeed: number = 500;    // 子弹速度
     public bulletCount: number = 1;      // 每次发射的子弹数量
     private bulletSpacing: number = 30; //并排的子弹间隔
+    private _tempVec3:Vec3 = new Vec3(); 
     
    
 
@@ -70,6 +73,11 @@ export class PlayerPlane extends  BasePlane {
         this.fireCd = 0.2;
         // 4. 回到屏幕底部正中间
         this.node.setPosition(0, -GameData.screenHeight / 2 + 150, 0);
+        //删除子弹组件
+        const fires = this.getComponents(BaseFire);
+        for (const f of fires) {
+            f.destroy(); // 销毁这些组件
+        }
     }
 
      public applyUpgrade(cardId: string) {
@@ -91,6 +99,14 @@ export class PlayerPlane extends  BasePlane {
                 break;
             case GameConstants.CARD_ID.MOVE_UP:
                 this.bulletSpeed += 1000;
+                break;
+            case GameConstants.CARD_ID.LASER:
+    
+                // 挂载组件，设置基础参数
+                const laser = this.addComponent(LaserFire);
+                laser.applyConfig({spawnPos:this.muzzle.worldPosition,muzzleNode:this.muzzle});
+                console.log("玩家获得了激光！");
+                
                 break;
         }
     }
@@ -118,6 +134,11 @@ export class PlayerPlane extends  BasePlane {
             this.enabled = false;                // 冻结 update
             this.isSelected = false;             // 强制松开触摸状态
             this.node.pauseSystemEvents(true);   // 彻底屏蔽触摸，防止暂停时还能拖动飞机
+        }
+
+        const fires = this.getComponents(BaseFire);
+        for (const f of fires) {
+            f.enabled = isPlaying;
         }
     }
 
@@ -172,7 +193,7 @@ export class PlayerPlane extends  BasePlane {
             //由于多个子弹并排发射，计算每个子弹偏移中间子弹的位置
             const offsetX = (i - (this.bulletCount - 1) / 2) * this.bulletSpacing;
             //得到设置偏移位置
-            const spawnPos = new Vec3(basePos.x + offsetX, basePos.y, basePos.z);
+            const spawnPos = this._tempVec3.set(basePos.x + offsetX, basePos.y, basePos.z);
             BulletManager.instance.spawnBullet(GameConstants.BULLET_TYPE.NORMAL,
                 true, 
                 spawnPos, 
@@ -206,6 +227,8 @@ export class PlayerPlane extends  BasePlane {
         this.node.active = false;
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.GAME_OVER);
     }
+
+   
 
 
     onDestroy() {

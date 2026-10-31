@@ -53,6 +53,11 @@ export class BasePlane extends Component {
      // 虚方法，子类重写
     protected shoot(){}
 
+    public setPaused(isPaused: boolean) {
+        // 默认逻辑：小怪直接暂停自身的 update
+        this.enabled = !isPaused;
+    }
+
 
     update(deltaTime: number) {
        

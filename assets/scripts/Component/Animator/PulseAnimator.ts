@@ -19,6 +19,9 @@ export class PulseAnimator extends Component {
     private _baseScale: Vec3 = new Vec3(1, 1, 1);
     private _uiOpacity: UIOpacity = null;
 
+    private _midScale:number = 0;
+    private _range:number = 0;
+
     start() {
         // 记录初始缩放值
         this._baseScale = this.node.scale.clone();
@@ -30,6 +33,9 @@ export class PulseAnimator extends Component {
                 this._uiOpacity = this.node.addComponent(UIOpacity);
             }
         }
+
+        this._midScale = (this.maxScale + this.minScale) / 2;
+        this._range = (this.maxScale - this.minScale) / 2;
     }
 
     update(dt: number) {
@@ -40,9 +46,7 @@ export class PulseAnimator extends Component {
         
         // 将 -1 到 1 映射到 minScale 和 maxScale 之间
         // 公式：中间值 + 振幅 * 正弦值
-        const midScale = (this.maxScale + this.minScale) / 2;
-        const range = (this.maxScale - this.minScale) / 2;
-        const currentScaleRatio = midScale + range * sinVal;
+        const currentScaleRatio = this._midScale + this._range * sinVal;
 
         // 应用缩放
         this.node.setScale(

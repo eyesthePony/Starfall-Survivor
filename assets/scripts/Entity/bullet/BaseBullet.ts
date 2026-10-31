@@ -3,6 +3,7 @@ import { GameConstants } from '../../Core/GameConstants';
 import { _decorator, Collider2D, Component, Contact2DType, Vec3, view } from 'cc';
 import { BasePlane } from '../plane/BasePlane';
 import { GameData } from '../../Core/GameData';
+import { DamageStats } from '../../Core/DamageStats';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseBullet')
@@ -99,6 +100,7 @@ export class BaseBullet extends Component {
         // 1. 先发战斗事件（GameManager 用）
         if (isSelf) {
             EventBus.dispatchEvent(GameConstants.EVENT_TYPE.PLAYER_BULLET_HIT, otherCollider.node, this.damage);
+            DamageStats.instance.addDamage("普通子弹", this.damage);
         } else {
             EventBus.dispatchEvent(GameConstants.EVENT_TYPE.ENEMY_BULLET_HIT, otherCollider.node, this.damage);
         }

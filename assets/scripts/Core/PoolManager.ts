@@ -50,6 +50,7 @@ export class PoolManager {
 
     public putNode(node:Node){
         if(!node)   return;
+        node.removeFromParent()
 
         let name = node.name;
    
