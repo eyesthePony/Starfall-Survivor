@@ -37,7 +37,7 @@ export class HomingMissile extends BaseBullet {
     }
 
     update(deltaTime: number) {
-        if (this._isDead) return;
+        super.update(deltaTime);
 
         this._retargetCd -= deltaTime;
 
@@ -49,8 +49,8 @@ export class HomingMissile extends BaseBullet {
 
         // 2. 只要有了目标，就开始追踪
         if (this._targetNode) {
-            const pos = this.node.worldPosition;
-            const targetPos = this._targetNode.worldPosition;
+            const pos = this.node.position;
+            const targetPos = this._targetNode.position;
             this._tempDir.set(targetPos.x - pos.x, targetPos.y - pos.y, 0);
             this._tempDir.normalize();
 
@@ -63,7 +63,7 @@ export class HomingMissile extends BaseBullet {
             this.node.angle = (angleRad * 180 / Math.PI) - 90;
         }
 
-        super.update(deltaTime);
+     
     }
 }
 

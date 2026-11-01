@@ -26,6 +26,9 @@ export class BulletManager extends Component {
     @property({ type: Prefab, tooltip: "追踪弹" })
     homingPrefab: Prefab = null!;
 
+    private _activeBullets: BaseBullet[] = [];
+    private _activeLasers: Laser[] = [];
+
     
 
     onLoad() {
@@ -36,10 +39,17 @@ export class BulletManager extends Component {
     }
 
     private onGameReset(){
-        const bullets = this.node.children;
-        for(let i = bullets.length - 1; i>=0 ;--i){
-            PoolManager.instance.putNode(bullets[i]);
+        for (let i = 0; i < this._activeBullets.length; i++) {
+            const bullet = this._activeBullets[i].node;
+            PoolManager.instance.putNode(bullet);
         }
+        for (let i = 0; i < this._activeLasers.length; i++) {
+            const laser = this._activeLasers[i].node;
+            PoolManager.instance.putNode(laser);
+        }
+        this._activeBullets.length = 0;
+        this._activeLasers.length = 0;
+  
     }
 
     onStateChanged(state:string){
@@ -52,18 +62,11 @@ export class BulletManager extends Component {
     }
 
     private setBulletsEnabled(isEnabled:boolean){
-        const bullets = this.node.children;
-        const length = bullets.length;
-        for(let i=length-1;i>=0;--i){
-            const bullet = bullets[i].getComponent(BaseBullet);
-            if(bullet){
-                bullet.enabled = isEnabled;
-                continue; 
-            }
-            const laser = bullets[i].getComponent(Laser);
-            if (laser) {
-                laser.enabled = isEnabled;
-            }
+        for (let i = 0; i < this._activeBullets.length; i++) {
+            this._activeBullets[i].enabled = isEnabled;
+        }
+        for (let i = 0; i < this._activeLasers.length; i++) {
+            this._activeLasers[i].enabled = isEnabled;
         }
 
     }
@@ -100,12 +103,14 @@ export class BulletManager extends Component {
             const laserComp = bulletNode.getComponent(Laser);
             if (laserComp) {
                 laserComp.init(isPlayerBullet, dir, damage, speed, spawnPos,followTarget);
+                this._activeLasers.push(laserComp);
                 return;
             }
         } else {
             const bulletComp = bulletNode.getComponent(BaseBullet);
             if (bulletComp) {
                 bulletComp.init(isPlayerBullet, dir, damage, speed, spawnPos);
+                this._activeBullets.push(bulletComp); 
                 return;
             }
         }
@@ -116,9 +121,29 @@ export class BulletManager extends Component {
 
     // 收到BULLET_KILLED事件，回收子弹
     private onBulletRecycle(bulletNode: Node): void {
+         // 👈 使用交换删除法，从数组中移除
+        const bulletComp = bulletNode.getComponent(BaseBullet);
+        if (bulletComp) {
+            this.removeFast(this._activeBullets, bulletComp);
+        }
+        const laserComp = bulletNode.getComponent(Laser);
+        if (laserComp) {
+            this.removeFast(this._activeLasers, laserComp);
+        }
         // 放回对应池子
         PoolManager.instance.putNode(bulletNode);
 
+    }
+
+    // 🌟 极致性能的数组删除法
+    private removeFast<T>(arr: T[], item: T) {
+        // 注意：这里的 indexOf 是 O(N) 查找。但在实战中，子弹寿命很短，数组通常只有几十个，极快。
+        const index = arr.indexOf(item);
+        if (index === -1) return;
+        // 把最后一个元素移动到当前索引，然后 pop 掉末尾
+        const lastIndex = arr.length - 1;
+        arr[index] = arr[lastIndex];
+        arr.pop(); 
     }
 
    

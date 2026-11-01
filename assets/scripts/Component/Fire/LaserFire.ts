@@ -2,7 +2,6 @@ import { _decorator, Node, } from 'cc';
 import { BaseFire } from './BaseFire';
 import { BulletManager } from '../../Manager/BulletManager';
 import { GameConstants } from '../../Core/GameConstants';
-import { EventBus } from '../../Core/EventBus';
 const { ccclass, property } = _decorator;
 
 @ccclass('LaserFire')

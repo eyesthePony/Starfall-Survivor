@@ -1,83 +1,186 @@
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-**Starfall Survivor** is a **Roguelike auto-fire bullet-hell shooter** built with Cocos Creator.
+# Starfall Survivor
 
-In the game, the player focuses on maneuvering their ship to dodge dense bullet patterns, while the ship automatically attacks enemies. The project currently features a complete gameplay loop: wave spawning, boss encounters, and a **data-driven Roguelike upgrade system (pick 1 of 3)**.
+A portrait (720×1280, FIT_HEIGHT) **Roguelike auto-fire bullet-hell shooter** built with **Cocos Creator 3.8 (TypeScript)**.
+
+The player drags the ship to dodge dense patterns while the ship fires automatically. Kills grant EXP; on level-up, the player picks 1 of 3 upgrade cards and progressively builds their firepower. Core loop: **waves → kills for EXP → level-up draft → phase bosses → victory/defeat**.
 
 ---
 
 ## 📂 Directory Structure
 
-All TypeScript source code lives under `assets/scripts`. The architecture follows a **high-cohesion, low-coupling** modular split:
+All TypeScript source lives under `assets/scripts`, split by responsibility:
 
 ```text
-assets/scripts/
-├── Core/           # Core infrastructure (constants, events, pooling, configs)
-├── Component/      # Reusable behavior components (skills, movement, animation)
-│   ├── Fire/       #   Fire skills: BaseFire / RingFire / SpiralFire
-│   ├── Move/       #   Movement skills: SineMove / BossEnterMove
-│   └── Animator/   #   Visual animators: Spin / Float / Pulse
-├── Entity/         # Game entities (planes, bullets, etc.)
-├── Manager/        # Global game managers
-└── UI/             # UI components and panels
+assets/
+├── scene/                          # Scenes
+│   ├── HallScene.scene             # Lobby (with building prototype)
+│   └── BattleScene.scene           # Battle scene
+├── resources/
+│   └── prefabs/                    # Prefabs (bullets / enemies / boss / turrets / effects / UI blocks)
+└── scripts/
+    ├── Core/                       # Infrastructure & config tables
+    │   ├── EventBus.ts             #   Global synchronous event bus
+    │   ├── PoolManager.ts          #   NodePools keyed by prefab.name
+    │   ├── GameConstants.ts        #   Events, states, collision group masks, skill/anim constants
+    │   ├── GameData.ts             #   Runtime globals (screen size, player HP, locked target)
+    │   ├── ConfigEnums.ts          #   Turret formation / trigger / aim / fire-mode enums
+    │   ├── BossConfig.ts           #   Boss visuals, collider, phased skill configs
+    │   ├── LevelConfig.ts          #   Level & wave configs
+    │   ├── CardConfig.ts           #   Roguelike card pool
+    │   ├── SkillMap.ts             #   Skill name → component class map (incl. AnimatorMap)
+    │   ├── MathUtils.ts            #   DirTable direction lookup (replaces trig calls)
+    │   ├── DamageStats.ts          #   Damage statistics
+    │   ├── BuildingConfig.ts       #   Lobby building configs
+    │   ├── EffectManager.ts        #   Pooled effects with timed recycle
+    │   └── AudioManager.ts         #   BGM / one-shot SFX playback
+    ├── Component/                  # Reusable behavior components
+    │   ├── Fire/
+    │   │   ├── BaseFire.ts         #     Fire base class (interval timer, config injection)
+    │   │   ├── RingFire.ts         #     Ring burst
+    │   │   ├── SpiralFire.ts       #     Multi-arm spiral
+    │   │   ├── LaserFire.ts         #     Player laser weapon
+    │   │   ├── HomingFire.ts       #     Player homing missile weapon
+    │   │   └── CannonBarrage.ts    #     Boss turret barrage (formation / volley / sequence / aim)
+    │   ├── Move/
+    │   │   ├── SineMove.ts         #     Sinusoidal patrol
+    │   │   ├── BossEnterMove.ts   #     Boss entrance tween
+    │   │   └── BossMoveTo.ts      #     Phased boss movement (eased)
+    │   ├── Animator/               #   Float / Pulse / Spin visual animators
+    │   └── CameraDrag.ts           # Lobby orthographic camera drag/zoom (prototype)
+    ├── Entity/
+    │   ├── plane/
+    │   │   ├── BasePlane.ts        #   Plane base (HP, takeDamage, fire timer, pause)
+    │   │   ├── player/PlayerPlane.ts
+    │   │   └── enemy/
+    │   │       ├── EnemyPlane.ts  #   Normal enemy
+    │   │       ├── BaseBoss.ts    #   Universal data-driven boss carrier + phase timeline
+    │   │       └── Turret.ts      #   Boss turret child (aim / fire)
+    │   ├── bullet/
+    │   │   ├── BaseBullet.ts       #   Normal bullet (movement, off-screen recycle, contact dispatch)
+    │   │   ├── Laser.ts            #   Sustained-damage beam (contact set, periodic tick, fade-out)
+    │   │   └── HomingMissile.ts    #   Throttled target seek + steering interpolation
+    │   └── item/BuildItem.ts
+    ├── Manager/
+    │   ├── GameManager.ts          #   Game state machine
+    │   ├── WaveManager.ts          #   Wave progression & spawn cadence
+    │   ├── EnemyPlaneManager.ts    #   Enemy / boss spawn & recycle
+    │   ├── BulletManager.ts        #   Bullet / laser spawn & recycle
+    │   ├── UpgradeManager.ts       #   EXP, level-ups, draft, upgrade application
+    │   ├── BuildManager.ts         #   Lobby building (prototype)
+    │   └── MapManager.ts           #   Lobby map (prototype)
+    └── UI/                         # Presentation layer: render on events, emit intent events
+        ├── PopupPanel.ts           #   Unified pause / victory / defeat panel
+        ├── UpgradePanel.ts         #   Pick-1-of-3 upgrade panel
+        ├── PlayerHealthUI.ts       #   Heart-block HP display
+        ├── BossHealthUI.ts         #   Top boss health bar
+        ├── ExpBarUI.ts             #   EXP bar & level
+        ├── StatsPanel.ts           #   Damage stats
+        ├── Start / Pause / Resume / Restart / Quit.ts
+        └── Build.ts / BuildPanel / BuildActionPanel.ts
 ```
 
-## 🏗️ Core Systems
+---
 
-### 1. Core (Infrastructure)
+## 🎮 Game Systems
 
-- **EventBus**: A global event bus that decouples Managers, Entities, and UI (e.g. enemy killed, player hit, game reset).
-- **PoolManager**: A generic node object pool reducing instantiate/destroy overhead.
-- **GameConstants / GameData / LevelConfig / BossConfig / CardConfig**: Data-driven configuration files for constants, player stats, level waves, boss designs, and Roguelike upgrade cards.
+### 1. Combat Loop
 
-### 2. Component (Reusable Behavior Layer)
+- **Controls**: drag the ship; movement clamped to screen bounds. The ship fires automatically — no fire button.
+- **Player**: 5 hearts; taking a hit costs 1 heart and grants brief invincibility frames; HP zero dispatches `GAME_OVER`.
+- **Kill rewards**: normal enemy 10 EXP, boss 1000 EXP; level-up EXP starts at 100 and grows by 200 per level.
+- **Draft**: on level-up the game enters `UPGRADING` (paused) and shows a 1-of-3 card panel; selecting a card dispatches `GAME_RESUME`.
 
-- **BaseFire / RingFire / SpiralFire**: Fire skills with configurable intervals, damage, and bullet patterns.
-- **SineMove / BossEnterMove**: Movement skills for patrolling and boss entrances.
-- **SpinAnimator / FloatAnimator / PulseAnimator**: Visual animations for boss parts.
+### 2. Roguelike Card System (UpgradeManager + CardConfig)
 
-### 3. Entity (Entity Layer)
+Cards fall into three types; the draft picks per slot priority and removes drawn cards from the pool:
 
-- **BasePlane**: Base class encapsulating HP, damage interface, and basic fire timing.
-- **BaseBullet**: Handles direction-based movement, boundary checks, and collision.
-- **PlayerPlane**: Features auto-firing, multi-bullet spread, invincibility frames, and dynamic stat upgrades.
-- **EnemyPlane**: Normal enemy logic.
-- **BaseBoss**: Universal boss carrier. Appearance and skills are fully data-driven via `BossConfig`. All bosses share one `BaseBoss.prefab`.
+| Type | Role | Examples |
+|---|---|---|
+| `STAT` | Direct base-stat changes | Damage up, fire-rate up, bullet count, speed |
+| `WEAPON` | Grants a new weapon (component) | Laser, homing missile |
+| `UPGRADE` | Empowers an owned weapon (requires prerequisite weapon) | Laser damage, laser cooldown, homing damage |
 
-### 4. Manager (Manager Layer)
+- Each card supports `maxLevel`; `requireWeapon` gates unlock behind another card.
+- `UpgradeManager` owns drafting and counting; `PlayerPlane.applyUpgrade` executes (stat mutation / weapon component mount / weapon `onUpgrade`).
 
-- **BulletManager**: Centralized bullet pooling and recycling.
-- **EnemyManager**: Spawns, initializes, and recycles enemies and bosses.
-- **GameManager**: Core state machine (Ready / Playing / Paused / Over).
-- **WaveManager**: Parses level configs and controls enemy spawn cadence.
-- **UpgradeManager**: The brain of the Roguelike system. Listens to `ENEMY_KILLED`, calculates EXP, handles level-ups, and applies selected upgrades to the player.
+### 3. Player Weapons (components on PlayerPlane)
 
-### 5. UI (UI Layer)
+- **Spread shots**: `bulletCount` controls parallel spread; one shared temp vector computes muzzle offsets.
+- **Laser `LaserFire → Laser`**: periodically emits a sustained beam; BEGIN/END contact maintains a hit set, ticks damage on an interval, and fades out near end-of-life.
+- **Homing `HomingFire → HomingMissile`**: steers toward the nearest enemy after spawn; retargets at 0.2s throttle when the target is invalid.
 
-- **PlayerHealthUI**: Dynamically renders health blocks based on current/max HP.
-- **BossHealthUI**: Top-screen boss health bar with smooth transitions.
-- **ExpBarUI**: Top-screen experience bar and level indicator.
-- **UpgradePanel**: The "Pick 1 of 3" upgrade panel. Handles random card drawing and pause/resume logic.
-- **PausePanel / ResultPanels**: Game flow UI components.
+### 4. Data-Driven Boss System (BaseBoss + BossConfig)
 
-## 🎮 Technical Highlights
+**All bosses share one `BaseBoss.prefab`**, assembled at runtime from config; adding a new boss requires no code change:
 
-- **Object Pooling**: High-frequency bullets and enemies use object pooling for stable performance.
-- **Event-Driven Architecture**: Collisions and UI updates are fully decoupled via `EventBus`. Logic entities do not directly reference UI nodes.
-- **Data-Driven Boss**: A single `BaseBoss` prefab powered by `BossConfig` (visual parts, colliders, phased skills). Adding a new boss requires zero code changes.
-- **Data-Driven Roguelike Upgrades**: The `UpgradeManager` handles EXP and triggers the `UpgradePanel`. Upgrades are defined in `CardConfig` and applied directly to `PlayerPlane`'s dynamic stats (damage, fire rate, bullet count).
-- **Dynamic UI Rendering**: Health bars and EXP bars dynamically generate their nodes based on the player's current `maxHp` and upgrade states.
+- **Visual parts `parts`**: load textures per node and attach visual animators (float / pulse / spin).
+- **Colliders `hitBox`**: circle or rectangle; the matching collider enables at runtime.
+- **Phases `phases`**: switch by HP threshold; each phase bundles skill configs supporting:
+  - `delay`: delayed activation on a unified timeline queue;
+  - `loop` / `loopDelay`: phase loop replay;
+  - `params`: injected into the component's `applyConfig`.
+- **Skill registration**: `SkillMap` maps config names to component classes; `ensureSkills` de-duplicates get/addComponent and caches skills.
 
-## 🚀 Planned Features
+**Turret barrage `CannonBarrage`**:
 
-- [ ] **Unique Bullet Patterns**: Expand weapon varieties (homing missiles, lasers, etc.).
-- [ ] **Visual & Audio Feedback**: Hit effects, screen shake, and sound effects.
-- [ ] **Meta-progression**: Permanent upgrades outside of runs.
-- [ ] **More Bosses and Enemies**: Utilizing the data-driven architecture.
+- Formation: `ATTACHED` (around the boss) / `ORBITING` (orbit the locked target);
+- Trigger: `MANUAL` (on command) / `AUTO` (interval loop);
+- Aim: `BLIND` (fixed angles) / `AIM` (locks `GameData.currentTarget`);
+- Fire: `VOLLEY` (all at once) / `SEQUENCE` (turrets fire one after another with gaps);
+- Each turret is an independent `Turret` node handling barrel rotation and firing; prefab loads asynchronously and all turrets are cleaned up on death/reset.
 
-## 🛠️ Development Setup
+**Configured bosses**:
 
-1. Install Cocos Creator 3.8 or later.
-2. Clone this repository and import it via Cocos Dashboard.
-3. Open `Scenes/HallScene.scene` (lobby) or `Scenes/BattleScene.scene` (battle) to preview the core gameplay.
-4. Click the **Play** button in the editor.
+| Boss | Phase design |
+|---|---|
+| `ICE_BOSS` | Phase 1 sine patrol + ring fire; phase 2 double spiral; phase 3 quadruple spiral |
+| `MACHINE_BOSS` | Phase 1 attached turrets blind-fire downward; phase 2 rush-in → aimed burst → retreat loop; phase 3 orbit and fire lasers in sequence |
+
+### 5. Waves & Levels (WaveManager + LevelConfig)
+
+- Waves advance per `LevelConfig`; alive-enemy count gates the next wave; when all waves finish, `GAME_VICTORY` dispatches.
+- Boss waves and normal enemies share one spawn path; endless mode resets waves after clearing and scales enemy HP by `1 + loopCount × 0.5`.
+
+---
+
+## 🏗️ Architecture Conventions
+
+- **Event-driven**: hits, kills, HP changes, state transitions and UI refresh all flow through `EventBus`; entities never reference UI directly; UI renders from events and emits intent events on clicks.
+- **Manager layering**: `GameManager` state machine; combat managers schedule entities; `UpgradeManager` decision layer; `PlayerPlane` execution layer. No circular imports between managers; superiors/subordinates call singletons, peers communicate via events.
+- **Object pooling**: bullets, lasers, enemies and effects all recycle through `PoolManager` per prefab name.
+- **State freezing**: outside `PLAYING`, managers freeze entity/bullet updates via `setPaused` / `enabled = false`; paused frames produce no logic progression.
+
+## ⚡ Performance Notes
+
+- `DirTable` precomputes directions; ring/spiral firing performs zero trig calls per shot.
+- Reusable `Vec3` temporaries in hot scripts avoid per-frame allocation.
+- Bullet arrays use swap-remove (`removeFast`) to avoid shifting the whole array.
+- Homing target seek throttled to 0.2s; UI refreshes use dirty flags / throttling.
+- Collider references and half-screen sizes cached in `onLoad`, not fetched every frame.
+
+## 🎮 Controls
+
+| Action | Description |
+|---|---|
+| Drag ship | Follows finger; clamped inside screen bounds |
+| Auto fire | Continuous automatic attack; no tap-to-shoot |
+| Level-up draft | Pick 1 of 3; battle resumes automatically |
+| Pause / Restart / Quit | Button groups on `PopupPanel` dispatch state events |
+
+## 🛠️ Setup
+
+1. Install **Cocos Creator 3.8.x**.
+2. Import this project via Cocos Dashboard.
+3. Open `assets/scene/BattleScene.scene` for gameplay; `assets/scene/HallScene.scene` for the lobby.
+4. Drag required prefabs into each Manager's `@property` slots (bullets / enemies / boss / effects / audio).
+5. Click Play in the editor.
+
+## 🚧 In Progress & Roadmap
+
+- [ ] Lobby map & building system (`MapManager` / `BuildManager` / `CameraDrag` prototype)
+- [ ] More enemy types and bosses (extendable via data-driven config)
+- [ ] Meta-progression and local save unlocking
+- [ ] Score system, boss explosion effects, player death fade-out and other asset feedback
+- [ ] Endless-mode balance and wave closure tuning

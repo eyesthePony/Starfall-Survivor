@@ -26,6 +26,11 @@ export class WaveManager extends Component {
 
         const levelId = GameData.selectedLevel - 1;
         this._levelData = LEVELS[levelId];
+        if (!this._levelData) {
+            console.error(`[WaveManager] 关卡缺失 levelId=${levelId}`);
+            this.enabled = false;
+            return;
+        }
         
         EventBus.on(GameConstants.EVENT_TYPE.GAME_STATE_CHANGED,this.onStateChanged,this);
         EventBus.on(GameConstants.EVENT_TYPE.ENEMY_ESCAPED,this.onEnemyDead,this);
@@ -75,7 +80,7 @@ export class WaveManager extends Component {
 
     private spawnEnemy() {   
         let success = false;
-        const hpMultiplier = 1 + (this._loopCount * 0.5); // 每轮回一次，怪物血量增加 50%
+        const hpMultiplier = 1 + (this._loopCount * 2); // 每轮回一次，怪物血量增加 200%
         if(this._waveData.category === GameConstants.ENEMY_CATEGORY.BOSS){
             success = EnemyManager.instance.spawnBoss(this._waveData.enemyType,hpMultiplier);
         }else{

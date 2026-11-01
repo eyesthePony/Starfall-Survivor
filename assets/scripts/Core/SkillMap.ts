@@ -5,6 +5,8 @@ import { GameConstants } from "./GameConstants";
 import { FloatAnimator } from "../Component/Animator/FloatAnimator";
 import { PulseAnimator } from "../Component/Animator/PulseAnimator";
 import { SpinAnimator } from "../Component/Animator/SpinAnimator";
+import { CannonBarrage } from "../Component/Fire/CannonBarrage";
+import { BossMoveTo } from "../Component/Move/BossMoveTo";
 
 
 
@@ -12,6 +14,9 @@ export const SkillMap:Record<string,any> = {
     [GameConstants.BOSS_SKILL.SINE_MOVE]:SineMove,
     [GameConstants.BOSS_SKILL.RING_FIRE]: RingFire,
     [GameConstants.BOSS_SKILL.SPIRAL_FIRE]: SpiralFire,
+    [GameConstants.BOSS_SKILL.CANNON_BARRAGE]:CannonBarrage,
+    [GameConstants.BOSS_SKILL.BOSSMOVETO]: BossMoveTo,
+
 }
 
 export const AnimatorMap:Record<string,any> = {

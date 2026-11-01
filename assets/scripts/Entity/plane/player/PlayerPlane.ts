@@ -1,5 +1,5 @@
 
-import { _decorator, Node, view, EventTouch, UITransform, Vec3 } from 'cc';
+import { _decorator, Node, EventTouch, UITransform, Vec3 } from 'cc';
 import { BasePlane } from '../BasePlane';
 import{BulletManager} from '../../../Manager/BulletManager';
 import { EventBus } from '../../../Core/EventBus';
@@ -41,6 +41,7 @@ export class PlayerPlane extends  BasePlane {
 
     onLoad() {
         PlayerPlane.instance = this;
+        GameData.currentTarget = this.node;
         this._maxHp = GameData.playerMaxHp;
         this.hp = this._maxHp;
         // 拿飞机自身的尺寸
@@ -67,6 +68,7 @@ export class PlayerPlane extends  BasePlane {
     private onGameReset(){
         // 1. 显示玩家节点
         this.node.active = true;
+         GameData.currentTarget = this.node;
         
         // 3. 重置逻辑状态
         this._isDead = false;
@@ -256,6 +258,9 @@ export class PlayerPlane extends  BasePlane {
         console.log('[Player] dead');
         this._isDead = true;  //  _isDead用来阻止 update 继续 shoot
         this.node.active = false;
+        if (GameData.currentTarget === this.node) {
+            GameData.currentTarget = null;
+        }
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.GAME_OVER);
     }
 

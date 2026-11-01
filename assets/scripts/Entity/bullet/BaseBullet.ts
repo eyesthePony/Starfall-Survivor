@@ -1,6 +1,6 @@
 import { EventBus } from '../../Core/EventBus';
 import { GameConstants } from '../../Core/GameConstants';
-import { _decorator, Collider2D, Component, Contact2DType, Vec3, view } from 'cc';
+import { _decorator, Collider2D, Component, Contact2DType, Vec3 } from 'cc';
 import { BasePlane } from '../plane/BasePlane';
 import { GameData } from '../../Core/GameData';
 import { DamageStats } from '../../Core/DamageStats';
@@ -24,19 +24,28 @@ export class BaseBullet extends Component {
 
     protected _isDead: boolean = false;   // 防止重复回收
 
+    private _collider: Collider2D = null;
+
+    private _halfW = 0;
+    private _halfH = 0;
+
     onLoad() {
-        const collider = this.getComponent(Collider2D);
-        if (collider) {
-            collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+        this._halfW = GameData.screenWidth / 2;
+        this._halfH = GameData.screenHeight / 2;
+        this._collider = this.getComponent(Collider2D);
+        if (this._collider) {
+            this._collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
         }
     }
 
     // 新增：显式初始化
     public init(isPlayerBullet: boolean, dir: Vec3, damage: number, speed: number, startPos: Vec3) {
         this.playerBullet = isPlayerBullet;
-        const collider = this.getComponent(Collider2D);
-        if (!collider) return;
-        collider.group = isPlayerBullet? GameConstants.ITEM_GROUP.SELF_BULLET: GameConstants.ITEM_GROUP.ENEMY_BULLET;
+
+        if (this._collider) {
+            this._collider.group = isPlayerBullet? GameConstants.ITEM_GROUP.SELF_BULLET: GameConstants.ITEM_GROUP.ENEMY_BULLET;
+        }
+       
         this.damage = damage;
         this.speed = speed;
         this._direction.set(dir);
@@ -55,21 +64,12 @@ export class BaseBullet extends Component {
     update(deltaTime: number) {
         if(this._isDead) return;
         const pos = this.node.position;
-        this.node.setPosition(
-            pos.x + this._direction.x * this.speed * deltaTime,
-            pos.y + this._direction.y * this.speed * deltaTime,
-            pos.z
-        );
+        const nx = pos.x + this._direction.x * this.speed * deltaTime;
+        const ny = pos.y + this._direction.y * this.speed * deltaTime;
+        this.node.setPosition(nx, ny, pos.z);
 
-        
-            // ========== 屏幕边界检测 飞出屏幕回收 ==========
-        const w = GameData.screenWidth / 2;
-        const h = GameData.screenHeight / 2;
-        const margin = 300;   // ← 够大就行
-        // 移动后重新取
-        const cur = this.node.position;
-        if (cur.x < -w - margin || cur.x > w + margin
-        || cur.y < -h - margin || cur.y > h + margin) {
+        if (nx < -this._halfW - 300 || nx > this._halfW + 300 ||
+            ny < -this._halfH - 300 || ny > this._halfH + 300) {
             this._isDead = true;
             EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BULLET_KILLED, this.node);
         }

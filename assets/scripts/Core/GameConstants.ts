@@ -1,3 +1,4 @@
+import { BossMoveTo } from "../Component/Move/BossMoveTo";
 
 
 export class GameConstants {
@@ -16,6 +17,7 @@ export class GameConstants {
         LEVEL_UP:'levelUp',         //玩家升级
         REQUEST_HOMING_TARGET: "REQUEST_HOMING_TARGET", //追踪弹寻求目标
         PLAYER_UPGRADE_WEAPON:'PLAYER_UPGRADE_WEAPON',//升级武器
+      
         
         
        
@@ -77,6 +79,7 @@ export class GameConstants {
         LASER_CD: 'laser_cd',
         //追踪弹强化
         HOMING_DMG: 'homing_dmg',
+        HOMING_UP: 'homing_up',
     };
 
      // 卡牌三大分类
@@ -116,7 +119,11 @@ export class GameConstants {
     //boss敌机类型
     public static BOSS_TYPE = {
         ICE_BOSS: "ice_boss",
+        MACHINE_BOSS: "machine_boss",
     }
+
+ 
+
 
     //子弹类型
     public static BULLET_TYPE = {
@@ -144,6 +151,9 @@ export class GameConstants {
         SINE_MOVE:"SineMove",
         RING_FIRE:"RingFire",
         SPIRAL_FIRE:"SpiralFire",
+        CANNON_BARRAGE: "CannonBarrage",
+        BOSSMOVETO: "BossMoveTo",
+
     };
 
     //动画类型
@@ -151,6 +161,7 @@ export class GameConstants {
         SPIN_ANIMATOR : "SpinAnimator",
         FLOAT_ANIMATOR : "FloatAnimator",
         PULSE_ANIMATOR : "PulseAnimator",
+        
     }
 
     // ========== 子弹阵营碰撞/分组 ==========

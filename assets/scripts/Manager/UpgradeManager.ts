@@ -35,6 +35,7 @@ export class UpgradeManager extends Component {
             ++levelUpCount;
         }
 
+        
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.EXP_CHANGED,  this._level, this._exp/this._maxExp); //给经验条ui更新数据
         if(levelUpCount > 0){
             EventBus.dispatchEvent(GameConstants.EVENT_TYPE.LEVEL_UP, levelUpCount);

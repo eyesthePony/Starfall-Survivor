@@ -1,8 +1,7 @@
-import { _decorator, Node } from 'cc';
+import { _decorator, Node, Vec3 } from 'cc';
 import { BaseFire } from './BaseFire';
 import { GameConstants } from '../../Core/GameConstants';
 import { BulletManager } from '../../Manager/BulletManager';
-import { EventBus } from '../../Core/EventBus';
 const { ccclass, property } = _decorator;
 
 @ccclass('HomingFire')
@@ -10,6 +9,9 @@ export class HomingFire extends BaseFire {
 
 
     private _muzzleNode: Node = null;
+    private _homingCount: number = 1;      // 每次发射几颗追踪弹
+    private _spawnSpacing: number = 30;    // 多发时的横向间隔
+    private _tempVec3: Vec3 = new Vec3();  // 复用，避免每帧 new
     
     protected onLoad(): void {
         this.interval = 0.8; // 每 0.8 秒发一颗
@@ -25,6 +27,8 @@ export class HomingFire extends BaseFire {
     onUpgrade(cardId:string){
         if (cardId === GameConstants.CARD_ID.HOMING_DMG) {
             this.damage *= 1.5;
+        }else if(cardId === GameConstants.CARD_ID.HOMING_UP){
+            this._homingCount += 2;
         }
     }
 
@@ -41,16 +45,22 @@ export class HomingFire extends BaseFire {
     protected fire(): void {
         // 初始朝上发射，子弹会在出生后自己拐弯
         this._shootDir.set(0, 1, 0);
-        const spawnPos = this._muzzleNode ? this._muzzleNode.worldPosition : this.node.worldPosition;
+        const basePos = this._muzzleNode ? this._muzzleNode.worldPosition : this.node.worldPosition;
 
-        BulletManager.instance.spawnBullet(
-            this._bulletType, 
-            this._isPlayerBullet, 
-            spawnPos, 
-            this._shootDir, 
-            this.damage, 
-            this.bulletSpeed
-        );
+        for (let i = 0; i < this._homingCount; i++) {
+            // 多发时横向散开，单发时 offsetX = 0 正好居中
+            const offsetX = (i - (this._homingCount - 1) / 2) * this._spawnSpacing;
+            const spawnPos = this._tempVec3.set(basePos.x + offsetX, basePos.y, basePos.z);
+
+            BulletManager.instance.spawnBullet(
+                this._bulletType,
+                this._isPlayerBullet,
+                spawnPos,
+                this._shootDir,
+                this.damage,
+                this.bulletSpeed
+            );
+        }
     }
 }
 

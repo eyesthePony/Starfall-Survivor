@@ -88,6 +88,14 @@ export const CARD_CONFIG:CardConfigData[] = [
         type: GameConstants.CARD_TYPE.UPGRADE,
         targetWeapon: GameConstants.BULLET_TYPE.HOMING,
      },
+     { id: GameConstants.CARD_ID.HOMING_UP, 
+        name: '唐奎666', 
+        desc: '给唐奎补两个弹', 
+        maxLevel: 3, 
+        requireWeapon:GameConstants.CARD_ID.HOMING_MISSILE, 
+        type: GameConstants.CARD_TYPE.UPGRADE,
+        targetWeapon: GameConstants.BULLET_TYPE.HOMING,
+     },
 
     
 ];

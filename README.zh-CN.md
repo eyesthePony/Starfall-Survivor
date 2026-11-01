@@ -1,83 +1,189 @@
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-**星陨幸存者** 是一款基于 Cocos Creator 开发的 **Roguelike 自动开火弹幕射击游戏**。
+# Starfall Survivor 星陨幸存者
 
-在游戏中，玩家专注于操控战机移动以躲避密集的弹幕，而战机会自动攻击敌人。项目目前已具备完整的核心玩法循环：波次刷怪、Boss 战，以及**数据驱动的 Roguelike 升级系统（三选一强化）**。
+基于 **Cocos Creator 3.8（TypeScript）** 的竖屏（720×1280，FIT_HEIGHT）**Roguelike 自动开火弹幕射击游戏**。
+
+玩家拖动战机走位躲避弹幕，战机自动攻击；击杀敌机积累经验，升级时从三张强化卡中选择其一，逐步构筑火力。核心循环：**波次刷怪 → 击杀取经验 → 升级抽卡 → 阶段 Boss → 胜利/失败结算**。
 
 ---
 
-## 📂 目录结构 (Directory Structure)
+## 📂 目录结构
 
-项目的 TypeScript 源码均位于 `assets/scripts` 目录下，整体架构遵循**高内聚、低耦合**的原则：
+全部 TypeScript 源码位于 `assets/scripts`，按职责分层：
 
 ```text
-assets/scripts/
-├── Core/           # 核心底层系统（常量、事件、对象池、配置表）
-├── Component/      # 可复用行为组件（技能、移动、动画）
-│   ├── Fire/       #   开火技能：BaseFire / RingFire / SpiralFire
-│   ├── Move/       #   移动技能：SineMove / BossEnterMove
-│   └── Animator/   #   视觉动画：Spin / Float / Pulse
-├── Entity/         # 游戏实体（飞机、子弹等）
-├── Manager/        # 游戏全局管理器
-└── UI/             # 用户界面组件与面板
+assets/
+├── scene/                          # 场景
+│   ├── HallScene.scene             # 大厅（含建造原型）
+│   └── BattleScene.scene           # 战斗场景
+├── resources/
+│   └── prefabs/                    # 预制体（子弹 / 敌机 / Boss / 炮台 / 特效 / UI 块）
+└── scripts/
+    ├── Core/                       # 基础设施与配置表
+    │   ├── EventBus.ts             #   全局同步事件总线
+    │   ├── PoolManager.ts          #   按 prefab.name 分池的对象池
+    │   ├── GameConstants.ts        #   事件名 / 状态 / 分组位掩码 / 技能与动画常量
+    │   ├── GameData.ts             #   运行时全局数据（屏幕尺寸、玩家血量、锁定目标）
+    │   ├── ConfigEnums.ts          #   炮台阵型 / 触发 / 瞄准 / 发射模式枚举
+    │   ├── BossConfig.ts           #   Boss 外观、碰撞体、阶段技能配置
+    │   ├── LevelConfig.ts          #   关卡与波次配置
+    │   ├── CardConfig.ts           #   Roguelike 卡牌池
+    │   ├── SkillMap.ts             #   技能名 → 组件类映射（含 AnimatorMap）
+    │   ├── MathUtils.ts            #   方向查表 DirTable（替代三角函数）
+    │   ├── DamageStats.ts          #   伤害统计
+    │   ├── BuildingConfig.ts       #   大厅建造物配置
+    │   ├── EffectManager.ts        #   特效对象池与定时回收
+    │   └── AudioManager.ts         #   BGM / 短音效播放
+    ├── Component/                  # 可复用行为组件（挂载到实体上）
+    │   ├── Fire/                   #   开火组件
+    │   │   ├── BaseFire.ts         #     开火基类（间隔计时、参数注入）
+    │   │   ├── RingFire.ts         #     环形弹幕
+    │   │   ├── SpiralFire.ts       #     多臂螺旋弹幕
+    │   │   ├── LaserFire.ts        #     玩家激光武器
+    │   │   ├── HomingFire.ts       #     玩家追踪弹武器
+    │   │   └── CannonBarrage.ts    #     Boss 炮台编排（阵型 / 齐射 / 轮射 / 瞄准）
+    │   ├── Move/                   #   移动组件
+    │   │   ├── SineMove.ts         #     正弦巡逻
+    │   │   ├── BossEnterMove.ts   #     Boss 入场补间
+    │   │   └── BossMoveTo.ts       #     Boss 阶段位移（缓动）
+    │   ├── Animator/               #   视觉动画组件
+    │       ├── FloatAnimator.ts
+    │       ├── PulseAnimator.ts
+    │       └── SpinAnimator.ts
+    │   └── CameraDrag.ts           #   大厅正交相机拖拽缩放（原型，Component 根目录）
+    ├── Entity/                     # 游戏实体
+    │   ├── plane/
+    │   │   ├── BasePlane.ts        #   飞机基类（血量、受击、开火计时、暂停）
+    │   │   ├── player/PlayerPlane.ts
+    │   │   └── enemy/
+    │   │       ├── EnemyPlane.ts   #   普通敌机
+    │   │       ├── BaseBoss.ts     #   通用 Boss 载体（数据驱动组装 + 阶段时间轴）
+    │   │       └── Turret.ts       #   Boss 炮台子组件（瞄准 / 开火）
+    │   ├── bullet/
+    │   │   ├── BaseBullet.ts       #   普通子弹（位移、出界回收、碰撞分发）
+    │   │   ├── Laser.ts            #   持续伤害激光（照射集合 + 周期结算 + 渐隐）
+    │   │   └── HomingMissile.ts    #   追踪弹（节流索敌 + 转向插值）
+    │   └── item/BuildItem.ts       #   大厅建造物
+    ├── Manager/                    # 全局管理器（单例，只做调度不持有 UI）
+    │   ├── GameManager.ts          #   游戏状态机
+    │   ├── WaveManager.ts          #   波次推进与刷怪节奏
+    │   ├── EnemyPlaneManager.ts    #   敌机 / Boss 生成与回收
+    │   ├── BulletManager.ts        #   子弹 / 激光统一生成与回收
+    │   ├── UpgradeManager.ts       #   经验、升级、抽卡与强化应用
+    │   ├── BuildManager.ts         #   大厅建造（原型）
+    │   └── MapManager.ts           #   大厅地图（原型）
+    └── UI/                         # 纯表现层，只监听事件渲染
+        ├── PopupPanel.ts           #   暂停 / 胜利 / 失败整合面板
+        ├── UpgradePanel.ts         #   三选一强化面板
+        ├── PlayerHealthUI.ts       #   爱心格子血量
+        ├── BossHealthUI.ts         #   Boss 顶部血条
+        ├── ExpBarUI.ts             #   经验条与等级
+        ├── StatsPanel.ts           #   伤害统计
+        ├── Start / Pause / Resume / Restart / Quit.ts
+        └── Build.ts / BuildPanel / BuildActionPanel.ts
 ```
 
-## 🏗️ 核心模块解析 (Core Systems)
+---
 
-### 1. Core (基础设施层)
+## 🎮 玩法系统
 
-- **EventBus**: 全局事件总线，用于解耦管理器、实体与 UI 之间的通信。
-- **PoolManager**: 通用节点对象池，极大减少实例化与销毁带来的性能开销。
-- **各类 Config**: 包括 `GameConstants`（常量）、`GameData`（玩家数据）、`LevelConfig`（波次）、`BossConfig`（Boss 数据）以及 `CardConfig`（强化卡牌池）。
+### 1. 战斗循环
 
-### 2. Component (可复用行为层)
+- **操作**：单指拖动战机，边界自动钳制；战机自动开火，无需手动射击。
+- **玩家**：5 颗爱心，受击扣 1 血并进入短暂无敌帧；血量归零发 `GAME_OVER`。
+- **击杀奖励**：普通敌机经验 10，Boss 经验 1000；升级所需经验 100，每级递增 200。
+- **升级抽卡**：经验满后游戏进入 `UPGRADING` 暂停态，弹出三选一卡牌；选完发 `GAME_RESUME` 恢复。
 
-- **BaseFire / RingFire / SpiralFire**: 开火技能基类及环形、螺旋弹幕实现。
-- **SineMove / BossEnterMove**: 正弦移动与 Boss 入场移动组件。
-- **SpinAnimator / FloatAnimator / PulseAnimator**: Boss 部件的旋转、浮动、呼吸等视觉动画。
+### 2. Roguelike 卡牌系统（UpgradeManager + CardConfig）
 
-### 3. Entity (实体层)
+卡牌分三类，抽卡按槽位优先级抽取并从池中去重：
 
-- **BasePlane**: 飞机基类，封装血量、受击接口与基础开火计时。
-- **BaseBullet**: 处理子弹位移、边界检测及碰撞回调。
-- **PlayerPlane**: 玩家战机，支持自动开火、散弹并排发射、无敌帧以及动态属性强化。
-- **EnemyPlane**: 普通敌机。
-- **BaseBoss**: 通用 Boss 载体。外观与技能完全由 `BossConfig` 驱动，所有 Boss 共用一个 `BaseBoss.prefab`。
+| 类型 | 作用 | 代表卡牌 |
+|---|---|---|
+| `STAT` | 直接改玩家基础属性 | 伤害提升、射速提升、子弹数量、移速/弹速 |
+| `WEAPON` | 获得新武器（挂组件） | 激光、追踪导弹 |
+| `UPGRADE` | 强化已有武器（需先获得对应武器） | 激光伤害、激光冷却、追踪弹伤害 |
 
-### 4. Manager (管理器层)
+- 每张卡支持 `maxLevel` 次数上限；`requireWeapon` 控制解锁前置。
+- `UpgradeManager` 决策抽卡与记账，`PlayerPlane.applyUpgrade` 负责执行（属性修改 / 挂载武器 / 调武器 `onUpgrade`）。
 
-- **BulletManager**: 统一管理子弹的对象池。
-- **EnemyManager**: 负责敌机与 Boss 的生成、初始化及回收。
-- **GameManager**: 核心状态机（准备、游玩、暂停、失败）。
-- **WaveManager**: 解析关卡配置，控制刷怪节奏。
-- **UpgradeManager**: 肉鸽系统大脑。监听击杀事件、计算经验值、处理升级触发，并将玩家选择的强化卡牌应用给 `PlayerPlane`。
+### 3. 玩家武器（组件化，挂在 PlayerPlane 上）
 
-### 5. UI (界面层)
+- **普通散弹**：`bulletCount` 控制并排数量，多排共用临时向量计算偏移。
+- **激光 `LaserFire → Laser`**：周期性发射一道持续伤害激光；碰撞进入/离开维护照射集合，按 `damageInterval` 周期结算，后段时间渐隐。
+- **追踪弹 `HomingFire → HomingMissile`**：出生后向最近敌机转向；目标失效时按 0.2s 节流重新请求目标。
 
-- **PlayerHealthUI**: 玩家血条。根据当前血量与最大血量动态生成并更新方块/爱心状态。
-- **BossHealthUI**: Boss 血条。顶部平滑过渡的进度条，入场显示，死亡隐藏。
-- **ExpBarUI**: 顶部经验条与等级数字显示。
-- **UpgradePanel**: 三选一强化面板。负责随机抽卡、UI 渲染，以及处理游戏暂停与恢复流程。
-- **PausePanel / ResultPanels**: 暂停与结算等流程控制 UI。
+### 4. 数据驱动 Boss 系统（BaseBoss + BossConfig）
 
-## 🎮 技术特点 (Technical Highlights)
+**所有 Boss 共用一个 `BaseBoss.prefab`**，运行时按配置组装，新增 Boss 不改代码：
 
-- **对象池驱动 (Object Pooling)**: 高频刷新的子弹与敌机全面接入对象池，确保帧率稳定。
-- **事件驱动 (Event-Driven)**: 碰撞与 UI 更新完全通过 `EventBus` 解耦，逻辑实体不直接引用 UI 节点。
-- **配置驱动的 Boss (Data-Driven Boss)**: 仅用一份 `BossConfig` 数据即可驱动所有 Boss 的外观拼装与阶段技能。新增 Boss 零代码改动。
-- **数据驱动的肉鸽系统 (Data-Driven Roguelike)**: `UpgradeManager` 独立管理经验与等级，通过 `UpgradePanel` 弹出随机卡牌，玩家选择后直接强化 `PlayerPlane` 的动态属性（伤害、射速、子弹数量）。
-- **动态 UI 渲染**: 血条与经验条能根据玩家当前的最大血量上限和升级状态，动态生成与调整 UI 节点。
+- **外观组装 `parts`**：逐节点加载贴图、挂视觉动画组件（浮动 / 呼吸 / 旋转）。
+- **碰撞体 `hitBox`**：支持圆形 / 矩形，运行时启用对应碰撞体。
+- **阶段 `phases`**：按血量阈值逐级切换；每个阶段是一组技能配置，支持：
+  - `delay`：技能延迟触发（统一时间轴队列）；
+  - `loop` / `loopDelay`：阶段循环重播；
+  - `params`：参数注入对应组件的 `applyConfig`。
+- **技能注册**：`SkillMap` 把配置中的技能名映射到组件类，`ensureSkills` 去重获取/挂载并缓存。
 
-## 🚀 未来规划 (Planned Features)
+**Boss 炮台编排 `CannonBarrage`**：
 
-- [ ] **专属弹幕模式**: 扩展更多武器形态（追踪导弹、激光等）。
-- [ ] **视听反馈优化**: 接入受击特效、屏幕震动与音效。
-- [ ] **局外成长系统**: 引入永久升级机制。
-- [ ] **更多敌人与 Boss**: 充分利用现有的数据驱动架构扩充内容。
+- 阵型：`ATTACHED`（挂载在 Boss 周围）/ `ORBITING`（环绕玩家目标）；
+- 触发：`MANUAL`（指令触发）/ `AUTO`（按间隔循环）；
+- 瞄准：`BLIND`（固定角度盲射）/ `AIM`（锁定 `GameData.currentTarget`）；
+- 发射：`VOLLEY`（齐射）/ `SEQUENCE`（炮台依次轮射，带间隔与轮次间隙）；
+- 炮台为独立 `Turret` 节点，负责炮管旋转与开火，资源异步加载、死亡/重置时统一回收。
 
-## 🛠️ 开发环境 (Development Setup)
+**当前配置的 Boss**：
 
-1. 安装 Cocos Creator 3.8 或更高版本。
-2. 克隆本项目并导入 Cocos Dashboard。
-3. 打开 `Scenes/HallScene.scene`（大厅）或直接打开 `Scenes/BattleScene.scene`（战斗场景）。
-4. 点击编辑器顶部的 Play 按钮即可运行。
+| Boss | 阶段设计 |
+|---|---|
+| 冰王 `ICE_BOSS` | 一阶段正弦巡逻 + 环形弹幕；二阶段双螺旋；三阶段四螺旋 |
+| 机械之王 `MACHINE_BOSS` | 一阶段挂载炮台向下盲射；二阶段冲刺到位 → 瞄准大招 → 撤退循环；三阶段脱离环绕、依次轮射激光 |
+
+### 5. 波次与关卡（WaveManager + LevelConfig）
+
+- 按 `LevelConfig` 顺序推进波次，统计存活敌机数，清空后进入下一波；全部波次结束发 `GAME_VICTORY`。
+- Boss 波与普通波共用同一刷怪通道；无尽模式清空后波次归零循环，怪物血量按 `1 + 轮回数 × 0.5` 递增。
+
+---
+
+## 🏗️ 架构约定
+
+- **事件驱动**：碰撞命中、击杀、血量变化、状态切换、UI 刷新全部走 `EventBus`；实体不直接引用 UI，UI 只监听事件渲染，点击只发意图事件。
+- **Manager 分层**：`GameManager` 状态机；战斗 Manager 调度实体；`UpgradeManager` 决策层；`PlayerPlane` 执行层。Manager 之间不互相 import 成环，上下级可调单例，同级通信用事件。
+- **对象池**：子弹、激光、敌机、特效统一经 `PoolManager` 按预制体名分池回收，避免高频 `instantiate/destroy`。
+- **状态冻结**：非 `PLAYING` 状态下，Manager 通过 `setPaused` / `enabled = false` 冻结实体与子弹更新，暂停期间不产生逻辑推进。
+
+## ⚡ 性能要点
+
+- `DirTable` 预计算方向表，环形 / 螺旋弹幕开火零三角函数运算。
+- 高频脚本复用 `Vec3` 临时对象，避免 `update` 内反复 `new Vec3`。
+- 子弹数组使用交换删除（`removeFast`），避免数组整体搬移。
+- 追踪弹索敌节流（0.2s 一次），UI 刷新带脏标记 / 节流。
+- 碰撞体引用、屏幕半宽高等在 `onLoad` 缓存，不在每帧重复获取。
+
+## 🎮 操作
+
+| 操作 | 说明 |
+|---|---|
+| 拖动战机 | 跟随手指移动，限制在屏幕边界内 |
+| 自动开火 | 战机持续攻击，无需点击射击 |
+| 升级选卡 | 三选一，点击后自动恢复战斗 |
+| 暂停 / 重开 / 退出 | 由 `PopupPanel` 按钮组分发状态事件 |
+
+## 🛠️ 开发环境
+
+1. 安装 **Cocos Creator 3.8.x**。
+2. 用 Dashboard 导入本工程目录。
+3. 战斗预览直接打开 `assets/scene/BattleScene.scene`；大厅打开 `assets/scene/HallScene.scene`。
+4. 在编辑器层级面板把对应预制体拖到各 Manager 的 `@property` 槽位（子弹 / 敌机 / Boss / 特效 / 音效）。
+5. 点击编辑器 Play 运行。
+
+## 🚧 进行中与后续规划
+
+- [ ] 大厅地图与建造系统（`MapManager` / `BuildManager` / `CameraDrag` 原型完善）
+- [ ] 更多普通敌机种类与新 Boss（复用数据驱动配置即可扩展）
+- [ ] 局外成长与本地存档解锁
+- [ ] 分数系统、Boss 爆炸表现与玩家死亡淡出等素材向反馈
+- [ ] 无尽模式数值与波次闭环调优

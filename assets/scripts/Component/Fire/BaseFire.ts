@@ -40,6 +40,10 @@ export  class BaseFire extends Component {
     protected fire(){
 
     }
+
+    public onPhaseChanged(phaseIndex: number) {
+        // 默认什么都不做
+    }
 }
 
 
