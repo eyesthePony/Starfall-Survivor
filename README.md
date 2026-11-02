@@ -125,18 +125,18 @@ Cards fall into three types; the draft picks per slot priority and removes drawn
 
 **Turret barrage `CannonBarrage`**:
 
-- Formation: `ATTACHED` (around the boss) / `ORBITING` (orbit the locked target);
-- Trigger: `MANUAL` (on command) / `AUTO` (interval loop);
-- Aim: `BLIND` (fixed angles) / `AIM` (locks `GameData.currentTarget`);
-- Fire: `VOLLEY` (all at once) / `SEQUENCE` (turrets fire one after another with gaps);
-- Each turret is an independent `Turret` node handling barrel rotation and firing; prefab loads asynchronously and all turrets are cleaned up on death/reset.
+- Formation `TurretFormation`: `ATTACHED` (circling the boss) / `ORBITING` (orbiting a designated center) / `SCATTERED` (spread along the four screen edges);
+- Trigger `TriggerMode`: `IDLE` (standby) / `ONCE` (one round then back to IDLE) / `CONTINUOUS` (fire on a repeating interval);
+- Aim `AimMode`: `FIXED` (fixed angle) / `TARGET` (locks `GameData.currentTarget`) / `SPIN` (constant sweep rotation) / `OSCILLATE` (pendulum swing around a center angle) / `CENTER` (always aim at screen center);
+- Fire `FireMode`: `VOLLEY` (all turrets fire together) / `SEQUENCE` (turret-by-turret at `seqInterval`; the next turret flashes red and scales up as a warning before firing);
+- Each turret is an independent `Turret` node handling barrel rotation and firing; the prefab loads asynchronously and all turrets are cleaned up on death/reset.
 
 **Configured bosses**:
 
 | Boss | Phase design |
 |---|---|
-| `ICE_BOSS` | Phase 1 sine patrol + ring fire; phase 2 double spiral; phase 3 quadruple spiral |
-| `MACHINE_BOSS` | Phase 1 attached turrets blind-fire downward; phase 2 rush-in → aimed burst → retreat loop; phase 3 orbit and fire lasers in sequence |
+| `ICE_BOSS` (3 phases) | P1 sine patrol + 16-shot ring; P2 two-arm spiral; P3 four-arm spiral |
+| `MACHINE_BOSS` (4 phases) | P1 attached circular turret ring firing downward on continuous volleys while sine-patrolling; P2 loop: rush to screen center → lock player → one volley → retreat upward; P3 turrets scatter to the screen edges aiming at center, then fire lasers in sequence after 2s; P4 turret ring sweeps at high rotation speed, then fires continuous volleys after 1s |
 
 ### 5. Waves & Levels (WaveManager + LevelConfig)
 

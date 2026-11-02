@@ -1,9 +1,9 @@
-import { AimMode, FireMode, TriggerMode, TurretFormation } from "./ConfigEnums";
+import {OrbitCenter, AimMode, FireMode, TriggerMode, TurretFormation } from "./ConfigEnums";
 import { GameConstants } from "./GameConstants";
 
 // 定义一个部位
 export interface BossPartConfig {
-    name: string;       // 节点名字，比如 "Body", "Ring"
+    name: string;       // 节点名字，比如 "Body"s, "Ring"
     texture: string;    // 贴图路径
     x?: number;         // 相对位置X
     y?: number;         // 相对位置Y
@@ -48,8 +48,8 @@ export interface BossConfigData {
 
 export const BOSS_CONFIG:Record<string,BossConfigData> = {
     [GameConstants.BOSS_TYPE.ICE_BOSS]: {
-        name:"冰王杨丰屹",
-        maxHp: 1000,
+        name:"杨丰屹碎冰冰",
+        maxHp: 3000,
         moveSpeed: 1.5,
         scale: 0.3,
         hitBox: { shape: 'circle', radius: 350 },   
@@ -89,7 +89,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
     },
     [GameConstants.BOSS_TYPE.MACHINE_BOSS]: {
         name:"胡杰飞飞飞",
-        maxHp: 1500,
+        maxHp: 6000,
         moveSpeed: 1.5,
         scale: 1.5,
         hitBox: { shape: 'circle', radius: 50 },
@@ -107,107 +107,115 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                 { 
                      // ================== 阶段 1：挂载炮台，普通子弹 ==================
                 skills: [
-                    { name: GameConstants.BOSS_SKILL.SINE_MOVE, params: { amplitude: 150, frequency: 0.5 } },
+                   
                     { 
-                        
                         name: GameConstants.BOSS_SKILL.CANNON_BARRAGE, 
-                        params: { 
-                                formation: TurretFormation.ATTACHED,
-                                triggerMode: TriggerMode.AUTO,      // 原来 autoFire: true
-                                aimMode: AimMode.BLIND,             // 原来 cmd: FIRE_FORWARD
-                                fireMode: FireMode.VOLLEY,          // 原来没有，默认齐射
-                                fireAngle: 180,
-                                interval: 3,
-                                damage: 10,
-                                bulletSpeed: 300,
-                                bulletType: GameConstants.BULLET_TYPE.NORMAL,
-                                isPlayerBullet: false,              
-                                turretPrefabPath: 'prefabs/Turret',
-                                attachRadius: 150,     
-                                orbitRadius: 250,      
-                                rotateSpeed: 45,      
-                                turretCount: 8,           
-                                },
+                        params: {
+                            turretPath: 'prefabs/Turret',
+                            formation: TurretFormation.ATTACHED, 
+                            aimMode: AimMode.FIXED, 
+                            fireAngle: 180, triggerMode: TriggerMode.CONTINUOUS, fireMode: FireMode.VOLLEY, 
+                            interval: 3,radius:300,
+                            isPlayerBullet:false,bulletType:GameConstants.BULLET_TYPE.MACHINE,},
+                    },
+                    { name: GameConstants.BOSS_SKILL.SINE_MOVE, 
+                        params: { amplitude: 150, frequency: 0.5 } ,
+                        delay:1,
+                        
                     },
                 ]                   
 
                 },
                   // ================== 阶段 2：狂暴冲刺（触发 enterAimPhase） ==================
             { 
-            loop: true, // 循环此阶段
-            skills: [
-                    // ① 0秒：停火，进入静默状态，准备冲刺
-                    { name: GameConstants.BOSS_SKILL.CANNON_BARRAGE, params: { triggerMode: TriggerMode.MANUAL }, delay: 0 },
-
-                    // ② 0秒：Boss 冲刺到屏幕中央（耗时 0.8 秒）
+                loop:true,
+                loopDelay:1,
+                skills: [
+                    // ① 0秒：从当前位置飞到屏幕中心，耗时 0.8 秒
                     { 
                         name: GameConstants.BOSS_SKILL.BOSSMOVETO, 
                         params: { targetX: 0, targetY: 0, duration: 0.8 }, 
                         delay: 0 
                     },
-
-                    // ③ 0.9秒：Boss 到位后，开一发瞄准的大招！
-                    // （这里留了 0.1 秒缓冲，确保 Boss 完全停稳再开枪）
                     { 
                         name: GameConstants.BOSS_SKILL.CANNON_BARRAGE, 
-                        params: {   
-                            aimMode: AimMode.AIM, attachRadius: 90 
-                                  
-                                }, 
-                        delay: 0.9 
+                        params: {
+                            aimMode: AimMode.TARGET, 
+                            triggerMode: TriggerMode.IDLE, 
+                            radius:100,
+                            },
+                        delay:1.2,
                     },
                     { 
                         name: GameConstants.BOSS_SKILL.CANNON_BARRAGE, 
-                        params: {   
-                            cmd: true, aimMode: AimMode.AIM, fireMode: FireMode.VOLLEY, damage: 50
-                                  
-                                }, 
-                        delay: 1.5  
+                        params: {
+                            triggerMode: TriggerMode.ONCE, fireMode: FireMode.VOLLEY, 
+                            },
+                        delay:1.6,
                     },
-
-                    // ④：Boss 威慑完毕，开始撤退（耗时 1.0 秒）
+                    { 
+                        name: GameConstants.BOSS_SKILL.CANNON_BARRAGE, 
+                        params: {
+                            aimMode:AimMode.FIXED,
+                            fireAngle:180,
+                            triggerMode: TriggerMode.IDLE, 
+                            radius:300,
+                            },
+                        delay:2,
+                    },
+                 
                     { 
                         name: GameConstants.BOSS_SKILL.BOSSMOVETO, 
                         params: { targetX: 0, targetY: 400, duration: 1.0 }, 
-                        delay:  2.6  
+                        delay: 2,
                     },
-
-                    // ⑤ 2.6秒：撤退完毕，恢复第一阶段的向下盲射
-                    { 
-                        name: GameConstants.BOSS_SKILL.CANNON_BARRAGE, 
-                        params: { triggerMode: TriggerMode.AUTO,
-                                    aimMode: AimMode.BLIND,      
-                                    fireMode: FireMode.VOLLEY,
-                                    fireAngle: 180,
-                                    interval: 0.5,
-                                    damage: 10, 
-                                    attachRadius:150,               
-                                }, 
-                        delay: 2.6 
-                    },
-            ]                   
+                ]                
             },
               // ================== 阶段 3：脱离环绕，激光处刑（触发 enterOrbitPhase） ==================
             { 
+
             skills: [
-              
-                // 保持炮台队长激活
-                { name: GameConstants.BOSS_SKILL.CANNON_BARRAGE, params: {
-                    formation: TurretFormation.ORBITING,
-                    triggerMode: TriggerMode.AUTO,
-                    aimMode: AimMode.BLIND,              
-                    fireMode: FireMode.SEQUENCE,      
-                    rotateSpeed: 0,                    
-                    seqInterval: 1,  
-                    seqGap: 2,                   
-                    damage: 10,                        
-                    bulletSpeed: 300,
-                    isPlayerBullet: false,
-                    followTarget: false, // 不跟随，位置用快照中心，只更新炮口
-                    bulletType: GameConstants.BULLET_TYPE.LASER, // 激光
-                    orbitRadius:200, // 环绕半径
+                    // ① 0秒：停火，进入静默状态，准备冲刺
+                    { name: GameConstants.BOSS_SKILL.CANNON_BARRAGE, params: { 
+                        formation:TurretFormation.SCATTERED, 
+                        rotateSpeed: 45,
+                        aimMode: AimMode.CENTER, 
+                        triggerMode: TriggerMode.IDLE, },
+
+                    },
+                    {
+                        name: GameConstants.BOSS_SKILL.CANNON_BARRAGE,params: { 
+                             bulletType:GameConstants.BULLET_TYPE.LASER,
+                             triggerMode: TriggerMode.CONTINUOUS,
+                            fireMode: FireMode.SEQUENCE, 
+                            seqInterval:1.2,
+                        },
+                        delay:2,
+                    }
+            ]                   
+            },
+            { 
+
+            skills: [
                     
-                } }, 
+                    { name: GameConstants.BOSS_SKILL.CANNON_BARRAGE, params: { 
+                        formation:TurretFormation.ATTACHED, 
+                        radius:300,
+                        rotateSpeed: 60,
+                        aimMode: AimMode.SPIN, 
+                        aimSpeed:360,
+                        triggerMode: TriggerMode.IDLE,
+                        bulletType:GameConstants.BULLET_TYPE.MACHINE, },
+
+                    },
+                    {
+                        name: GameConstants.BOSS_SKILL.CANNON_BARRAGE,params: { 
+                            triggerMode: TriggerMode.CONTINUOUS,
+                            fireMode: FireMode.VOLLEY, 
+                            interval:1,
+                        },
+                        delay:1,
+                    }
             ]                   
             },
         ]

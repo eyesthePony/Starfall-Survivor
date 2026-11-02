@@ -1,6 +1,6 @@
 import { _decorator, Component, Node, Vec3 } from 'cc';
 import { BulletManager } from '../../../Manager/BulletManager';
-import { GameConstants } from '../../../Core/GameConstants';
+import { DirTable } from '../../../Core/MathUtils';
 const { ccclass } = _decorator;
 
 @ccclass('Turret')
@@ -34,8 +34,9 @@ export class Turret extends Component {
         const myPos = this.node.worldPosition;
         
         // 根据当前节点的旋转角度，算出开火方向
-        const rad = (this.node.angle + 90) * Math.PI / 180;
-        this._tempDir.set(Math.cos(rad), Math.sin(rad), 0).normalize();
+        const deg = ((Math.round(this.node.angle) + 180) % 360 + 360) % 360;
+        const d = DirTable[deg];
+        this._tempDir.set(d.x, d.y, 0);   // 已经是单位向量，不用 normalize
 
         // 呼叫军火库生成子弹
         BulletManager.instance.spawnBullet(
@@ -44,7 +45,8 @@ export class Turret extends Component {
             myPos, 
             this._tempDir, 
             damage, 
-            speed
+            speed,
+            this.node,
         );
     }
 

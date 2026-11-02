@@ -68,7 +68,7 @@ export class PlayerPlane extends  BasePlane {
     private onGameReset(){
         // 1. 显示玩家节点
         this.node.active = true;
-         GameData.currentTarget = this.node;
+        GameData.currentTarget = this.node;
         
         // 3. 重置逻辑状态
         this._isDead = false;

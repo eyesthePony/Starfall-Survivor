@@ -128,18 +128,18 @@ assets/
 
 **Boss 炮台编排 `CannonBarrage`**：
 
-- 阵型：`ATTACHED`（挂载在 Boss 周围）/ `ORBITING`（环绕玩家目标）；
-- 触发：`MANUAL`（指令触发）/ `AUTO`（按间隔循环）；
-- 瞄准：`BLIND`（固定角度盲射）/ `AIM`（锁定 `GameData.currentTarget`）；
-- 发射：`VOLLEY`（齐射）/ `SEQUENCE`（炮台依次轮射，带间隔与轮次间隙）；
-- 炮台为独立 `Turret` 节点，负责炮管旋转与开火，资源异步加载、死亡/重置时统一回收。
+- 阵型 `TurretFormation`：`ATTACHED`（挂载在 Boss 周围成圆阵）/ `ORBITING`（环绕指定中心旋转）/ `SCATTERED`（散开到屏幕四边周长分布）；
+- 触发 `TriggerMode`：`IDLE`（停火待机）/ `ONCE`（打一轮后回到 IDLE）/ `CONTINUOUS`（按间隔持续开火）；
+- 瞄准 `AimMode`：`FIXED`（固定角度）/ `TARGET`（锁定 `GameData.currentTarget`）/ `SPIN`（匀速旋转扫描）/ `OSCILLATE`（围绕中心角来回摆动）/ `CENTER`（持续瞄准屏幕中心）；
+- 发射 `FireMode`：`VOLLEY`（全体齐射）/ `SEQUENCE`（炮台按 `seqInterval` 依次轮射，下一发开火前对应炮台红色闪烁放大预警）；
+- 炮台为独立 `Turret` 节点，负责炮管旋转与开火，预制体异步加载、死亡/重置时统一回收。
 
 **当前配置的 Boss**：
 
 | Boss | 阶段设计 |
 |---|---|
-| 冰王 `ICE_BOSS` | 一阶段正弦巡逻 + 环形弹幕；二阶段双螺旋；三阶段四螺旋 |
-| 机械之王 `MACHINE_BOSS` | 一阶段挂载炮台向下盲射；二阶段冲刺到位 → 瞄准大招 → 撤退循环；三阶段脱离环绕、依次轮射激光 |
+| 冰王 `ICE_BOSS`（3 阶段） | P1 正弦巡逻 + 16 发环形弹幕；P2 双臂螺旋；P3 四臂螺旋 |
+| 机械之王 `MACHINE_BOSS`（4 阶段） | P1 挂载圆阵炮台朝下持续齐射，叠加正弦移动；P2 循环：飞至屏幕中心 → 锁定玩家 → 齐射一轮 → 撤回上方；P3 炮台散到屏幕四边、瞄屏幕中心待机，2s 后依次轮射激光；P4 圆阵炮台高速旋转扫描，1s 后持续齐射 |
 
 ### 5. 波次与关卡（WaveManager + LevelConfig）
 

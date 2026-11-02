@@ -1023,6 +1023,10 @@
       "__uuid__": "471260b6-6921-4980-9a31-3f5edebc61bb",
       "__expectedType__": "cc.Prefab"
     },
+    "machineBulletPrefab": {
+      "__uuid__": "e3dabfea-b2fa-4234-96a4-7c428fc329b6",
+      "__expectedType__": "cc.Prefab"
+    },
     "leserPrefab": {
       "__uuid__": "dab99e03-7b99-49b0-93a2-78a2a27390a5",
       "__expectedType__": "cc.Prefab"

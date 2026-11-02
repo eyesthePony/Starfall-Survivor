@@ -131,6 +131,7 @@ export class GameConstants {
         ICE:'ice',
         LASER:'laser',
         HOMING: 'homing',
+        MACHINE:'machine',
     }
 
     

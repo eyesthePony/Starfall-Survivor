@@ -20,6 +20,9 @@ export class BulletManager extends Component {
     @property({ type: Prefab, tooltip: "冰霜子弹" })
     iceBulletPrefab: Prefab = null!;
 
+    @property({ type: Prefab, tooltip: "机械子弹" })
+    machineBulletPrefab: Prefab = null!;
+
     @property({ type: Prefab, tooltip: "激光" })
     leserPrefab: Prefab = null!;
 
@@ -77,6 +80,9 @@ export class BulletManager extends Component {
         switch(bulletType){
             case GameConstants.BULLET_TYPE.ICE:
                 bulletprefab = this.iceBulletPrefab; 
+                break;
+            case GameConstants.BULLET_TYPE.MACHINE:
+                bulletprefab = this.machineBulletPrefab; 
                 break;
             case GameConstants.BULLET_TYPE.LASER:
                 bulletprefab = this.leserPrefab; 

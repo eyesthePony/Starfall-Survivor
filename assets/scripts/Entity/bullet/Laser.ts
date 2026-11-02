@@ -66,6 +66,7 @@ export class Laser extends Component {
 
         this.damage = damage;
         this._isDead = false;
+        this.enabled = true;
         this._enemiesInLaser.clear(); 
         this._damageTimer = 0;
         this._lifeTimer = 0; 
@@ -115,6 +116,7 @@ export class Laser extends Component {
         // 如果设置了跟随目标，每一帧都把激光的位置同步到飞机上！
         if (this._followTarget && this._followTarget.isValid) {
             this.node.setWorldPosition(this._followTarget.worldPosition);
+            this.node.angle = this._followTarget.angle; 
         }
 
         // 1. 生命周期倒计时

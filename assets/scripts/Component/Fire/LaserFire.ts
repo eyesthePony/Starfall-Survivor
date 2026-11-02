@@ -45,7 +45,7 @@ export class LaserFire extends BaseFire {
         if (params.interval !== undefined) this.interval = params.interval;
         if (params.baseAngle !== undefined) this._baseAngle = params.baseAngle;
         if (params.muzzleNode !== undefined) this._muzzleNode = params.muzzleNode; 
-        if(params.isPlayerBullet !== undefined)this._isPlayerBullet = params.isPlayerBullet;
+        if (params.isPlayerBullet !== undefined)this._isPlayerBullet = params.isPlayerBullet;
     }
 
     

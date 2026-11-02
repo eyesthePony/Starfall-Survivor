@@ -1,13 +1,42 @@
-/**
- * 炮台阵型状态
- */
+
+
+
+
+//====围绕旋转圆心=====
+export enum OrbitCenter {
+    SCREEN = 0,   // 屏幕中心
+    SELF = 1,     // Boss 自己
+    TARGET = 2,   // 玩家
+}
+
+//===队形=====
 export enum TurretFormation {
-    ATTACHED = 'attached',   // 挂载在 Boss 身上
-    ORBITING = 'orbiting'    // 脱离本体，环绕玩家
+    ATTACHED = 0,    // 挂在 Boss 身上
+    ORBITING = 1,    // 围绕某个中心旋转
+    SCATTERED = 2,   // 四散到屏幕边角
+}
+
+//=====开火====
+export enum TriggerMode {
+    IDLE,        //停止开火
+    ONCE,        // 一次开火：打一轮回空闲
+    CONTINUOUS,  // 持续开火：一直打
+}
+
+export enum FireMode    { VOLLEY = 0, SEQUENCE = 1 } // 同时 / 依次
+
+
+//=========炮口转动======
+export enum AimMode {
+    FIXED = 0,    // 固定角度
+    TARGET = 1,   // 瞄准目标
+    SPIN = 2,     // 持续旋转扫描
+    OSCILLATE = 3,  // 来回摆动
+    CENTER = 4, //屏幕中心
 }
 
 
-//炮台发射子弹类型
-export enum TriggerMode { MANUAL = 0, AUTO = 1 }   // 手动触发 / 自动循环
-export enum AimMode     { BLIND  = 0, AIM  = 1 }   // 盲发（固定角） / 瞄准目标
-export enum FireMode    { VOLLEY = 0, SEQUENCE = 1 } // 同时 / 依次
+
+
+
+
