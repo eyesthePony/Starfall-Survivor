@@ -89,7 +89,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
     },
     [GameConstants.BOSS_TYPE.MACHINE_BOSS]: {
         name:"胡杰飞飞飞",
-        maxHp: 6000,
+        maxHp: 1000,
         moveSpeed: 1.5,
         scale: 1.5,
         hitBox: { shape: 'circle', radius: 50 },

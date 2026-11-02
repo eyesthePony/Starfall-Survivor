@@ -84,6 +84,14 @@ export class CannonBarrage extends BaseFire {
 
     public clear(){
         this.clearCannons();   
+
+        // 换局/重建时复位配置默认值（同局内技能叠加不受影响）
+        this._bulletType = GameConstants.BULLET_TYPE.NORMAL;
+        this._triggerMode = TriggerMode.IDLE;
+        this._fireMode = FireMode.SEQUENCE;
+        this._aimMode = AimMode.FIXED;
+        this._rotateSpeed = 0;
+        this._currentAngle = 0;
     }
 
     spawnCannons(){
@@ -134,27 +142,18 @@ export class CannonBarrage extends BaseFire {
         this._seqIndex = -1;
         this._seqTimer = 0;
         this._timer = 0;
+
+       
     }
 
     // CannonBarrage.ts 新增
     public reset(): void {
-        // 开火计数
+       // 只清瞬时运行时计数；阵型/瞄准/子弹类型等配置由 applyConfig 负责
         this._timer = 0;
         this._seqIndex = -1;
         this._seqTimer = 0;
-        this._triggerMode = TriggerMode.IDLE;
-        this._fireMode = FireMode.SEQUENCE;
-        // 瞄准
-        this._aimMode = AimMode.FIXED;
-        this._oscPhase = 0;
-        // 阵型（防 P3/P4 的 rotateSpeed 残留到 P1）
-        this._rotateSpeed = 0;
-        this._currentAngle = 0;
         this._isMoving = false;
         this._moveTimer = 0;
-        // 子弹属性（防激光类型/阵营残留）
-        this._bulletType = GameConstants.BULLET_TYPE.NORMAL;
-        this._isPlayerBullet = false;
     }
 
     public applyConfig(params?: Record<string, any>) {
