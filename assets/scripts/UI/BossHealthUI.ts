@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node, ProgressBar } from 'cc';
+import { _decorator, Component, Label, Node, ProgressBar, tween, Tween } from 'cc';
 import { GameConstants } from '../Core/GameConstants';
 import { EventBus } from '../Core/EventBus';
 const { ccclass, property } = _decorator;
@@ -15,7 +15,9 @@ export class BossHealthUI extends Component {
     @property(Label)
     bossNameLabel: Label = null!; 
 
-     private _maxHp: number = 1;
+    private _maxHp: number = 1;
+
+    private _tweenTarget = { p: 1 };
 
 
     protected onLoad(): void {
@@ -27,23 +29,28 @@ export class BossHealthUI extends Component {
     }
 
 
-    bossShowHpBar(bossName: string = "冰霜之主",maxHp:number){
+    bossShowHpBar(bossName: string = "冰霜之主", maxHp: number) {
         this.node.active = true;
         this.bossNameLabel.string = bossName;
         this._maxHp = maxHp;
-        this.progressBar.progress = 1; 
+        Tween.stopAllByTarget(this._tweenTarget);
+        this._tweenTarget.p = 1;
+        this.progressBar.progress = 1;
+    }
+
+    bossHPChanged(curHp: number) {
+        if (!this.node.active || !this.progressBar) return;
+        const ratio = Math.max(0, Math.min(1, curHp / this._maxHp));
+        Tween.stopAllByTarget(this._tweenTarget);
+        tween(this._tweenTarget).to(0.2, { p: ratio }, {
+            onUpdate: () => { this.progressBar.progress = this._tweenTarget.p; }
+        }).start();
     }
 
     bossHideHpBar(){
         this.node.active = false; 
     }
 
-    bossHPChanged(curHp:number){
-
-        if (!this.node.active || !this.progressBar) return;
-        let ratio = curHp / this._maxHp;
-        this.progressBar.progress = Math.max(0, Math.min(1, ratio)); 
-    }
 
 
     protected onDestroy(): void {

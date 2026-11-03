@@ -1,4 +1,4 @@
-import { _decorator, BoxCollider2D, CircleCollider2D, Collider2D, Component, Node, resources, Sprite, SpriteFrame, Tween, Vec3,} from 'cc';
+import { _decorator, AnimationClip, BoxCollider2D, CircleCollider2D, Animation, Component, Node, resources, Sprite, SpriteFrame, Tween, Vec3,} from 'cc';
 import { BasePlane } from '../BasePlane';
 import { EventBus } from '../../../Core/EventBus';
 import { GameConstants } from '../../../Core/GameConstants';
@@ -128,15 +128,28 @@ export class BaseBoss extends BasePlane{
             const sp = node.addComponent(Sprite);
             //设置大小模式
             sp.sizeMode = Sprite.SizeMode.TRIMMED;
+        
             //加载贴图并赋予节点
-            resources.load(`${part.texture}/spriteFrame`,SpriteFrame,(err, sf) => {
-                if (err) { console.error(`加载失败: ${part.texture}`, err);  node.destroy(); return; }
+        if (!part.animClipPath) {
+            resources.load(`${part.texture}/spriteFrame`, SpriteFrame, (err, sf) => {
+                if (err) { console.error(`加载失败: ${part.texture}`, err); node.destroy(); return; }
                 if (!node.isValid) return;
                 sp.spriteFrame = sf;
             });
+        }
             
             //赋予贴图动画
-            if (part.animation) {
+        if (part.animClipPath) {
+            // 走序列帧动画：不 load 单张图，直接挂 Animation 播循环 Clip
+            resources.load(part.animClipPath, AnimationClip, (err, clip) => {
+                    if (err) { console.error(`加载动画失败: ${part.animClipPath}`, err); node.destroy(); return; }
+                    if (!node.isValid) return;
+                    const anim = node.addComponent(Animation);
+                    anim.defaultClip = clip;
+                    anim.playOnLoad = true;
+                    anim.play();
+                });
+        }else if (part.animation) {
                 const Cls = AnimatorMap[part.animation];
                 if (Cls) node.addComponent(Cls);
                 else console.warn(`[BaseBoss] 未知动画: ${part.animation}`);
@@ -361,6 +374,8 @@ export class BaseBoss extends BasePlane{
             c.enabled = false;
             (c as any).clear?.();
         } });   
+        this._delayedTasks.length = 0;
+        this._phaseLoopTimer = 0;
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.ENEMY_KILLED, this.node);
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BOSS_HIDE_HP_BAR);
     }

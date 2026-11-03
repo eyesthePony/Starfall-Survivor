@@ -1,4 +1,4 @@
-import { _decorator, Button, Component, Label, Node } from 'cc';
+import { _decorator, Button, Component, Label, Node, Sprite, SpriteFrame } from 'cc';
 import { EventBus } from '../Core/EventBus';
 import { GameConstants } from '../Core/GameConstants';
 import { CardConfigData } from '../Core/CardConfig';
@@ -9,6 +9,9 @@ export class UpgradePanel extends Component {
 
     @property([Button])
     cardButtons: Button[] = []; 
+
+    @property({ type: [SpriteFrame], tooltip: "按顺序：剑/翅膀/闪电/子弹" })
+    iconFrames: SpriteFrame[] = [];
 
     private _pendingCount: number = 0; 
     private _currentCards: CardConfigData[] = [];
@@ -82,6 +85,14 @@ export class UpgradePanel extends Component {
             const card = this._currentCards[i];  
             const buttonNode = this.cardButtons[i].node;
 
+            const iconNode = buttonNode.getChildByName('Icon');
+            if (iconNode) {
+                const iconSprite = iconNode.getComponent(Sprite);
+                if (iconSprite && this.iconFrames[card.iconIndex]) {
+                    iconSprite.spriteFrame = this.iconFrames[card.iconIndex];
+                }
+            }
+            
             if (card) {
                 buttonNode.active = true;
                 const labelNode = buttonNode.getChildByName('Label');

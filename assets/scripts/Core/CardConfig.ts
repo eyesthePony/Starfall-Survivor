@@ -6,6 +6,7 @@ export interface CardConfigData {
     name: string;        // 卡牌名字（给UI显示）
     desc: string;        // 卡牌描述（给UI显示）
     maxLevel?: number;   // (可选) 这个强化最多能选几次，如果不填默认无限
+    iconIndex?:number;   //卡牌图标
     requireWeapon?: string;
     type: typeof GameConstants.CARD_TYPE[keyof typeof GameConstants.CARD_TYPE]; 
     targetWeapon?: string;  // 这张卡是给谁用的？
@@ -19,6 +20,7 @@ export const CARD_CONFIG:CardConfigData[] = [
         id:  GameConstants.CARD_ID.DMG_UP,
         name: '强力大奎头',
         desc: '由于黄昊天帮助，唐奎伤害 +100',
+        iconIndex:0,
         type: GameConstants.CARD_TYPE.STAT,
     },
     // 射速强化
@@ -27,6 +29,7 @@ export const CARD_CONFIG:CardConfigData[] = [
         name: '快速唐奎肘击',
         desc: '由于胡杰的帮忙，唐奎肘击间隔 -50%',
         maxLevel: 5, // 假设最多强化 5 次
+        iconIndex:1,
         type: GameConstants.CARD_TYPE.STAT,
     },
     {
@@ -34,6 +37,7 @@ export const CARD_CONFIG:CardConfigData[] = [
         name: '奎子充足',
         desc: '唐奎得到杨丰屹帮助，每次多发射2奎子',
         maxLevel: 5, 
+        iconIndex:2,
         type: GameConstants.CARD_TYPE.STAT,
     },
     {
@@ -41,6 +45,7 @@ export const CARD_CONFIG:CardConfigData[] = [
         name: '兵奎神速',
         desc: '唐奎得到吴锦波帮助，奎子飞行速度+1000',
         maxLevel: 5,
+        iconIndex:3,
         type: GameConstants.CARD_TYPE.STAT,
     },
     // ============== 武器获得卡 ==============
@@ -74,6 +79,7 @@ export const CARD_CONFIG:CardConfigData[] = [
         name: '光速冷却', 
         desc: '激光开火间隔 -20%', 
         maxLevel: 3, 
+        iconIndex:1,
         requireWeapon: GameConstants.CARD_ID.LASER, 
         type: GameConstants.CARD_TYPE.UPGRADE,
         targetWeapon: GameConstants.BULLET_TYPE.LASER,
@@ -92,6 +98,7 @@ export const CARD_CONFIG:CardConfigData[] = [
         name: '唐奎666', 
         desc: '给唐奎补两个弹', 
         maxLevel: 3, 
+        iconIndex:2,
         requireWeapon:GameConstants.CARD_ID.HOMING_MISSILE, 
         type: GameConstants.CARD_TYPE.UPGRADE,
         targetWeapon: GameConstants.BULLET_TYPE.HOMING,

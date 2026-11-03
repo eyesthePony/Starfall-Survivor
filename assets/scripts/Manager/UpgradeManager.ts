@@ -4,6 +4,7 @@ import { GameConstants } from '../Core/GameConstants';
 import { BasePlane } from '../Entity/plane/BasePlane';
 import { PlayerPlane } from '../Entity/plane/player/PlayerPlane';
 import { CARD_CONFIG, CardConfigData } from '../Core/CardConfig';
+import { AudioManager } from '../Core/AudioManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('UpgradeManager')
@@ -38,6 +39,7 @@ export class UpgradeManager extends Component {
         
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.EXP_CHANGED,  this._level, this._exp/this._maxExp); //给经验条ui更新数据
         if(levelUpCount > 0){
+            AudioManager.instance.playOneShot(GameConstants.AUDIO_TYPE.LEVELUP,2);
             EventBus.dispatchEvent(GameConstants.EVENT_TYPE.LEVEL_UP, levelUpCount);
         }
     }

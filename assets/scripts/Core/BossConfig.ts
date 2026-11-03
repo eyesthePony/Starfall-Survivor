@@ -4,11 +4,12 @@ import { GameConstants } from "./GameConstants";
 // 定义一个部位
 export interface BossPartConfig {
     name: string;       // 节点名字，比如 "Body"s, "Ring"
-    texture: string;    // 贴图路径
+    texture?: string;    // 贴图路径
     x?: number;         // 相对位置X
     y?: number;         // 相对位置Y
     scale?: number;     // 缩放
     animation?: string; // 挂载什么动画组件，比如 "SpinAnimator"
+    animClipPath?: string;//循环待机动画 Clip 的 resources 路径，有它就不加载单张图
     hitBox?: { shape: 'circle' | 'box'; radius?: number; width?: number; height?: number; };
 }
 
@@ -220,6 +221,34 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
             },
         ]
     },
+    [GameConstants.BOSS_TYPE.WHALE_BOSS]:{
+        name:"吴鲸波",
+        maxHp: 3000,
+        moveSpeed: 1.5,
+        scale: 0.3,
+        hitBox: { shape: 'circle', radius: 350 },  
+        parts: [
+            { 
+                name: "Body", 
+               
+                animClipPath:'animations/whale',          // 身体：上下浮动
+                scale: 4,
+    
+            },     
+            
+        ],
+         phases: [
+            { 
+                // 阶段1：缓慢的冰环
+                skills: [
+                    {name:GameConstants.BOSS_SKILL.SINE_MOVE, params: { amplitude: 250, frequency: 0.2 } },
+                    { name: GameConstants.BOSS_SKILL.RING_FIRE,  params: { bulletCount: 16, damage: 10, speed: 300,interval: 1.0,bulletType:GameConstants.BULLET_TYPE.ICE,isPlayerBullet:false,}},
+                ]
+            },
+        ]
+
+    },
+       
     
 };
 

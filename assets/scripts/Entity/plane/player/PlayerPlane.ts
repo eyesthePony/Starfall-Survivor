@@ -9,6 +9,7 @@ import { LaserFire } from '../../../Component/Fire/LaserFire';
 import { BaseFire } from '../../../Component/Fire/BaseFire';
 import { HomingFire } from '../../../Component/Fire/HomingFire';
 import { CardConfigData } from '../../../Core/CardConfig';
+import { AudioManager } from '../../../Core/AudioManager';
 const { ccclass, property} = _decorator;
 
 @ccclass('PlayerPlane')
@@ -232,7 +233,7 @@ export class PlayerPlane extends  BasePlane {
                 spawnPos, 
                 this._shootDir, this.bulletDamage, this.bulletSpeed);
         }
-       
+        AudioManager.instance.playOneShot(GameConstants.AUDIO_TYPE.SHOOT);
     }
 
     onHit(playerNode: Node, damage:number){

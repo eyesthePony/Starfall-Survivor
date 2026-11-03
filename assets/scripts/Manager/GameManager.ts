@@ -48,7 +48,7 @@ export class GameManager extends Component {
 
     private onGameStart(){
         this.onStateChanged(GameConstants.GAME_STATE.PLAYING);
-        AudioManager.instance.play(GameConstants.AUDIO_TYPE.BGM,1);
+        AudioManager.instance.play(GameConstants.AUDIO_TYPE.BGM,0.7);
     }
 
     //游戏胜利，相当于游戏结束

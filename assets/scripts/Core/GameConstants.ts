@@ -120,6 +120,7 @@ export class GameConstants {
     public static BOSS_TYPE = {
         ICE_BOSS: "ice_boss",
         MACHINE_BOSS: "machine_boss",
+        WHALE_BOSS:'whale_boss',
     }
 
  
@@ -144,7 +145,8 @@ export class GameConstants {
     public static AUDIO_TYPE = {
         BGM:"bgm",
         BOOM:"boom",
-        BULLET:"bullet",
+        SHOOT:"shoot",
+        LEVELUP:'levelup',
     };
 
     //boss行为类型

@@ -57,7 +57,7 @@ export const LEVELS: LevelData[] = [
         backgroundRes: '',  
         bgmRes: '',      
         waves: [
-            {category:GameConstants.ENEMY_CATEGORY.BOSS, enemyType: GameConstants.BOSS_TYPE.MACHINE_BOSS, count: 1, delay: 0, spawnInterval: 0},
+            {category:GameConstants.ENEMY_CATEGORY.BOSS, enemyType: GameConstants.BOSS_TYPE.WHALE_BOSS, count: 1, delay: 0, spawnInterval: 0},
         ],
     },
 ];
