@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Vec3 } from 'cc';
+import { _decorator,} from 'cc';
 import { BaseFire } from './BaseFire';
 import { BulletManager } from '../../Manager/BulletManager';
 import { DirTable } from '../../Core/MathUtils';
@@ -57,7 +57,7 @@ export class SpiralFire extends BaseFire {
             
             const idx = Math.round(angle) % 360;
             
-            // 👈 4. 查表法，0 次三角函数运算！
+            // 4. 查表法，0 次三角函数运算！
             this._shootDir.set(DirTable[idx].x, DirTable[idx].y, 0);
 
             BulletManager.instance.spawnBullet(

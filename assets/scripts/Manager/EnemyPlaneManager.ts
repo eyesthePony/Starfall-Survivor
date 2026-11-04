@@ -28,7 +28,7 @@ export class EnemyManager extends Component {
     onLoad() {
         EnemyManager._instance = this;
 
-        this.topY = GameData.screenHeight / 2;
+        this.topY = GameData.viewH / 2;
         EventBus.on(GameConstants.EVENT_TYPE.GAME_RESET,this.onGameReset,this);
         EventBus.on(GameConstants.EVENT_TYPE.GAME_STATE_CHANGED,this.onStateChanged,this);
         EventBus.on(GameConstants.EVENT_TYPE.ENEMY_KILLED, this.onEnemyRecycle, this);
@@ -113,8 +113,8 @@ export class EnemyManager extends Component {
         prefabToSpawn = this.normalEnemyPrefab;
         // 普通怪：随机 X，范围在屏幕内缩一点
         const halfW = 50;
-        const minX = -GameData.screenWidth/ 2 + halfW;
-        const maxX = GameData.screenWidth / 2 - halfW;
+        const minX = -GameData.viewW/ 2 + halfW;
+        const maxX = GameData.viewW/ 2 - halfW;
         spawnX = minX + Math.random() * (maxX - minX);
       
             

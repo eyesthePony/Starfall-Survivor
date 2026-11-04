@@ -27,6 +27,7 @@ assets/
     │   ├── GameData.ts             #   运行时全局数据（屏幕尺寸、玩家血量、锁定目标）
     │   ├── ConfigEnums.ts          #   炮台阵型 / 触发 / 瞄准 / 发射模式枚举
     │   ├── BossConfig.ts           #   Boss 外观、碰撞体、阶段技能配置
+    │   ├── BulletConfig.ts         #   子弹数据驱动配置（每种子弹的基础速度/伤害）
     │   ├── LevelConfig.ts          #   关卡与波次配置
     │   ├── CardConfig.ts           #   Roguelike 卡牌池
     │   ├── SkillMap.ts             #   技能名 → 组件类映射（含 AnimatorMap）
@@ -46,6 +47,7 @@ assets/
     │   ├── Move/                   #   移动组件
     │   │   ├── SineMove.ts         #     正弦巡逻
     │   │   ├── BossEnterMove.ts   #     Boss 入场补间
+    │   │   ├── BackgroundScroll.ts #     背景无限滚动（动态适配 viewH 防黑边）
     │   │   └── BossMoveTo.ts       #     Boss 阶段位移（缓动）
     │   ├── Animator/               #   视觉动画组件
     │       ├── FloatAnimator.ts
@@ -113,6 +115,13 @@ assets/
 - **普通散弹**：`bulletCount` 控制并排数量，多排共用临时向量计算偏移。
 - **激光 `LaserFire → Laser`**：周期性发射一道持续伤害激光；碰撞进入/离开维护照射集合，按 `damageInterval` 周期结算，后段时间渐隐。
 - **追踪弹 `HomingFire → HomingMissile`**：出生后向最近敌机转向；目标失效时按 0.2s 节流重新请求目标。
+
+**数据驱动子弹（`BulletManager` + `BulletConfig`）**：
+
+- 所有直线子弹共用一个 `baseBulletPrefab`，`BulletManager` 维护一个按类型索引的 `SpriteFrame` 字典。
+- `BULLET_CONFIG` 存每种子弹的基础速度 / 伤害；运行时实际伤害和速度由调用方传入（玩家攻击加成 / buff）。
+- 行为特殊的子弹（激光、追踪弹）保留独立 Prefab，在 `spawnBullet` 里提前 `if/return` 分流。
+- 新增子弹类型 = 加一行配置 + 拖一张 SpriteFrame，不用新建 Prefab。
 
 ### 4. 数据驱动 Boss 系统（BaseBoss + BossConfig）
 

@@ -128,11 +128,12 @@ export class GameConstants {
 
     //子弹类型
     public static BULLET_TYPE = {
-        NORMAL:'normal',
+        BLUEBULLET:'bluebullet',
+        YELLOWBULLET:'yellowbullet',
         ICE:'ice',
         LASER:'laser',
         HOMING: 'homing',
-        MACHINE:'machine',
+        PARTICLE:'particle',
     }
 
     

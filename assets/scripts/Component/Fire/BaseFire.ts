@@ -7,15 +7,15 @@ export  class BaseFire extends Component {
 
     public interval: number = 1.0;   // 开火间隔（秒）
 
-    public damage:number = 100;
+    public damage:number = 1;
 
-    public bulletSpeed:number = 150;
+    public bulletSpeed:number = 1;
 
     protected _timer:number = 0;
 
     protected _shootDir:Vec3 = new Vec3();
 
-    protected _bulletType = GameConstants.BULLET_TYPE.NORMAL;
+    protected _bulletType = GameConstants.BULLET_TYPE.BLUEBULLET;
 
     protected _isPlayerBullet:boolean = true;
 

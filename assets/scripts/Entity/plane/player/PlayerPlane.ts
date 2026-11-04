@@ -27,8 +27,8 @@ export class PlayerPlane extends  BasePlane {
        //飞机无敌时间倒计时
     protected _invincibleTimer: number = 0;
 
-    public bulletDamage: number = 10;    // 子弹伤害
-    public bulletSpeed: number = 500;    // 子弹速度
+    public bulletDamage: number = 1;    // 子弹伤害
+    public bulletSpeed: number = 1;    // 子弹速度
     public bulletCount: number = 1;      // 每次发射的子弹数量
     private bulletSpacing: number = 30; //并排的子弹间隔
     private _tempVec3:Vec3 = new Vec3(); 
@@ -49,8 +49,8 @@ export class PlayerPlane extends  BasePlane {
         const ut = this.getComponent(UITransform)!;
         this.halfW = ut.width * ut.anchorX;         // 锚点左侧宽度
         this.halfH = ut.height * ut.anchorY;        // 锚点下侧高度
-        this._maxX = GameData.screenWidth / 2 - this.halfW;
-        this._maxY = GameData.screenHeight / 2 - this.halfH;
+        this._maxX = GameData.viewW / 2 - this.halfW;
+        this._maxY = GameData.viewH / 2 - this.halfH;
 
         this._shootDir = new Vec3(0, 1, 0);  // 飞机子弹方向
 
@@ -78,12 +78,12 @@ export class PlayerPlane extends  BasePlane {
         this.hp = this._maxHp; // 恢复满血
         this._invincibleTimer = 0
          // ✅ 重开时，属性也要恢复初始值（非常重要！）
-        this.bulletDamage = 10;
-        this.bulletSpeed = 500;
+        this.bulletDamage = 1;
+        this.bulletSpeed = 1;
         this.bulletCount = 1;
         this.fireCd = 0.2;
         // 4. 回到屏幕底部正中间
-        this.node.setPosition(0, -GameData.screenHeight / 2 + 150, 0);
+        this.node.setPosition(0, -GameData.viewH / 2 + 150, 0);
         //删除子弹组件
         for (let i = 0; i < this._activeWeapons.length; i++) {
             this._activeWeapons[i].destroy();
@@ -96,14 +96,14 @@ export class PlayerPlane extends  BasePlane {
         if (cardData.type === GameConstants.CARD_TYPE.STAT) {
             switch(cardData.id){
                 case GameConstants.CARD_ID.DMG_UP:
-                    this.bulletDamage += 100;
+                    this.bulletDamage += 0.5;
                     break;
 
                 case GameConstants.CARD_ID.SPD_UP:
                     this.fireCd *= 0.5;
                     break;
                 case GameConstants.CARD_ID.MOVE_UP:
-                    this.bulletSpeed += 1000;
+                    this.bulletSpeed += 0.5;
                     break;
                 case GameConstants.CARD_ID.BULLET_UP:
                     this.bulletCount += 2;
@@ -228,7 +228,7 @@ export class PlayerPlane extends  BasePlane {
             const offsetX = (i - (this.bulletCount - 1) / 2) * this.bulletSpacing;
             //得到设置偏移位置
             const spawnPos = this._tempVec3.set(basePos.x + offsetX, basePos.y, basePos.z);
-            BulletManager.instance.spawnBullet(GameConstants.BULLET_TYPE.NORMAL,
+            BulletManager.instance.spawnBullet(GameConstants.BULLET_TYPE.BLUEBULLET,
                 true, 
                 spawnPos, 
                 this._shootDir, this.bulletDamage, this.bulletSpeed);

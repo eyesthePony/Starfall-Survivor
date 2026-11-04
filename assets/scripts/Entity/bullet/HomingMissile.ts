@@ -1,4 +1,4 @@
-import { _decorator,  Node, Vec3 } from 'cc';
+import { _decorator,  Node, Vec3 ,SpriteFrame} from 'cc';
 import { BaseBullet } from './BaseBullet';
 import { EventBus } from '../../Core/EventBus';
 import { GameConstants } from '../../Core/GameConstants';
@@ -17,8 +17,8 @@ export class HomingMissile extends BaseBullet {
     
 
     // 接收目标，以及一个“没目标时向我求助”的回调函数
-    public init(isPlayerBullet: boolean, dir: Vec3, damage: number, speed: number, startPos: Vec3,) {
-        super.init(isPlayerBullet, dir, damage, speed, startPos);
+    public init(isPlayerBullet: boolean, dir: Vec3, damage: number, speed: number, startPos: Vec3,sf:SpriteFrame,) {
+        super.init(isPlayerBullet, dir, damage, speed, startPos,sf);
         this._targetNode = null; 
     }
 

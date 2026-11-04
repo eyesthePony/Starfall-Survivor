@@ -1,4 +1,4 @@
-import { _decorator, AnimationClip, BoxCollider2D, CircleCollider2D, Animation, Component, Node, resources, Sprite, SpriteFrame, Tween, Vec3,} from 'cc';
+import { _decorator, AnimationClip, BoxCollider2D, CircleCollider2D, Animation, Component, Node, resources, Sprite, SpriteFrame, Vec3,} from 'cc';
 import { BasePlane } from '../BasePlane';
 import { EventBus } from '../../../Core/EventBus';
 import { GameConstants } from '../../../Core/GameConstants';
@@ -276,7 +276,7 @@ export class BaseBoss extends BasePlane{
         // 2秒慢慢飘进来
         // 停在距离屏幕顶端往下大约 200 像素的位置
         // 假设屏幕中心是 0，顶部就是 height / 2
-        const targetY = GameData.screenHeight / 2;
+        const targetY = GameData.viewH / 2;
         const target = new Vec3(0, targetY - 220, 0);
         this._enterMove?.play(2, target, () => {
             this._isEntering = false;

@@ -1,4 +1,4 @@
-import { _decorator, Color, instantiate, Node, Prefab, resources, Sprite, Vec3, view } from 'cc';
+import { _decorator, Color, instantiate, Node, Prefab, resources, Sprite, Vec3} from 'cc';
 
 import { Turret } from '../../Entity/plane/enemy/Turret';//引入士兵（小飞机）
 import { BaseFire } from './BaseFire';
@@ -86,7 +86,7 @@ export class CannonBarrage extends BaseFire {
         this.clearCannons();   
 
         // 换局/重建时复位配置默认值（同局内技能叠加不受影响）
-        this._bulletType = GameConstants.BULLET_TYPE.NORMAL;
+        this._bulletType = GameConstants.BULLET_TYPE.BLUEBULLET;
         this._triggerMode = TriggerMode.IDLE;
         this._fireMode = FireMode.SEQUENCE;
         this._aimMode = AimMode.FIXED;
@@ -364,8 +364,8 @@ export class CannonBarrage extends BaseFire {
        
     
         // 内缩 50 像素，避免炮塔一半在屏幕外
-        const w = GameData.screenWidth - 50; 
-        const h = GameData.screenHeight - 50;
+        const w = GameData.viewW - 50; 
+        const h = GameData.viewH - 50;
         const corners: [number, number][] = [
             [25, h], [w, h], [w, 25], [25, 25], // 左下角稍微偏移 (25,25)
         ];
@@ -500,7 +500,7 @@ export class CannonBarrage extends BaseFire {
     //瞄准屏幕中心
     private updateAimAtCenter() {
         // 根据你的世界坐标系计算中心点
-        this._tempAimPos.set(GameData.screenWidth / 2, GameData.screenHeight / 2, 0);
+        this._tempAimPos.set(GameData.viewW / 2, GameData.viewH / 2, 0);
         
         for (let i = 0; i < this._turretScripts.length; i++) {
             const turret = this._turretScripts[i];

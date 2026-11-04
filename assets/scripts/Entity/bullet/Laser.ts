@@ -1,4 +1,4 @@
-import { _decorator, Component, Collider2D, Contact2DType, UITransform, Vec3, tween, UIOpacity, BoxCollider2D, Node } from 'cc';
+import { _decorator, Component, Collider2D, Contact2DType, UITransform, Vec3, UIOpacity, BoxCollider2D, Node, SpriteFrame, Sprite } from 'cc';
 import { EventBus } from '../../Core/EventBus';
 import { GameConstants } from '../../Core/GameConstants';
 import { BasePlane } from '../../Entity/plane/BasePlane';
@@ -21,6 +21,7 @@ export class Laser extends Component {
 
     private _isDead: boolean = false;
     private playerBullet: boolean = true;
+    private _sprite: Sprite = null;
     
     // 记录当前正在被激光照射的敌人
     private _enemiesInLaser: Set<Node> = new Set(); 
@@ -43,6 +44,7 @@ export class Laser extends Component {
 
          // 👈 必须加上这一行！先获取，没有就添加一个
         this._opacity = this.getComponent(UIOpacity) || this.addComponent(UIOpacity);
+        this._sprite = this.node.getChildByName("body")?.getComponent(Sprite);
     }
 
     protected onEnable() {
@@ -53,7 +55,7 @@ export class Laser extends Component {
         }
     }
 
-    public init(isPlayerBullet: boolean, dir: Vec3, damage: number, speed: number, startPos: Vec3,followNode: Node = null) {
+    public init(isPlayerBullet: boolean, dir: Vec3, damage: number, speed: number, startPos: Vec3,sf:SpriteFrame,followNode: Node = null) {
         this.playerBullet = isPlayerBullet;
         
         if (this._boxCollider) {
@@ -71,6 +73,7 @@ export class Laser extends Component {
         this._damageTimer = 0;
         this._lifeTimer = 0; 
         this._followTarget = followNode; // 记录飞机节点
+        this._sprite.spriteFrame = sf;
 
         this.node.setWorldPosition(startPos);
 

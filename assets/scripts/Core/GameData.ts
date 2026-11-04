@@ -1,17 +1,28 @@
-import { Node } from 'cc'; 
+import { Node, view } from 'cc'; 
 
 export class GameData  {
-    static selectedLevel: number = 0;      // 当前选的关
-    static unlockedLevel: number = 0;       // 解锁到第几关
+
+    public static selectedLevel: number = 0;      // 当前选的关
+    public static unlockedLevel: number = 0;       // 解锁到第几关
     public static isEndlessMode: boolean = false; //无尽关卡
 
-    //屏幕尺寸
-    static screenWidth: number = 720;
-    static screenHeight: number = 1280;
-
-    static playerMaxHp: number = 5; //玩家血量
+    public static playerMaxHp: number = 5; //玩家血量
 
     public static currentTarget: Node = null;//全局目标，子弹和敌机的子弹都可以使用这个目标来锁定
+
+    public static viewH:number = 1280;
+    public static viewW:number = 720;
+    
+
+    public static init(){
+        const size = view.getVisibleSize();
+        this.viewH = size.height;
+        this.viewW = size.width;
+    }
+
+   
+
+   
     
 }
 

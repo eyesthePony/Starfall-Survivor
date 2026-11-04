@@ -110,7 +110,7 @@
         "_value": true
       },
       "spine": {
-        "_value": true
+        "_value": false
       },
       "dragon-bones": {
         "_value": true
@@ -137,7 +137,6 @@
       "particle-2d",
       "physics-2d-builtin",
       "profiler",
-      "spine",
       "tiled-map",
       "tween",
       "ui",

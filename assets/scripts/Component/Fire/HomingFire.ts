@@ -15,8 +15,6 @@ export class HomingFire extends BaseFire {
     
     protected onLoad(): void {
         this.interval = 0.8; // 每 0.8 秒发一颗
-        this.damage = 40;    // 追踪弹单发伤害高点
-        this.bulletSpeed = 400; // 追踪弹不需要太快，否则拐不过弯
         this._bulletType = GameConstants.BULLET_TYPE.HOMING;
         this.weaponType = GameConstants.BULLET_TYPE.HOMING; 
         

@@ -90,7 +90,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
     },
     [GameConstants.BOSS_TYPE.MACHINE_BOSS]: {
         name:"胡杰飞飞飞",
-        maxHp: 1000,
+        maxHp: 10000,
         moveSpeed: 1.5,
         scale: 1.5,
         hitBox: { shape: 'circle', radius: 50 },
@@ -117,7 +117,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                             aimMode: AimMode.FIXED, 
                             fireAngle: 180, triggerMode: TriggerMode.CONTINUOUS, fireMode: FireMode.VOLLEY, 
                             interval: 3,radius:300,
-                            isPlayerBullet:false,bulletType:GameConstants.BULLET_TYPE.MACHINE,},
+                            isPlayerBullet:false,bulletType:GameConstants.BULLET_TYPE.PARTICLE,},
                     },
                     { name: GameConstants.BOSS_SKILL.SINE_MOVE, 
                         params: { amplitude: 150, frequency: 0.5 } ,
@@ -206,7 +206,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                         aimMode: AimMode.SPIN, 
                         aimSpeed:360,
                         triggerMode: TriggerMode.IDLE,
-                        bulletType:GameConstants.BULLET_TYPE.MACHINE, },
+                        bulletType:GameConstants.BULLET_TYPE.PARTICLE, },
 
                     },
                     {
@@ -223,7 +223,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
     },
     [GameConstants.BOSS_TYPE.WHALE_BOSS]:{
         name:"吴鲸波",
-        maxHp: 3000,
+        maxHp: 5000,
         moveSpeed: 1.5,
         scale: 0.3,
         hitBox: { shape: 'circle', radius: 350 },  
@@ -242,7 +242,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                 // 阶段1：缓慢的冰环
                 skills: [
                     {name:GameConstants.BOSS_SKILL.SINE_MOVE, params: { amplitude: 250, frequency: 0.2 } },
-                    { name: GameConstants.BOSS_SKILL.RING_FIRE,  params: { bulletCount: 16, damage: 10, speed: 300,interval: 1.0,bulletType:GameConstants.BULLET_TYPE.ICE,isPlayerBullet:false,}},
+                    { name: GameConstants.BOSS_SKILL.RING_FIRE,  params: { bulletCount: 16, damage: 1, speed: 1,interval: 1.0,bulletType:GameConstants.BULLET_TYPE.PARTICLE,isPlayerBullet:false,}},
                 ]
             },
         ]

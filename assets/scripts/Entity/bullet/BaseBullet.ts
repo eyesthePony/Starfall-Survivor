@@ -1,6 +1,6 @@
 import { EventBus } from '../../Core/EventBus';
 import { GameConstants } from '../../Core/GameConstants';
-import { _decorator, Collider2D, Component, Contact2DType, Vec3 } from 'cc';
+import { _decorator, Collider2D, Component, Contact2DType, SpriteFrame,Sprite, Vec3 } from 'cc';
 import { BasePlane } from '../plane/BasePlane';
 import { GameData } from '../../Core/GameData';
 import { DamageStats } from '../../Core/DamageStats';
@@ -28,23 +28,29 @@ export class BaseBullet extends Component {
 
     private _halfW = 0;
     private _halfH = 0;
+    private _sprite: Sprite = null;
 
     onLoad() {
-        this._halfW = GameData.screenWidth / 2;
-        this._halfH = GameData.screenHeight / 2;
+        this._halfW = GameData.viewW / 2;
+        this._halfH = GameData.viewH / 2;
         this._collider = this.getComponent(Collider2D);
         if (this._collider) {
             this._collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
         }
+        this._sprite = this.node.getChildByName("body")?.getComponent(Sprite);
     }
 
     // 新增：显式初始化
-    public init(isPlayerBullet: boolean, dir: Vec3, damage: number, speed: number, startPos: Vec3) {
+    public init(isPlayerBullet: boolean, dir: Vec3, damage: number, speed: number, startPos: Vec3,sf:SpriteFrame) {
         this.playerBullet = isPlayerBullet;
 
         if (this._collider) {
             this._collider.group = isPlayerBullet? GameConstants.ITEM_GROUP.SELF_BULLET: GameConstants.ITEM_GROUP.ENEMY_BULLET;
         }
+
+     
+        this._sprite.spriteFrame = sf;
+           
        
         this.damage = damage;
         this.speed = speed;
@@ -64,15 +70,20 @@ export class BaseBullet extends Component {
     update(deltaTime: number) {
         if(this._isDead) return;
         const pos = this.node.position;
-        const nx = pos.x + this._direction.x * this.speed * deltaTime;
-        const ny = pos.y + this._direction.y * this.speed * deltaTime;
-        this.node.setPosition(nx, ny, pos.z);
+        this.node.setPosition(
+            pos.x + this._direction.x * this.speed * deltaTime,
+            pos.y + this._direction.y * this.speed * deltaTime,
+            pos.z
+        );
 
-        if (nx < -this._halfW - 300 || nx > this._halfW + 300 ||
-            ny < -this._halfH - 300 || ny > this._halfH + 300) {
+        if (pos.x < -this._halfW - 300 || pos.x > this._halfW + 300 ||
+            pos.y < -this._halfH - 300 || pos.y > this._halfH + 300) {
             this._isDead = true;
             EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BULLET_KILLED, this.node);
         }
+   
+           
+       
     }
 
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D) {

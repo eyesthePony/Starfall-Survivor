@@ -16,9 +16,8 @@ export class GameManager extends Component {
 
     onLoad() {
         GameManager.instance = this;
-        const size = view.getVisibleSize();
-        GameData.screenWidth = size.width;
-        GameData.screenHeight = size.height;
+        GameData.init();
+        
         EventBus.on(GameConstants.EVENT_TYPE.GAME_OVER, this.onGameOver, this);
         EventBus.on(GameConstants.EVENT_TYPE.GAME_RESTART, this.onGameRestart, this);
         EventBus.on(GameConstants.EVENT_TYPE.GAME_RESUME,this.onGameResume,this);

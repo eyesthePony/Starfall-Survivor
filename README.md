@@ -27,6 +27,7 @@ assets/
     │   ├── GameData.ts             #   Runtime globals (screen size, player HP, locked target)
     │   ├── ConfigEnums.ts          #   Turret formation / trigger / aim / fire-mode enums
     │   ├── BossConfig.ts           #   Boss visuals, collider, phased skill configs
+    │   ├── BulletConfig.ts         #   Bullet data-driven config (base speed / damage per type)
     │   ├── LevelConfig.ts          #   Level & wave configs
     │   ├── CardConfig.ts           #   Roguelike card pool
     │   ├── SkillMap.ts             #   Skill name → component class map (incl. AnimatorMap)
@@ -46,6 +47,7 @@ assets/
     │   ├── Move/
     │   │   ├── SineMove.ts         #     Sinusoidal patrol
     │   │   ├── BossEnterMove.ts   #     Boss entrance tween
+    │   │   ├── BackgroundScroll.ts #     Infinite scrolling background (dynamic viewH fit)
     │   │   └── BossMoveTo.ts      #     Phased boss movement (eased)
     │   ├── Animator/               #   Float / Pulse / Spin visual animators
     │   └── CameraDrag.ts           # Lobby orthographic camera drag/zoom (prototype)
@@ -110,6 +112,13 @@ Cards fall into three types; the draft picks per slot priority and removes drawn
 - **Spread shots**: `bulletCount` controls parallel spread; one shared temp vector computes muzzle offsets.
 - **Laser `LaserFire → Laser`**: periodically emits a sustained beam; BEGIN/END contact maintains a hit set, ticks damage on an interval, and fades out near end-of-life.
 - **Homing `HomingFire → HomingMissile`**: steers toward the nearest enemy after spawn; retargets at 0.2s throttle when the target is invalid.
+
+**Data-driven bullets (`BulletManager` + `BulletConfig`)**:
+
+- All straight-line bullets share one `baseBulletPrefab`; `BulletManager` holds a `SpriteFrame` dictionary keyed by bullet type.
+- `BULLET_CONFIG` stores per-type base speed / damage; runtime damage/speed are passed in by the caller (player attack bonus / buffs).
+- Special-behavior bullets (Laser, homing) keep their own prefabs and are dispatched early in `spawnBullet` via `if/return`.
+- Adding a new bullet type = one config entry + one dragged `SpriteFrame` — no new prefab needed.
 
 ### 4. Data-Driven Boss System (BaseBoss + BossConfig)
 

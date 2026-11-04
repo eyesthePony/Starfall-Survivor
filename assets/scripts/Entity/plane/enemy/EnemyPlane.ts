@@ -1,4 +1,4 @@
-import { _decorator, UITransform, Vec3, view } from 'cc';
+import { _decorator, UITransform, Vec3,  } from 'cc';
 import { BasePlane } from '../BasePlane';
 import { BulletManager } from '../../../Manager/BulletManager';
 import { EventBus } from '../../../Core/EventBus';
@@ -24,7 +24,7 @@ export class EnemyPlane extends BasePlane  {
     onLoad() {
    
 
-        this.bottomY = -GameData.screenHeight / 2;   //底部的Y坐标
+        this.bottomY = -GameData.viewH / 2;   //底部的Y坐标
 
         const ut = this.getComponent(UITransform)!; //获取飞机的组件
         this.halfH = ut.height / 2;                 //飞机高度的一半
@@ -67,7 +67,7 @@ export class EnemyPlane extends BasePlane  {
 
 
     shoot(){
-        BulletManager.instance.spawnBullet(GameConstants.BULLET_TYPE.NORMAL,false, this.node.worldPosition, this._shootDir, 10, 500);
+        BulletManager.instance.spawnBullet(GameConstants.BULLET_TYPE.YELLOWBULLET,false, this.node.worldPosition, this._shootDir, 1, 1);
     }
 
 

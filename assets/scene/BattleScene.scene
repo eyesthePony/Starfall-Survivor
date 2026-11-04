@@ -548,7 +548,7 @@
       }
     ],
     "speed": 50,
-    "scrollHeight": 1280,
+    "scrollHeight": 0,
     "_id": "5ddvxQh0FIOoy7FDEDPOQM"
   },
   {
@@ -1045,23 +1045,37 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "normalPlayerBulletPrefab": {
-      "__uuid__": "ba43409c-bfcd-42d0-bf1e-790cf18305af",
+    "bulletFrames": [
+      {
+        "__uuid__": "ad4a6770-5225-4051-b3b8-063461b61bc9@f9941",
+        "__expectedType__": "cc.SpriteFrame"
+      },
+      {
+        "__uuid__": "aa299d38-2c19-434e-8b90-1fe7db292e45@f9941",
+        "__expectedType__": "cc.SpriteFrame"
+      },
+      {
+        "__uuid__": "fd75895e-0ad8-43a6-8e58-ce6e1a7a7a18@f9941",
+        "__expectedType__": "cc.SpriteFrame"
+      },
+      {
+        "__uuid__": "9558744d-daa0-49d4-ae92-42a4caa6b008@f9941",
+        "__expectedType__": "cc.SpriteFrame"
+      },
+      {
+        "__uuid__": "2a94ffc0-efce-445c-a797-cecc73790e66@f9941",
+        "__expectedType__": "cc.SpriteFrame"
+      },
+      {
+        "__uuid__": "8a8f902b-a12e-4835-ab0c-08fb849ba1de@f9941",
+        "__expectedType__": "cc.SpriteFrame"
+      }
+    ],
+    "baseBulletPrefab": {
+      "__uuid__": "7edbfb30-4ec1-4bd2-b67a-b097f5db7743",
       "__expectedType__": "cc.Prefab"
     },
-    "normalEnemyBulletPrefab": {
-      "__uuid__": "42e478c7-94b0-48ca-b868-971d887afaa7",
-      "__expectedType__": "cc.Prefab"
-    },
-    "iceBulletPrefab": {
-      "__uuid__": "471260b6-6921-4980-9a31-3f5edebc61bb",
-      "__expectedType__": "cc.Prefab"
-    },
-    "machineBulletPrefab": {
-      "__uuid__": "e3dabfea-b2fa-4234-96a4-7c428fc329b6",
-      "__expectedType__": "cc.Prefab"
-    },
-    "leserPrefab": {
+    "laserPrefab": {
       "__uuid__": "dab99e03-7b99-49b0-93a2-78a2a27390a5",
       "__expectedType__": "cc.Prefab"
     },
