@@ -245,7 +245,7 @@ export class PlayerPlane extends  BasePlane {
     public takeDamage(damage: number): void {
         if (this._invincibleTimer > 0) return;
         if (this.hp <= 0) return; 
-        this.hp -= 1;
+        this.hp -= damage;
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.PLAYER_HP_CHANGED,this.hp);
         this._invincibleTimer = this.invincibiltyDuration; 
 
@@ -256,7 +256,7 @@ export class PlayerPlane extends  BasePlane {
 
        // 虚方法，子类重写
     protected onDeath() {
-        console.log('[Player] dead');
+
         this._isDead = true;  //  _isDead用来阻止 update 继续 shoot
         this.node.active = false;
         if (GameData.currentTarget === this.node) {

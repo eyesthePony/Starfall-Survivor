@@ -86,6 +86,13 @@ export class BulletManager extends Component {
             return;
         }
 
+        let finalDamage = damage;
+        let finalSpeed = speed;
+        if(isPlayerBullet){
+            finalDamage = damage * baseData.baseDamage;
+            finalSpeed = speed * baseData.baseSpeed;
+        }
+        const sf = this._spriteDict[baseData.spriteName];
         let bulletprefab:Prefab = null;
         let bulletNode:Node = null;
         switch(bulletType){
@@ -98,7 +105,7 @@ export class BulletManager extends Component {
                 bulletNode = PoolManager.instance.getNode(bulletprefab, this.node);
                 const laserComp = bulletNode.getComponent(Laser);
                 if (laserComp) {
-                    laserComp.init(isPlayerBullet, dir, damage * baseData.baseDamage, speed * baseData.baseSpeed, spawnPos,this._spriteDict[bulletType],followTarget);
+                    laserComp.init(isPlayerBullet, dir, finalDamage, finalSpeed, spawnPos,sf,followTarget);
                     this._activeLasers.push(laserComp);
                     return;
                 }
@@ -112,7 +119,7 @@ export class BulletManager extends Component {
                 bulletNode = PoolManager.instance.getNode(bulletprefab, this.node);
                 const homingComp = bulletNode.getComponent(HomingMissile);
                 if (homingComp) {
-                    homingComp.init(isPlayerBullet, dir, damage * baseData.baseDamage, speed * baseData.baseSpeed, spawnPos,this._spriteDict[bulletType]);
+                    homingComp.init(isPlayerBullet, dir,finalDamage, finalSpeed, spawnPos,sf);
                     this._activeBullets.push(homingComp);
                     return;
                 }
@@ -126,7 +133,7 @@ export class BulletManager extends Component {
                 bulletNode = PoolManager.instance.getNode(bulletprefab, this.node);
                 const bulletComp = bulletNode.getComponent(BaseBullet);
                 if (bulletComp) {
-                    bulletComp.init(isPlayerBullet, dir, damage * baseData.baseDamage, speed * baseData.baseSpeed, spawnPos,this._spriteDict[bulletType]);
+                    bulletComp.init(isPlayerBullet, dir,finalDamage, finalSpeed, spawnPos,sf);
                     this._activeBullets.push(bulletComp); 
                     return;
                 }

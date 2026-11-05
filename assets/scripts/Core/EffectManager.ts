@@ -56,8 +56,10 @@ export class EffectManager extends Component {
         // ==========================================
         anim.stop(); // 防复用残留状态
         anim.play();
-
+        
+        if (!anim.defaultClip) { PoolManager.instance.putNode(effectNode); return; }
         const waitTime = anim.defaultClip.duration;
+        
 
         // ==========================================
         // 3. 定时回收（绝不用 anim.on 匿名函数，会内存泄漏）

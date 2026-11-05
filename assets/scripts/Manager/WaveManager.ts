@@ -109,7 +109,7 @@ export class WaveManager extends Component {
     }
 
     onEnemyDead(){
-        --this._aliveEnemies;   //存活的飞机数量-1
+       this._aliveEnemies = Math.max(0, this._aliveEnemies - 1);   //存活的飞机数量-1
     }
 
     private onGameReset(){

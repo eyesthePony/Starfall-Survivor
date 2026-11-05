@@ -119,7 +119,9 @@ assets/
 **数据驱动子弹（`BulletManager` + `BulletConfig`）**：
 
 - 所有直线子弹共用一个 `baseBulletPrefab`，`BulletManager` 维护一个按类型索引的 `SpriteFrame` 字典。
-- `BULLET_CONFIG` 存每种子弹的基础速度 / 伤害；运行时实际伤害和速度由调用方传入（玩家攻击加成 / buff）。
+- `BULLET_CONFIG` 存每种子弹的基础速度 / 伤害。最终数值按阵营分流：
+  - **玩家弹**：`最终伤害 = 伤害 × baseDamage`，`最终速度 = 速度 × baseSpeed`。
+  - **敌弹**：伤害 / 速度直接取配置绝对值（不乘基础倍率），每个敌方技能配置必须显式配 `bulletSpeed`。
 - 行为特殊的子弹（激光、追踪弹）保留独立 Prefab，在 `spawnBullet` 里提前 `if/return` 分流。
 - 新增子弹类型 = 加一行配置 + 拖一张 SpriteFrame，不用新建 Prefab。
 
@@ -171,6 +173,7 @@ assets/
 - 子弹数组使用交换删除（`removeFast`），避免数组整体搬移。
 - 追踪弹索敌节流（0.2s 一次），UI 刷新带脏标记 / 节流。
 - 碰撞体引用、屏幕半宽高等在 `onLoad` 缓存，不在每帧重复获取。
+- 出界回收在视口四周留 30px `MARGIN` 缓冲，超出即回池。
 
 ## 🎮 操作
 
@@ -193,6 +196,8 @@ assets/
 
 - [ ] 大厅地图与建造系统（`MapManager` / `BuildManager` / `CameraDrag` 原型完善）
 - [ ] 更多普通敌机种类与新 Boss（复用数据驱动配置即可扩展）
+- [ ] `ICE_BOSS` 子弹类型占位（配置已留，尚无对应 `BulletConfig` 条目与贴图）
+- [ ] 敌机本体撞击伤害与掉落拾取系统
 - [ ] 局外成长与本地存档解锁
 - [ ] 分数系统、Boss 爆炸表现与玩家死亡淡出等素材向反馈
 - [ ] 无尽模式数值与波次闭环调优

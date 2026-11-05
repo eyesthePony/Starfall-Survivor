@@ -53,13 +53,13 @@ export class GameManager extends Component {
     //游戏胜利，相当于游戏结束
     private onGameVictory() {
         this.onStateChanged(GameConstants.GAME_STATE.VICTORY); 
-        console.log('[GameManager] 胜利');
+       
     }
 
     // 游戏结束
     private onGameOver() {
         this.onStateChanged(GameConstants.GAME_STATE.OVER);
-        console.log('[GameManager] 游戏结束');
+
 
     }
 
@@ -68,7 +68,7 @@ export class GameManager extends Component {
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.GAME_RESET);
         this.onStateChanged(GameConstants.GAME_STATE.PLAYING);
         DamageStats.instance.clear();
-        console.log('[GameManager] 重新开始');
+
     }
 
     onPlayerLevelUp(levelUpCount: number){

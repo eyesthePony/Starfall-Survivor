@@ -49,7 +49,7 @@ export class BaseBullet extends Component {
         }
 
      
-        this._sprite.spriteFrame = sf;
+        if (this._sprite && sf)this._sprite.spriteFrame = sf;
            
        
         this.damage = damage;
@@ -69,21 +69,22 @@ export class BaseBullet extends Component {
 
     update(deltaTime: number) {
         if(this._isDead) return;
+         /**
+         * 这里使用局部坐标position来判断出界
+         * 由于吧ullet是bulletmanger子节点，position就是相对于bulletmanger的坐标
+         * 不过由于bulletmanger对齐了canvas的坐标，所以相当于相对于canavs的坐标
+         * 目前能用
+         */
         const pos = this.node.position;
-        this.node.setPosition(
-            pos.x + this._direction.x * this.speed * deltaTime,
-            pos.y + this._direction.y * this.speed * deltaTime,
-            pos.z
-        );
-
-        if (pos.x < -this._halfW - 300 || pos.x > this._halfW + 300 ||
-            pos.y < -this._halfH - 300 || pos.y > this._halfH + 300) {
-            this._isDead = true;
-            EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BULLET_KILLED, this.node);
-        }
-   
-           
-       
+        const nx = pos.x + this._direction.x * this.speed * deltaTime;
+        const ny = pos.y + this._direction.y * this.speed * deltaTime;
+        this.node.setPosition(nx, ny, pos.z);
+        const MARGIN = 30;   // 按子弹贴图半径取 20~40
+        if (nx < -this._halfW - MARGIN || nx > this._halfW + MARGIN ||
+            ny < -this._halfH - MARGIN || ny > this._halfH + MARGIN) { 
+                this._isDead = true;
+                EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BULLET_KILLED, this.node);
+            }     
     }
 
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D) {

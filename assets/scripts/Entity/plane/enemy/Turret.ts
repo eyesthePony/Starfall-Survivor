@@ -37,7 +37,6 @@ export class Turret extends Component {
         const deg = ((Math.round(this.node.angle) + 180) % 360 + 360) % 360;
         const d = DirTable[deg];
         this._tempDir.set(d.x, d.y, 0);   // 已经是单位向量，不用 normalize
-
         // 呼叫军火库生成子弹
         BulletManager.instance.spawnBullet(
             bulletType, 

@@ -1165,10 +1165,18 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "normalEnemyPrefab": {
-      "__uuid__": "e90dd23c-ea04-4bd4-8767-8a512df2762f",
-      "__expectedType__": "cc.Prefab"
-    },
+    "enemyPrefabs": [
+      {
+        "__uuid__": "e90dd23c-ea04-4bd4-8767-8a512df2762f",
+        "__expectedType__": "cc.Prefab"
+      }
+    ],
+    "enemyFrames": [
+      {
+        "__uuid__": "8b6cf0e7-6e60-46e8-b3ad-680d5a7e61a6@f9941",
+        "__expectedType__": "cc.SpriteFrame"
+      }
+    ],
     "bossPrefab": {
       "__uuid__": "a32e82b7-0a3d-479f-98fb-27bde185c0c7",
       "__expectedType__": "cc.Prefab"

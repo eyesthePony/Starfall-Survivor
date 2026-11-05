@@ -17,7 +17,7 @@ export class RingFire extends BaseFire{
         if (params.bulletType !== undefined) this._bulletType = params.bulletType;
         if (params.bulletCount !== undefined) this._bulletCount = params.bulletCount;
         if (params.damage !== undefined) this.damage = params.damage;
-        if (params.speed !== undefined) this.bulletSpeed = params.speed;
+        if (params.bulletSpeed !== undefined) this.bulletSpeed = params.bulletSpeed;
         if (params.interval !== undefined) this.interval = params.interval;
         if(params.isPlayerBullet !== undefined)this._isPlayerBullet = params.isPlayerBullet;
     }

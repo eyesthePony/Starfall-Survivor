@@ -6,7 +6,7 @@ export class GameData  {
     public static unlockedLevel: number = 0;       // 解锁到第几关
     public static isEndlessMode: boolean = false; //无尽关卡
 
-    public static playerMaxHp: number = 5; //玩家血量
+    public static playerMaxHp: number = 50000; //玩家血量
 
     public static currentTarget: Node = null;//全局目标，子弹和敌机的子弹都可以使用这个目标来锁定
 

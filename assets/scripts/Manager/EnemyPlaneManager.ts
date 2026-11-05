@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, Prefab, view, Vec3 } from 'cc';
+import { _decorator, Component, Node, Prefab,  SpriteFrame,  Vec3 } from 'cc';
 import { PoolManager } from '../Core/PoolManager';
 import { EventBus } from '../Core/EventBus';
 import { GameConstants } from '../Core/GameConstants';
@@ -6,6 +6,8 @@ import { BasePlane } from '../Entity/plane/BasePlane';
 import { GameData } from '../Core/GameData';
 import { BOSS_CONFIG } from '../Core/BossConfig';
 import { BaseBoss } from '../Entity/plane/enemy/BaseBoss';
+import { ENEMY_CONFIG } from '../Core/EnemyConfig';
+import { EnemyPlane } from '../Entity/plane/enemy/EnemyPlane';
 const { ccclass, property } = _decorator;
 
 @ccclass('EnemyManager')
@@ -13,8 +15,16 @@ export class EnemyManager extends Component {
 
     private static _instance:EnemyManager = null;
 
-    @property(Prefab)
-    normalEnemyPrefab: Prefab = null!;
+    @property([Prefab]) 
+    enemyPrefabs: Prefab[] = [];
+    //存放图
+    @property([SpriteFrame]) 
+    enemyFrames: SpriteFrame[] = [];
+
+    //预制体名字到预制体映射
+    private _prefabDict: Record<string, Prefab> = {};
+    //图名到图的映射
+    private _spriteDict: Record<string, SpriteFrame> = {};
 
     @property(Prefab)
     bossPrefab: Prefab = null!;
@@ -28,6 +38,17 @@ export class EnemyManager extends Component {
     onLoad() {
         EnemyManager._instance = this;
 
+        //将所有预制体生成字典映射
+        for (let i=0; i < this.enemyPrefabs.length; ++ i) {
+            const p = this.enemyPrefabs[i];
+            this._prefabDict[p.name] = p;
+        }
+        //所有图生成字典映射
+        for (let i=0; i < this.enemyFrames.length; ++ i) {
+            const f = this.enemyFrames[i];
+            this._spriteDict[f.name] = f;
+        }
+        
         this.topY = GameData.viewH / 2;
         EventBus.on(GameConstants.EVENT_TYPE.GAME_RESET,this.onGameReset,this);
         EventBus.on(GameConstants.EVENT_TYPE.GAME_STATE_CHANGED,this.onStateChanged,this);
@@ -76,10 +97,16 @@ export class EnemyManager extends Component {
         
     }
 
+
+
     private onEnemyRecycle(enemyNode: Node) {
         const plane = enemyNode.getComponent(BasePlane);
         const idx = this._activeEnemies.indexOf(plane);
-        if (idx !== -1) this._activeEnemies.splice(idx, 1); //  移除
+        if (idx !== -1) {
+            const last = this._activeEnemies.length - 1;
+            this._activeEnemies[idx] = this._activeEnemies[last];
+            this._activeEnemies.pop();
+        }
         PoolManager.instance.putNode(enemyNode);
     }
     
@@ -99,36 +126,37 @@ export class EnemyManager extends Component {
         
         const node = PoolManager.instance.getNode(this.bossPrefab, this.node);
         const boss = node.getComponent(BaseBoss);
-        
+        if (!boss) { PoolManager.instance.putNode(node); return false; }
         boss.init(cfg, new Vec3(0, this.topY + 120, 0),hpMultiplier);
         this._activeEnemies.push(boss); // Boss 也是 BasePlane，直接塞进去！
         return true;   
     }
 
     public spawnNormalEnemy(enemyType:string,hpMultiplier:number = 1) {
-        let prefabToSpawn:Prefab = null;
-        let spawnX = 0; // 默认 X 坐标为 0（屏幕中间）
 
-        
-        prefabToSpawn = this.normalEnemyPrefab;
+        //====坐标生成======
+        let spawnX = 0; // 默认 X 坐标为 0（屏幕中间）
         // 普通怪：随机 X，范围在屏幕内缩一点
         const halfW = 50;
         const minX = -GameData.viewW/ 2 + halfW;
         const maxX = GameData.viewW/ 2 - halfW;
         spawnX = minX + Math.random() * (maxX - minX);
       
-            
+        //通过小怪类型，读取小怪配置信息
+        const cfg = ENEMY_CONFIG[enemyType];
+        if (!cfg) { console.error("无此小怪配置", enemyType); return false; }
 
-        if (!prefabToSpawn) return false;
+        //获取相应预制体
+        const prefab = this._prefabDict[cfg.prefabName];
+        if (!prefab) { console.error("无此小怪预制体", cfg.prefabName); return false; }
 
-        const enemy = PoolManager.instance.getNode(prefabToSpawn, this.node);
-        const plane = enemy.getComponent(BasePlane);
-
-        const position = new Vec3(spawnX, this.topY + 100, 0);
-        // 从屏幕顶外面生成
-        plane.init(position,hpMultiplier);
-        this._activeEnemies.push(plane); 
-        return true; 
+        const node = PoolManager.instance.getNode(prefab, this.node);
+        const plane = node.getComponent(EnemyPlane);
+        if (!plane) { PoolManager.instance.putNode(node); return false; }
+        const pos = new Vec3(spawnX, this.topY + 100, 0);
+        plane.init(cfg, pos, hpMultiplier, this._spriteDict[cfg.spriteName]);
+        this._activeEnemies.push(plane);
+        return true;
     }
 
      // 收到信号，算出敌人，把结果通过 callback 传回去！

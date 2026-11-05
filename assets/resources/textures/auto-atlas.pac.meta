@@ -2,7 +2,7 @@
   "ver": "1.0.8",
   "importer": "auto-atlas",
   "imported": true,
-  "uuid": "94272ef4-1521-463a-aef0-c2883dc91bb5",
+  "uuid": "bdef55f8-35a0-409d-9dce-50a842f1846b",
   "files": [
     ".json"
   ],
@@ -23,15 +23,12 @@
     "removeTextureInBundle": true,
     "removeImageInBundle": true,
     "removeSpriteAtlasInBundle": true,
-    "compressSettings": {
-      "useCompressTexture": true,
-      "presetId": "dbMP8n+Z1G07GY1cvLuSfl"
-    },
+    "compressSettings": {},
     "textureSetting": {
       "wrapModeS": "repeat",
       "wrapModeT": "repeat",
-      "minfilter": "linear",
-      "magfilter": "linear",
+      "minfilter": "nearest",
+      "magfilter": "nearest",
       "mipfilter": "none",
       "anisotropy": 0
     }

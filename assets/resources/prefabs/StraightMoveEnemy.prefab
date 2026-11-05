@@ -1,7 +1,7 @@
 [
   {
     "__type__": "cc.Prefab",
-    "_name": "EnemyPlane",
+    "_name": "StraightMoveEnemy",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_native": "",
@@ -13,7 +13,7 @@
   },
   {
     "__type__": "cc.Node",
-    "_name": "EnemyPlane",
+    "_name": "StraightMoveEnemy",
     "_objFlags": 0,
     "__editorExtras__": {},
     "_parent": null,
@@ -166,10 +166,7 @@
       "b": 255,
       "a": 255
     },
-    "_spriteFrame": {
-      "__uuid__": "8b6cf0e7-6e60-46e8-b3ad-680d5a7e61a6@f9941",
-      "__expectedType__": "cc.SpriteFrame"
-    },
+    "_spriteFrame": null,
     "_type": 0,
     "_fillType": 0,
     "_sizeMode": 0,

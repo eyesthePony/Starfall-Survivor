@@ -73,7 +73,7 @@ export class Laser extends Component {
         this._damageTimer = 0;
         this._lifeTimer = 0; 
         this._followTarget = followNode; // 记录飞机节点
-        this._sprite.spriteFrame = sf;
+        if (this._sprite && sf)this._sprite.spriteFrame = sf;
 
         this.node.setWorldPosition(startPos);
 

@@ -31,8 +31,8 @@ export interface SkillConfig {
 
 export interface BossPhaseConfig {
     skills: SkillConfig[];
-    loop?: boolean;       // 👈 改为布尔值：是否循环此阶段
-    loopDelay?: number;   // 👈 可选：循环间隙休息几秒（默认 0.5 秒） 
+    loop?: boolean;       // 改为布尔值：是否循环此阶段
+    loopDelay?: number;   // 可选：循环间隙休息几秒（默认 0.5 秒） 
 }
 
 export interface BossConfigData {
@@ -116,7 +116,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                             formation: TurretFormation.ATTACHED, 
                             aimMode: AimMode.FIXED, 
                             fireAngle: 180, triggerMode: TriggerMode.CONTINUOUS, fireMode: FireMode.VOLLEY, 
-                            interval: 3,radius:300,
+                            interval: 3,radius:300,bulletSpeed:300,
                             isPlayerBullet:false,bulletType:GameConstants.BULLET_TYPE.PARTICLE,},
                     },
                     { name: GameConstants.BOSS_SKILL.SINE_MOVE, 
@@ -242,7 +242,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                 // 阶段1：缓慢的冰环
                 skills: [
                     {name:GameConstants.BOSS_SKILL.SINE_MOVE, params: { amplitude: 250, frequency: 0.2 } },
-                    { name: GameConstants.BOSS_SKILL.RING_FIRE,  params: { bulletCount: 16, damage: 1, speed: 1,interval: 1.0,bulletType:GameConstants.BULLET_TYPE.PARTICLE,isPlayerBullet:false,}},
+                    { name: GameConstants.BOSS_SKILL.RING_FIRE,  params: { bulletCount: 16, damage: 100, bulletSpeed: 200,interval: 1.0,bulletType:GameConstants.BULLET_TYPE.PARTICLE,isPlayerBullet:false,}},
                 ]
             },
         ]

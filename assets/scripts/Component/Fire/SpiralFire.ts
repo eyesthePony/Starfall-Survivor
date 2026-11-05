@@ -28,7 +28,7 @@ export class SpiralFire extends BaseFire {
         if (!params) return;
         if (params.bulletType !== undefined) this._bulletType = params.bulletType;
         if (params.damage !== undefined) this.damage = params.damage;
-        if (params.speed !== undefined) this.bulletSpeed = params.speed;
+        if (params.bulletSpeed !== undefined) this.bulletSpeed = params.bulletSpeed;
         if(params.arms !== undefined) this._arms = params.arms;
         if(params.angleStep !== undefined) this._angleStep = params.angleStep;
         if (params.interval !== undefined) this.interval = params.interval;

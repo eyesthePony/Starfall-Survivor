@@ -19,11 +19,10 @@ export class CannonBarrage extends BaseFire {
 
         public bulletSpeed:number = 150;  //子弹前进速度
  
-       
 
         protected _shootDir:Vec3 = new Vec3(); //子弹发射方向
 
-        protected _bulletType = GameConstants.BULLET_TYPE.NORMAL;  //子弹类型
+        protected _bulletType;  //子弹类型
 
         protected _isPlayerBullet:boolean = true;     //是否玩家子弹
 
@@ -61,7 +60,7 @@ export class CannonBarrage extends BaseFire {
     private _oscRange: number = 45;      // OSCILLATE 的摆幅（±度）
     private _oscPhase: number = 0;       // OSCILLATE 的相位
     private _fireAngle: number = 180;   // 盲射朝向 / 摆动中心
-    private _tempAimPos: Vec3 = new Vec3();
+
 
     //===========炮口移动模式==============================
     private _currentFormation: TurretFormation = TurretFormation.ATTACHED;//队形，圆圈，屏幕四周
@@ -74,7 +73,12 @@ export class CannonBarrage extends BaseFire {
     private _moveTimer: number = 0;
     private _moveDuration: number = 0.6;
     private _startPositions: Vec3[] = [];
-    private _targetPositions: Vec3[] = [];
+
+
+    //==========复用临时变量，避免多次new========
+    //存放变换阵型后，每个turret的坐标
+    private _targetVecs: Vec3[] = [];
+    private _tempCenter = new Vec3();
 
     
 
@@ -294,10 +298,10 @@ export class CannonBarrage extends BaseFire {
 
         // 到位后，每帧按阵型重算位置，不是阵型变换，而是在阵型中移动
         this._currentAngle = (this._currentAngle + this._rotateSpeed * dt) % 360;//_rotateSpeed 为0时阵型静止不动
-        const targets = this.computeTargetPositions();  //计算目标位置
+        this.computeTargetPositions();  //计算目标位置
         for (let i = 0; i < this._cannonNodes.length; i++) {
             const node = this._cannonNodes[i];
-            if (node && node.isValid) node.setWorldPosition(targets[i]); //设置每个炮口的新坐标
+            if (node && node.isValid) node.setWorldPosition(this._targetVecs[i]); //设置每个炮口的新坐标
         }
         // 其他情况：到位了，不动
     }
@@ -310,14 +314,14 @@ export class CannonBarrage extends BaseFire {
 
          // 如果圆心是 Boss（比如 ATTACHED），Boss在动，终点也要跟着动！
         if (this._currentFormation === TurretFormation.ATTACHED) {
-            this._targetPositions = this.computeTargetPositions();
+            this.computeTargetPositions();
         }
 
         for (let i = 0; i < this._cannonNodes.length; i++) {
             const node = this._cannonNodes[i];
             if (!node || !node.isValid) continue;
             const s = this._startPositions[i];
-            const t = this._targetPositions[i];
+            const t = this._targetVecs[i];
             if (!s || !t) continue;   
             node.setWorldPosition(
                 s.x + (t.x - s.x) * eased,
@@ -339,28 +343,34 @@ export class CannonBarrage extends BaseFire {
     }
 
     //计算不同阵型的目标位置
-    private computeTargetPositions(): Vec3[] {
-        const out: Vec3[] = [];
+    private computeTargetPositions() {
         const angleStep = 360 / this._turretCount;
 
-        if (this._currentFormation === TurretFormation.SCATTERED) {
-            return this.computeScatteredPositions(); //分散到屏幕边角
+        while (this._targetVecs.length < this._turretCount) {
+            this._targetVecs.push(new Vec3());
         }
+
+        if (this._currentFormation === TurretFormation.SCATTERED) {
+            this.computeScatteredPositions(); //分散到屏幕边角
+            return;
+        }
+
+        
 
         // ATTACHED / ORBITING：都是"圆心 + 半径 × 角度"  围绕每个点的圆阵
         const center = this.resolveCenter();  //找到圆心
         for (let i = 0; i < this._turretCount; i++) {
             const rad = (this._currentAngle + i * angleStep) * Math.PI / 180;
-            out.push(new Vec3(
+            this._targetVecs[i].set(
                 center.x + Math.cos(rad) * this._radius,
                 center.y + Math.sin(rad) * this._radius,
                 0
-            ));
+            );
         }
-        return out;
+  
     }
 
-    private computeScatteredPositions(): Vec3[] {
+    private computeScatteredPositions(){
        
     
         // 内缩 50 像素，避免炮塔一半在屏幕外
@@ -374,7 +384,7 @@ export class CannonBarrage extends BaseFire {
         const segLen = [ w,  h,  w,  h];
         const total = 2 * (w + h);
 
-        const out: Vec3[] = [];
+  
         for (let i = 0; i < this._turretCount; i++) {
             // 第 i 个炮塔在周长上的比例（0~1）
             const t = ((i / this._turretCount) + this._currentAngle / 360) * total % total;
@@ -391,14 +401,13 @@ export class CannonBarrage extends BaseFire {
             const b = corners[(seg + 1) % 4];
             const k = local / segLen[seg];
 
-            out.push(new Vec3(
+            this._targetVecs[i].set(
                 a[0] + (b[0] - a[0]) * k,
                 a[1] + (b[1] - a[1]) * k,
                 0
-            ));
+            );
         }
           
-        return out;
     }
 
     private resolveCenter(): Vec3 {
@@ -412,7 +421,8 @@ export class CannonBarrage extends BaseFire {
             const t = GameData.currentTarget;
             return (t && t.isValid) ? t.worldPosition : this.node.worldPosition;
         }
-        return new Vec3(0, 0, 0);   // SCREEN
+        this._tempCenter.set(0, 0, 0);
+        return this._tempCenter;   // SCREEN
     }
 
 
@@ -426,11 +436,14 @@ export class CannonBarrage extends BaseFire {
         this._currentAngle = 0;
 
         // 记录起点，算终点，开始插值
-        this._startPositions.length = 0;
-        for (let i = 0; i < this._cannonNodes.length; i++) {
-            this._startPositions.push(this._cannonNodes[i].worldPosition.clone());
+        while (this._startPositions.length < this._cannonNodes.length) {
+            this._startPositions.push(new Vec3());
         }
-        this._targetPositions = this.computeTargetPositions();
+        for (let i = 0; i < this._cannonNodes.length; i++) {
+            this._startPositions[i].set(this._cannonNodes[i].worldPosition);
+        }
+  
+        this.computeTargetPositions();
 
         this._isMoving = true;
         this._moveTimer = 0;
@@ -500,12 +513,12 @@ export class CannonBarrage extends BaseFire {
     //瞄准屏幕中心
     private updateAimAtCenter() {
         // 根据你的世界坐标系计算中心点
-        this._tempAimPos.set(GameData.viewW / 2, GameData.viewH / 2, 0);
+        this._tempCenter.set(GameData.viewW / 2, GameData.viewH / 2, 0);
         
         for (let i = 0; i < this._turretScripts.length; i++) {
             const turret = this._turretScripts[i];
             if (turret && turret.isValid) {
-                turret.aimAt(this._tempAimPos);
+                turret.aimAt(this._tempCenter);
             }
         }
     }

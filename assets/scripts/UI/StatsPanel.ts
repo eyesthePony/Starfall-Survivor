@@ -95,11 +95,9 @@ export class StatsPanel extends Component {
         const nameLabel = node.children[0]?.getComponent(Label);
         const dmgLabel = node.children[1]?.getComponent(Label);
         if (nameLabel) {
-            console.log(name);
             nameLabel.string = name;
         }
         if (dmgLabel){
-            console.log(damage);
             dmgLabel.string = `伤害: ${damage}`;
         } 
     }

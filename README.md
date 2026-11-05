@@ -116,7 +116,9 @@ Cards fall into three types; the draft picks per slot priority and removes drawn
 **Data-driven bullets (`BulletManager` + `BulletConfig`)**:
 
 - All straight-line bullets share one `baseBulletPrefab`; `BulletManager` holds a `SpriteFrame` dictionary keyed by bullet type.
-- `BULLET_CONFIG` stores per-type base speed / damage; runtime damage/speed are passed in by the caller (player attack bonus / buffs).
+- `BULLET_CONFIG` stores per-type base speed / damage. Final values split by camp:
+  - **Player bullets**: `finalDamage = damage × baseDamage`, `finalSpeed = speed × baseSpeed`.
+  - **Enemy bullets**: damage and speed are passed through as absolute values (no base multiplier); every enemy skill config must set `bulletSpeed` explicitly.
 - Special-behavior bullets (Laser, homing) keep their own prefabs and are dispatched early in `spawnBullet` via `if/return`.
 - Adding a new bullet type = one config entry + one dragged `SpriteFrame` — no new prefab needed.
 
@@ -168,6 +170,7 @@ Cards fall into three types; the draft picks per slot priority and removes drawn
 - Bullet arrays use swap-remove (`removeFast`) to avoid shifting the whole array.
 - Homing target seek throttled to 0.2s; UI refreshes use dirty flags / throttling.
 - Collider references and half-screen sizes cached in `onLoad`, not fetched every frame.
+- Off-screen recycle keeps a 30px `MARGIN` around the viewport; bullets past the margin return to the pool.
 
 ## 🎮 Controls
 
@@ -190,6 +193,8 @@ Cards fall into three types; the draft picks per slot priority and removes drawn
 
 - [ ] Lobby map & building system (`MapManager` / `BuildManager` / `CameraDrag` prototype)
 - [ ] More enemy types and bosses (extendable via data-driven config)
+- [ ] `ICE_BOSS` bullet type placeholder (config exists; no matching `BulletConfig` entry / sprite yet)
+- [ ] Enemy body contact damage and drop pickup system
 - [ ] Meta-progression and local save unlocking
 - [ ] Score system, boss explosion effects, player death fade-out and other asset feedback
 - [ ] Endless-mode balance and wave closure tuning

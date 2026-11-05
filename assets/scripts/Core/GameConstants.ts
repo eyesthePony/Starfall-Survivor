@@ -113,7 +113,12 @@ export class GameConstants {
 
     //普通敌机类型
     public static ENEMY_TYPE = {
-        NORMAL:'normal',
+       BASIC_DRONE:"basic_drone",
+    }
+    //敌机预制体名字
+    public static ENEMY_PREFAB = {
+        STRAIGHT: "StraightMoveEnemy",
+        SINE: "SineEnemy",
     }
 
     //boss敌机类型
