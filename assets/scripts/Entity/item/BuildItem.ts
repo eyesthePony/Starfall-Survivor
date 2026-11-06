@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Sprite, Button } from 'cc';
+import { _decorator, Component, Label,  Button } from 'cc';
 import { BuildingData } from '../../Core/BuildingConfig';
 import { EventBus } from '../../Core/EventBus';
 import { GameConstants } from '../../Core/GameConstants';

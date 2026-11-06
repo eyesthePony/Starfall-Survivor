@@ -1,4 +1,4 @@
-import { _decorator, Color, instantiate, Node, Prefab, resources, Sprite, Vec3} from 'cc';
+import { _decorator, assetManager, Color, instantiate, Node, Prefab,  Sprite, Vec3} from 'cc';
 
 import { Turret } from '../../Entity/plane/enemy/Turret';//引入士兵（小飞机）
 import { BaseFire } from './BaseFire';
@@ -106,14 +106,17 @@ export class CannonBarrage extends BaseFire {
             this._isSpawning = false;     // ← 没有路径也要重置
             return;
         }
-  
-        resources.load(this._turretPath, Prefab, (err, prefab) => {
-            this._isSpawning = false; // 加载完后重置标志位
+
+        const boss = assetManager.getBundle('boss');
+        if (!boss) { this._isSpawning = false; return; }
+        boss.load(this._turretPath, Prefab, (err, prefab) => {
+            this._isSpawning = false;
             if (err || !this.enabled) return;
             this._turretPrefab = prefab;
             this.createCannonNodes();
-            this.setFormation(this._currentFormation, this._orbitCenter, this._radius, this._rotateSpeed);   
+            this.setFormation(this._currentFormation, this._orbitCenter, this._radius, this._rotateSpeed);
         });
+       
         
     }
 
@@ -203,7 +206,7 @@ export class CannonBarrage extends BaseFire {
             this._seqTimer = 0;
         }
 
-        if (params.damage !== undefined) this.damage = params.damage;
+        if (params.bulletDamage!== undefined) this.bulletDamage = params.bulletDamage;
         if (params.bulletSpeed !== undefined) this.bulletSpeed = params.bulletSpeed;
         if (params.bulletType !== undefined) this._bulletType = params.bulletType;
         if (params.isPlayerBullet !== undefined) this._isPlayerBullet = params.isPlayerBullet;
@@ -552,7 +555,7 @@ export class CannonBarrage extends BaseFire {
         }
 
         for(let i=0;i< this._turretScripts.length;++i){
-            this._turretScripts[i].fire(this.damage,this._bulletType,this.bulletSpeed,this._isPlayerBullet);
+            this._turretScripts[i].fire(this.bulletDamage,this._bulletType,this.bulletSpeed,this._isPlayerBullet);
         }
     }
 
@@ -575,7 +578,7 @@ export class CannonBarrage extends BaseFire {
         //获取当前要发射的炮台组件，并发射
         let turret:Turret = this._turretScripts[this._seqIndex];
         if (turret && turret.isValid) {
-            turret.fire(this.damage,this._bulletType,this.bulletSpeed,this._isPlayerBullet);
+            turret.fire(this.bulletDamage,this._bulletType,this.bulletSpeed,this._isPlayerBullet);
         }
         ++this._seqIndex;
 

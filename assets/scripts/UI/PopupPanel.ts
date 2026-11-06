@@ -54,21 +54,21 @@ export class PopupPanel extends Component {
     showPause(){
         this.node.active = true;
         this.hideAllBtns();
-        this.titleLabel.string = '唐奎暂停';
+        this.titleLabel.string = '奎来暂停一下';
         this.showBtns(this.pauseBtns);
     }
 
     showWin(){
         this.node.active = true;
         this.hideAllBtns();
-        this.titleLabel.string = '唐奎胜利';
+        this.titleLabel.string = '奎来全胜';
         this.showBtns(this.winBtns);
     }
 
     showOver(){
         this.node.active = true;
         this.hideAllBtns();
-        this.titleLabel.string = '唐奎结束';
+        this.titleLabel.string = '奎来再冲一次吧';
         this.showBtns(this.loseBtns);
     }
 

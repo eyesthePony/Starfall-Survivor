@@ -1,5 +1,5 @@
 
-import { _decorator, Node, EventTouch, UITransform, Vec3 } from 'cc';
+import { _decorator, Node, EventTouch, UITransform, Vec3, Collider2D, Contact2DType } from 'cc';
 import { BasePlane } from '../BasePlane';
 import{BulletManager} from '../../../Manager/BulletManager';
 import { EventBus } from '../../../Core/EventBus';
@@ -38,6 +38,8 @@ export class PlayerPlane extends  BasePlane {
 
     private _activeWeapons: BaseFire[] = [];
 
+    private _collider: Collider2D = null;
+
 
 
     onLoad() {
@@ -53,6 +55,11 @@ export class PlayerPlane extends  BasePlane {
         this._maxY = GameData.viewH / 2 - this.halfH;
 
         this._shootDir = new Vec3(0, 1, 0);  // 飞机子弹方向
+
+        this._collider = this.getComponent(Collider2D);
+        if (this._collider) {
+            this._collider.on(Contact2DType.BEGIN_CONTACT, this.onBeginContact, this);
+        }
 
         // 注册触摸
         this.addTouchListeners();
@@ -77,7 +84,7 @@ export class PlayerPlane extends  BasePlane {
         this._maxHp = GameData.playerMaxHp;
         this.hp = this._maxHp; // 恢复满血
         this._invincibleTimer = 0
-         // ✅ 重开时，属性也要恢复初始值（非常重要！）
+       
         this.bulletDamage = 1;
         this.bulletSpeed = 1;
         this.bulletCount = 1;
@@ -252,6 +259,20 @@ export class PlayerPlane extends  BasePlane {
         if (this.hp <= 0) {
             this.onDeath();
         }
+    }
+
+    onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D){
+        if(this._isDead) return;
+        
+        if(otherCollider.group === GameConstants.ITEM_GROUP.ENEMY_PLANE){
+            const target = otherCollider.getComponent(BasePlane);
+            if (target && target.isDead) {
+                return; // 对方已经死了
+            }
+            EventBus.dispatchEvent(GameConstants.EVENT_TYPE.PLAYER_CRASH_ENEMY, otherCollider.node);
+            this.takeDamage(target.ramDamage);
+        }
+
     }
 
        // 虚方法，子类重写

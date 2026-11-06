@@ -24,9 +24,11 @@ export class StatsPanel extends Component {
         this.node.setPosition(this._closePos);
         this.node.active = false;
 
+        this.toggleBtn.active = false;
+        /** 
         if (this.toggleBtn) {
             this.toggleBtn.on(Button.EventType.CLICK, this.togglePanel, this);
-        }
+        }*/
     }
 
     // 👈 新增：用 update 实现平滑刷新，不卡顿

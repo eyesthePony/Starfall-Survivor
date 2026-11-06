@@ -2,7 +2,7 @@ import { _decorator, Component, Collider2D, Contact2DType, UITransform, Vec3, UI
 import { EventBus } from '../../Core/EventBus';
 import { GameConstants } from '../../Core/GameConstants';
 import { BasePlane } from '../../Entity/plane/BasePlane';
-import { DamageStats } from '../../Core/DamageStats';
+
 const { ccclass, property } = _decorator;
 
 @ccclass('Laser')
@@ -170,7 +170,7 @@ export class Laser extends Component {
             // 扣血
             if (this.playerBullet) {
                 EventBus.dispatchEvent(GameConstants.EVENT_TYPE.PLAYER_BULLET_HIT, enemyNode, this.damage);
-                DamageStats.instance.addDamage("激光射线", this.damage);
+
             } else {
                 EventBus.dispatchEvent(GameConstants.EVENT_TYPE.ENEMY_BULLET_HIT, enemyNode, this.damage);
             }

@@ -31,6 +31,7 @@ export interface SkillConfig {
 
 export interface BossPhaseConfig {
     skills: SkillConfig[];
+    hpRatio?: number;       // 进入阶段的血量比例，初始阶段不管
     loop?: boolean;       // 改为布尔值：是否循环此阶段
     loopDelay?: number;   // 可选：循环间隙休息几秒（默认 0.5 秒） 
 }
@@ -38,6 +39,8 @@ export interface BossPhaseConfig {
 export interface BossConfigData {
     name:string;
     maxHp: number;
+    damage:number;//碰撞伤害
+    expReward:number;
     moveSpeed: number;
     scale:number;
     hitBox?: BossHitBoxConfig;
@@ -48,49 +51,11 @@ export interface BossConfigData {
 
 
 export const BOSS_CONFIG:Record<string,BossConfigData> = {
-    [GameConstants.BOSS_TYPE.ICE_BOSS]: {
-        name:"杨丰屹碎冰冰",
-        maxHp: 3000,
-        moveSpeed: 1.5,
-        scale: 0.3,
-        hitBox: { shape: 'circle', radius: 350 },   
-        // 1. 组装外观
-        parts: [
-              
-            { 
-                name: "Body", 
-                texture: "textures/plane/ice", 
-                animation: GameConstants.ANIMATOR_TYPE.FLOAT_ANIMATOR,          // 身体：上下浮动
-    
-            },     
-            
-        ],
-        // 2. 组装战斗阶段
-        phases: [
-            { 
-                // 阶段1：缓慢的冰环
-                skills: [
-                    {name:GameConstants.BOSS_SKILL.SINE_MOVE, params: { amplitude: 250, frequency: 0.2 } },
-                    { name: GameConstants.BOSS_SKILL.RING_FIRE,  params: { bulletCount: 16, damage: 10, speed: 300,interval: 1.0,bulletType:GameConstants.BULLET_TYPE.ICE,isPlayerBullet:false,}},
-                ]
-            },
-            { 
-                // 阶段2：狂暴双螺旋
-                skills: [{ name:GameConstants.BOSS_SKILL.SPIRAL_FIRE, params: { arms: 2, damage: 8 ,interval: 0.15,bulletType:GameConstants.BULLET_TYPE.ICE,isPlayerBullet:false,} },
-
-                ] 
-            },
-            { 
-                // 阶段3：狂暴四螺旋
-                skills: [{ name:GameConstants.BOSS_SKILL.SPIRAL_FIRE, params: { arms: 4, damage: 8 ,interval: 0.05,bulletType:GameConstants.BULLET_TYPE.ICE,isPlayerBullet:false,} },
-
-                ] 
-            },
-        ]
-    },
     [GameConstants.BOSS_TYPE.MACHINE_BOSS]: {
-        name:"胡杰飞飞飞",
-        maxHp: 10000,
+        name:"胡碟飞飞飞",
+        maxHp: 18000,
+        damage:80,
+        expReward:1000,
         moveSpeed: 1.5,
         scale: 1.5,
         hitBox: { shape: 'circle', radius: 50 },
@@ -116,7 +81,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                             formation: TurretFormation.ATTACHED, 
                             aimMode: AimMode.FIXED, 
                             fireAngle: 180, triggerMode: TriggerMode.CONTINUOUS, fireMode: FireMode.VOLLEY, 
-                            interval: 3,radius:300,bulletSpeed:300,
+                            interval: 3,radius:300,bulletSpeed:300,bulletDamage:40,
                             isPlayerBullet:false,bulletType:GameConstants.BULLET_TYPE.PARTICLE,},
                     },
                     { name: GameConstants.BOSS_SKILL.SINE_MOVE, 
@@ -131,6 +96,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
             { 
                 loop:true,
                 loopDelay:1,
+                hpRatio: 0.6,
                 skills: [
                     // ① 0秒：从当前位置飞到屏幕中心，耗时 0.8 秒
                     { 
@@ -150,7 +116,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                     { 
                         name: GameConstants.BOSS_SKILL.CANNON_BARRAGE, 
                         params: {
-                            triggerMode: TriggerMode.ONCE, fireMode: FireMode.VOLLEY, 
+                            triggerMode: TriggerMode.ONCE, fireMode: FireMode.VOLLEY, bulletDamage:40,
                             },
                         delay:1.6,
                     },
@@ -174,7 +140,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
             },
               // ================== 阶段 3：脱离环绕，激光处刑（触发 enterOrbitPhase） ==================
             { 
-
+            hpRatio: 0.3,
             skills: [
                     // ① 0秒：停火，进入静默状态，准备冲刺
                     { name: GameConstants.BOSS_SKILL.CANNON_BARRAGE, params: { 
@@ -186,36 +152,13 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                     },
                     {
                         name: GameConstants.BOSS_SKILL.CANNON_BARRAGE,params: { 
-                             bulletType:GameConstants.BULLET_TYPE.LASER,
-                             triggerMode: TriggerMode.CONTINUOUS,
+                            bulletType:GameConstants.BULLET_TYPE.LASER,
+                            triggerMode: TriggerMode.CONTINUOUS,
                             fireMode: FireMode.SEQUENCE, 
+                            bulletDamage:60,
                             seqInterval:1.2,
                         },
                         delay:2,
-                    }
-            ]                   
-            },
-            { 
-
-            skills: [
-                    
-                    { name: GameConstants.BOSS_SKILL.CANNON_BARRAGE, params: { 
-                        formation:TurretFormation.ATTACHED, 
-                        radius:300,
-                        rotateSpeed: 60,
-                        aimMode: AimMode.SPIN, 
-                        aimSpeed:360,
-                        triggerMode: TriggerMode.IDLE,
-                        bulletType:GameConstants.BULLET_TYPE.PARTICLE, },
-
-                    },
-                    {
-                        name: GameConstants.BOSS_SKILL.CANNON_BARRAGE,params: { 
-                            triggerMode: TriggerMode.CONTINUOUS,
-                            fireMode: FireMode.VOLLEY, 
-                            interval:1,
-                        },
-                        delay:1,
                     }
             ]                   
             },
@@ -223,7 +166,9 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
     },
     [GameConstants.BOSS_TYPE.WHALE_BOSS]:{
         name:"吴鲸波",
-        maxHp: 5000,
+        maxHp: 5500,
+        damage:80,
+        expReward:400,
         moveSpeed: 1.5,
         scale: 0.3,
         hitBox: { shape: 'circle', radius: 350 },  
@@ -242,7 +187,13 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                 // 阶段1：缓慢的冰环
                 skills: [
                     {name:GameConstants.BOSS_SKILL.SINE_MOVE, params: { amplitude: 250, frequency: 0.2 } },
-                    { name: GameConstants.BOSS_SKILL.RING_FIRE,  params: { bulletCount: 16, damage: 100, bulletSpeed: 200,interval: 1.0,bulletType:GameConstants.BULLET_TYPE.PARTICLE,isPlayerBullet:false,}},
+                    { name: GameConstants.BOSS_SKILL.RING_FIRE,  params: { bulletCount: 16, bulletDamage: 70, bulletSpeed: 200,interval: 1.0,bulletType:GameConstants.BULLET_TYPE.PARTICLE,isPlayerBullet:false,}},
+                ]
+            },
+            {
+                hpRatio: 0.7,
+                skills: [
+                    {name: GameConstants.BOSS_SKILL.RING_FIRE,params:{bulletCount: 18, bulletDamage: 70, bulletSpeed: 200,interval: 1.0,bulletType:GameConstants.BULLET_TYPE.PARTICLE,isPlayerBullet:false,}},
                 ]
             },
         ]

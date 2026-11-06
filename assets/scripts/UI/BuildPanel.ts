@@ -1,5 +1,5 @@
 import { _decorator, Component, Prefab, instantiate, Node } from 'cc';
-import { BuildingData,BUILDINGS } from '../Core/BuildingConfig';
+import { BUILDINGS } from '../Core/BuildingConfig';
 import { BuildItem } from '../Entity/item/BuildItem';
 import { EventBus } from '../Core/EventBus';
 import { GameConstants } from '../Core/GameConstants';

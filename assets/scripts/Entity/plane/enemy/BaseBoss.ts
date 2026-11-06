@@ -1,4 +1,4 @@
-import { _decorator, AnimationClip, BoxCollider2D, CircleCollider2D, Animation, Component, Node, resources, Sprite, SpriteFrame, Vec3,} from 'cc';
+import { _decorator, AnimationClip, BoxCollider2D, CircleCollider2D, Animation, Component, Node, Sprite, SpriteFrame, Vec3, assetManager,} from 'cc';
 import { BasePlane } from '../BasePlane';
 import { EventBus } from '../../../Core/EventBus';
 import { GameConstants } from '../../../Core/GameConstants';
@@ -61,7 +61,8 @@ export class BaseBoss extends BasePlane{
         this.enabled = true;       
         this._maxHp = cfg.maxHp * hpMultiplier;   //初始化最大血量
         this.hp = this._maxHp;      //初始化现有血量
-        this.expReward = 1000;
+        this.ramDamage = cfg.damage;
+        this.expReward = cfg.expReward ?? 1000;
 
          // 重置时间轴状态
         this._delayedTasks.length = 0;
@@ -129,26 +130,28 @@ export class BaseBoss extends BasePlane{
             //设置大小模式
             sp.sizeMode = Sprite.SizeMode.TRIMMED;
         
+            const boss = assetManager.getBundle('boss');
+            if (!boss) { console.error('boss 分包未加载'); node.destroy(); return; }
             //加载贴图并赋予节点
-        if (!part.animClipPath) {
-            resources.load(`${part.texture}/spriteFrame`, SpriteFrame, (err, sf) => {
-                if (err) { console.error(`加载失败: ${part.texture}`, err); node.destroy(); return; }
-                if (!node.isValid) return;
-                sp.spriteFrame = sf;
-            });
-        }
+            if (!part.animClipPath) {
+                boss.load(`${part.texture}/spriteFrame`, SpriteFrame, (err, sf) => {
+                    if (err) { console.error(`加载失败: ${part.texture}`, err); node.destroy(); return; }
+                    if (!node.isValid) return;
+                    sp.spriteFrame = sf;
+                });
+            }
             
             //赋予贴图动画
         if (part.animClipPath) {
             // 走序列帧动画：不 load 单张图，直接挂 Animation 播循环 Clip
-            resources.load(part.animClipPath, AnimationClip, (err, clip) => {
-                    if (err) { console.error(`加载动画失败: ${part.animClipPath}`, err); node.destroy(); return; }
-                    if (!node.isValid) return;
-                    const anim = node.addComponent(Animation);
-                    anim.defaultClip = clip;
-                    anim.playOnLoad = true;
-                    anim.play();
-                });
+            boss.load(part.animClipPath, AnimationClip, (err, clip) => {
+                if (err) { console.error(`加载动画失败: ${part.animClipPath}`, err); node.destroy(); return; }
+                if (!node.isValid) return;
+                const anim = node.addComponent(Animation);
+                anim.defaultClip = clip;
+                anim.playOnLoad = true;
+                anim.play();
+            });
         }else if (part.animation) {
                 const Cls = AnimatorMap[part.animation];
                 if (Cls) node.addComponent(Cls);
@@ -258,16 +261,15 @@ export class BaseBoss extends BasePlane{
     }
 
     // 血量变化时判断是否进下一阶段
-    protected checkPhase() {
-        const ratio = this.hp / this._maxHp;
+    protected checkPhase() {   
         const total = this._config.phases.length;
-
-        // 2 阶段：50% 进二阶段；3 阶段：66% / 33%
-        for (let i = this._phaseIndex + 1; i < total; ++i) {
-            if (ratio <= 1 - i / total) {
-                this.activatePhase(i);
-                break;              // 一次只进一级
-            }
+        if(this._phaseIndex + 1 >= total){
+            return;
+        }
+        const ratio = this.hp / this._maxHp;
+        
+        if (ratio <= this._config.phases[this._phaseIndex + 1].hpRatio) {
+                this.activatePhase(this._phaseIndex + 1);
         }
     }
 

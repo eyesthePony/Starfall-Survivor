@@ -24,7 +24,7 @@ export class HomingFire extends BaseFire {
 
     onUpgrade(cardId:string){
         if (cardId === GameConstants.CARD_ID.HOMING_DMG) {
-            this.damage *= 1.5;
+            this.bulletDamage *= 1.5;
         }else if(cardId === GameConstants.CARD_ID.HOMING_UP){
             this._homingCount += 2;
         }
@@ -33,7 +33,7 @@ export class HomingFire extends BaseFire {
     public applyConfig(params?: Record<string, any>) {
         if (!params) return;
         if (params.bulletType !== undefined) this._bulletType = params.bulletType;
-        if (params.damage !== undefined) this.damage = params.damage;
+        if (params.bulletDamage !== undefined) this.bulletDamage = params.bulletDamage;
         if (params.bulletSpeed !== undefined) this.bulletSpeed = params.bulletSpeed;
         if (params.interval !== undefined) this.interval = params.interval;
         if (params.isPlayerBullet !== undefined) this._isPlayerBullet = params.isPlayerBullet;
@@ -55,7 +55,7 @@ export class HomingFire extends BaseFire {
                 this._isPlayerBullet,
                 spawnPos,
                 this._shootDir,
-                this.damage,
+                this.bulletDamage,
                 this.bulletSpeed
             );
         }

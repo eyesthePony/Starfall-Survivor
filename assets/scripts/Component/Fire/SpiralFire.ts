@@ -27,7 +27,7 @@ export class SpiralFire extends BaseFire {
     public applyConfig(params?: Record<string, any>) {
         if (!params) return;
         if (params.bulletType !== undefined) this._bulletType = params.bulletType;
-        if (params.damage !== undefined) this.damage = params.damage;
+        if (params.bulletDamage !== undefined) this.bulletDamage = params.bulletDamage;
         if (params.bulletSpeed !== undefined) this.bulletSpeed = params.bulletSpeed;
         if(params.arms !== undefined) this._arms = params.arms;
         if(params.angleStep !== undefined) this._angleStep = params.angleStep;
@@ -65,7 +65,7 @@ export class SpiralFire extends BaseFire {
                 this._isPlayerBullet, 
                 spawnPos, 
                 this._shootDir, 
-                this.damage, 
+                this.bulletDamage, 
                 this.bulletSpeed
             );
         }

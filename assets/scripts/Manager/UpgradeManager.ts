@@ -9,7 +9,7 @@ const { ccclass, property } = _decorator;
 
 @ccclass('UpgradeManager')
 export class UpgradeManager extends Component {
-    private _maxExp:number = 100;
+    private _maxExp:number = 50;
     private _exp:number = 0;
     private _level:number = 1;
 
@@ -31,7 +31,7 @@ export class UpgradeManager extends Component {
         let levelUpCount = 0;
         while (this._exp >= this._maxExp) {
             this._exp -= this._maxExp;
-            this._maxExp += 200; // 下一级需要的经验增多
+            this._maxExp += 70; // 下一级需要的经验增多
             ++this._level;
             ++levelUpCount;
         }
@@ -49,7 +49,7 @@ export class UpgradeManager extends Component {
     //重置
     reset(){
         this._level = 1;
-        this._maxExp = 100;
+        this._maxExp = 50;
         this._exp = 0;
         this._cardCounts = {};
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.EXP_CHANGED, this._level, this._exp/this._maxExp);

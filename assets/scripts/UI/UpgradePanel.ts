@@ -10,7 +10,7 @@ export class UpgradePanel extends Component {
     @property([Button])
     cardButtons: Button[] = []; 
 
-    @property({ type: [SpriteFrame], tooltip: "按顺序：剑/翅膀/闪电/子弹" })
+    @property({ type: [SpriteFrame], tooltip: "按顺序：剑//闪电/子弹翅膀" })
     iconFrames: SpriteFrame[] = [];
 
     private _pendingCount: number = 0; 

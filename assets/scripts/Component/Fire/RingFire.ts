@@ -16,7 +16,7 @@ export class RingFire extends BaseFire{
         if (!params) return;
         if (params.bulletType !== undefined) this._bulletType = params.bulletType;
         if (params.bulletCount !== undefined) this._bulletCount = params.bulletCount;
-        if (params.damage !== undefined) this.damage = params.damage;
+        if (params.bulletDamage !== undefined) this.bulletDamage = params.bulletDamage;
         if (params.bulletSpeed !== undefined) this.bulletSpeed = params.bulletSpeed;
         if (params.interval !== undefined) this.interval = params.interval;
         if(params.isPlayerBullet !== undefined)this._isPlayerBullet = params.isPlayerBullet;
@@ -31,7 +31,7 @@ export class RingFire extends BaseFire{
             this._shootDir.set(DirTable[idx].x, DirTable[idx].y, 0);
 
             BulletManager.instance.spawnBullet(this._bulletType,
-                this._isPlayerBullet,spawnPos,this._shootDir,this.damage,this.bulletSpeed);
+                this._isPlayerBullet,spawnPos,this._shootDir,this.bulletDamage,this.bulletSpeed);
         }
     }
 }

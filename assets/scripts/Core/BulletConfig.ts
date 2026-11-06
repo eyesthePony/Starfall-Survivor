@@ -2,6 +2,7 @@ import { GameConstants } from "./GameConstants";
 
 // 定义子弹数据的接口
 export interface BulletData {
+    prefab: string,          //对应预制体，bulletmangaer根据这个判断实例化哪个预制体
     spriteName: string;     // 换哪张图（对应 SpriteFrame 字典 key）
     baseSpeed: number;
     baseDamage: number;
@@ -14,19 +15,19 @@ export interface BulletData {
 
 export const BULLET_CONFIG: Record<string, BulletData> = {
     [GameConstants.BULLET_TYPE.BLUEBULLET]: {
-        spriteName: "bluebullet", baseSpeed: 400, baseDamage: 100,
+       prefab:GameConstants.BULLET_PREFAB.BASE, spriteName: "bluebullet", baseSpeed: 420, baseDamage: 10,
     },
     [GameConstants.BULLET_TYPE.YELLOWBULLET]: {
-        spriteName: "yellowbullet", baseSpeed: 400, baseDamage: 100,
+        prefab:GameConstants.BULLET_PREFAB.BASE,spriteName: "yellowbullet", baseSpeed: 260, baseDamage: 10,
     },
     [GameConstants.BULLET_TYPE.LASER]: {
-        spriteName: "laser", baseSpeed: 400, baseDamage: 100,
+         prefab:GameConstants.BULLET_PREFAB.LASER,spriteName: "laser", baseSpeed: 0, baseDamage: 14,
     },
     [GameConstants.BULLET_TYPE.HOMING]: {
-        spriteName: "homing", baseSpeed: 400, baseDamage: 100,
+         prefab:GameConstants.BULLET_PREFAB.HOMING,spriteName: "homing", baseSpeed: 320, baseDamage: 12,
     },
     [GameConstants.BULLET_TYPE.PARTICLE]: {
-        spriteName: "particle", baseSpeed: 400, baseDamage: 100,
+         prefab:GameConstants.BULLET_PREFAB.BASE,spriteName: "particle", baseSpeed: 240, baseDamage: 10,
     },
 
 }

@@ -1,6 +1,3 @@
-import { BossMoveTo } from "../Component/Move/BossMoveTo";
-
-
 export class GameConstants {
 
     // ========== 事件名称 ==========
@@ -11,6 +8,7 @@ export class GameConstants {
         REMOVE_BULLET: "removeBullet",           // 从数组移除子弹
         PLAYER_BULLET_HIT: "playerBulletHit",    // 我方子弹击中
         ENEMY_BULLET_HIT: "enemyBulletHit",      // 敌方子弹击中
+        PLAYER_CRASH_ENEMY: "playerCrashEnemy",  // 玩家机身撞到敌机
         //敌机
         ENEMY_KILLED: "enemyKilled",             //飞机被玩家消灭死亡(加分)
         ENEMY_ESCAPED: "enemyEscaped",  // 敌机飞出底部（不加分）
@@ -63,6 +61,7 @@ export class GameConstants {
 
     };
 
+    //==============卡牌================
     public static CARD_ID = {
         //普通子弹强化
         DMG_UP: 'dmg_up',
@@ -105,33 +104,54 @@ export class GameConstants {
         BATTLE: 'BattleScene'
     }
 
-    //敌机类型
+    //============敌机配置=============
+    //敌机类型.小怪还是boss，小怪和boss使用不同预制体
     public static ENEMY_CATEGORY = {
         NORMAL:'normal',
         BOSS:'boss',
     }
 
     //普通敌机类型
+    // 行为逻辑由预制体来决定，类型为key，行为逻辑等数据为value
     public static ENEMY_TYPE = {
-       BASIC_DRONE:"basic_drone",
+        BASIC_DRONE:"basic_drone",
+        SINE_DRONE: "sine_drone",     
+        ARC_DRONE: "arc_drone",     
     }
-    //敌机预制体名字
+
+    //敌机预制体名字，不同飞机逻辑，value
     public static ENEMY_PREFAB = {
         STRAIGHT: "StraightMoveEnemy",
         SINE: "SineEnemy",
+        ARC:'ArcEnemy',
     }
 
-    //boss敌机类型
+    //boss敌机类型，类型为key，行为逻辑等数据为value
     public static BOSS_TYPE = {
-        ICE_BOSS: "ice_boss",
         MACHINE_BOSS: "machine_boss",
         WHALE_BOSS:'whale_boss',
     }
 
+    //boss行为类型，value
+    public static BOSS_SKILL = {
+        SINE_MOVE:"SineMove",
+        RING_FIRE:"RingFire",
+        SPIRAL_FIRE:"SpiralFire",
+        CANNON_BARRAGE: "CannonBarrage",
+        BOSSMOVETO: "BossMoveTo",
+
+    };
+
  
 
-
-    //子弹类型
+//==============子弹相关数据==============
+    //子弹预制体类型,不同贴图，逻辑相同子弹，用同一个预制体s
+    public static BULLET_PREFAB = { 
+        BASE:'base', 
+        HOMING:'homing', 
+        LASER:'laser',
+     }
+    //子弹类型，不同贴图就是不同类型
     public static BULLET_TYPE = {
         BLUEBULLET:'bluebullet',
         YELLOWBULLET:'yellowbullet',
@@ -155,15 +175,7 @@ export class GameConstants {
         LEVELUP:'levelup',
     };
 
-    //boss行为类型
-    public static BOSS_SKILL = {
-        SINE_MOVE:"SineMove",
-        RING_FIRE:"RingFire",
-        SPIRAL_FIRE:"SpiralFire",
-        CANNON_BARRAGE: "CannonBarrage",
-        BOSSMOVETO: "BossMoveTo",
-
-    };
+    
 
     //动画类型
     public static ANIMATOR_TYPE = {

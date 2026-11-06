@@ -1,4 +1,4 @@
-import { _decorator, Component, Node, UITransform } from 'cc';
+import { _decorator,  Component, Node, UITransform, } from 'cc';
 import { EventBus } from '../../Core/EventBus';
 import { GameConstants } from '../../Core/GameConstants';
 import { GameData } from '../../Core/GameData';
@@ -15,21 +15,18 @@ export class BackgroundScroll extends Component {
     @property({ tooltip: "单张背景高度，0=自动用屏幕高度" })
     scrollHeight: number = 0;
 
-
-
-
     
 
     protected onLoad(): void {
         EventBus.on(GameConstants.EVENT_TYPE.GAME_STATE_CHANGED, this.onStateChanged, this);
         this.scrollHeight = GameData.viewH;
-       
 
         for (let i = 0; i < this.backgrounds.length; ++i) {
             const bg = this.backgrounds[i];
             bg.getComponent(UITransform).setContentSize(GameData.viewW,GameData.viewH);
             bg.setPosition(bg.position.x, i * GameData.viewH);
         }
+        
     }
 
     private onStateChanged(state: string) {

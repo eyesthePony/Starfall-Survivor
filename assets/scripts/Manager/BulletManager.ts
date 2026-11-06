@@ -77,7 +77,7 @@ export class BulletManager extends Component {
 
     }
 
-    
+    //bulletType是各中不同贴图的子弹，但逻辑相同，所以使用相同预制体。根据预制体来实例化，然后组装贴图，赋予数值。
     public spawnBullet(bulletType:string,isPlayerBullet: boolean, spawnPos: Vec3, dir: Vec3, damage: number, speed: number,followTarget: Node = null): void {
         
         const baseData = BULLET_CONFIG[bulletType];
@@ -95,8 +95,8 @@ export class BulletManager extends Component {
         const sf = this._spriteDict[baseData.spriteName];
         let bulletprefab:Prefab = null;
         let bulletNode:Node = null;
-        switch(bulletType){
-            case GameConstants.BULLET_TYPE.LASER:
+        switch(baseData.prefab){
+            case GameConstants.BULLET_PREFAB.LASER:
                 bulletprefab = this.laserPrefab;
                 if(!bulletprefab) {
                     console.error("无此预制体", bulletType);
@@ -110,7 +110,7 @@ export class BulletManager extends Component {
                     return;
                 }
                 break;
-            case GameConstants.BULLET_TYPE.HOMING:
+            case GameConstants.BULLET_PREFAB.HOMING:
                 bulletprefab = this.homingPrefab;
                 if(!bulletprefab) {
                     console.error("无此预制体", bulletType);

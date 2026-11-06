@@ -1,33 +1,54 @@
 import { _decorator, Component, Node } from 'cc';
-import { LevelData, LEVELS, WaveData } from '../Core/LevelConfig';
+import { ENDLESS_LEVEL, LevelData, LEVELS, WaveData, WaveGroup } from '../Core/LevelConfig';
 import { GameData } from '../Core/GameData';
 import { EventBus } from '../Core/EventBus';
 import { GameConstants } from '../Core/GameConstants';
 import { EnemyManager } from './EnemyPlaneManager';
 const { ccclass, property } = _decorator;
 
+// 运行时状态
+interface RunningGroup {
+    config: WaveGroup; //哪一组
+    remain: number; //还剩多少只
+    timer: number; //组内计时器
+}
+
+enum WaveState {
+    IDLE,          //刚开局，闲置中
+    WAITING,       // 等待这波开始（等 delay）
+    SPAWNING,      // 正在按剧本刷怪（时间轴运转中）
+    WAITING_CLEAR, // 怪刷完了，等玩家清空战场
+    FINISHED       // 这波结束，准备进下一波
+}
+
 @ccclass('WaveManager')
 export class WaveManager extends Component {
 
+    private _waveState:WaveState = WaveState.IDLE;
+
     private _levelData:LevelData = null;   //关卡数据
+
     private _waveIndex: number = 0;       //波数
-    private _waveData:WaveData = null;    //一波数据
-    private _toSpawn: number = 0;        // 这波还剩几架没刷
-    private _aliveEnemies: number = 0;  // 场上活着几架
-    private _spawnTimer = 0;     // 刷怪倒计时
+    private _waveData:WaveData = null;    //关卡中一波数据 
     private _waveDelayTimer = 0; // 波次延迟倒计时
+
+    private _waveTime:number = 0; //一波计时器，计算一波占用总时长，用于控制group生成，
+    private _runningGroups: RunningGroup[] = []; // 正在刷怪的组池
+
+    private _aliveEnemies: number = 0;  // 场上活着几架
+  
     private _loopCount: number = 0; //轮回次数
 
 
 
     protected onLoad(): void {
+        this._levelData = GameData.isEndlessMode
+        ? ENDLESS_LEVEL
+        : LEVELS[GameData.selectedLevel - 1];
 
-         
-
-        const levelId = GameData.selectedLevel - 1;
-        this._levelData = LEVELS[levelId];
-        if (!this._levelData) {
-            console.error(`[WaveManager] 关卡缺失 levelId=${levelId}`);
+        // 如果关卡不存在，或者关卡的波次是空的，结束游戏
+        if (!this._levelData || !this._levelData.waves || this._levelData.waves.length === 0) {
+            console.error(`[WaveManager] 关卡数据异常或为空 levelId=${GameData.selectedLevel}`);
             this.enabled = false;
             return;
         }
@@ -43,66 +64,119 @@ export class WaveManager extends Component {
 
 
     protected update(dt: number): void {
-
-        if(this._waveDelayTimer > 0){       //场上的敌人小于等于1就开始波数倒计时
-
-            this._waveDelayTimer -= dt;     //波数来临倒计时
-
-        }else if(this._toSpawn > 0){        //这波敌人还未生成完
-            this._spawnTimer -= dt;        //倒计时结束，生成一个敌人
-            if(this._spawnTimer <= 0){     
-                this.spawnEnemy();
-            }
-        }else {
-            if(this._aliveEnemies > 0) return;    //如果还存活的飞机大于1，就先不下一波
-            if(this._waveIndex >= this._levelData.waves.length){    //没波了 游戏结束
-                if (GameData.isEndlessMode) {
-                    // 无尽模式：清空后波数归零，继续循环
-                    this._waveIndex = 0;
-                    this._loopCount++;
-                } else {
-                    // 正常模式：胜利
-                    EventBus.dispatchEvent(GameConstants.EVENT_TYPE.GAME_VICTORY);
-                    return;
+        switch(this._waveState){
+            case WaveState.IDLE:
+                break;
+            case WaveState.WAITING:
+                this._waveDelayTimer -= dt;
+                if(this._waveDelayTimer <= 0){
+                    this.beginSpawning();//波次延迟结束，开始生成
                 }
-            }
-            this.startNextWave();    //下一波
+                break;
+            case WaveState.SPAWNING:
+                this.updateSpawning(dt);
+                break;
+            case WaveState.WAITING_CLEAR:
+                if(this._aliveEnemies <= 0){
+                    this.endWave();//这波清理完成
+                }
+                break;
+            case WaveState.FINISHED:
+                break;
         }
+        
     }
 
     private startNextWave() {
-        this._waveData = this._levelData.waves[this._waveIndex];   //得到index波数据
-        this._spawnTimer = this._waveData.spawnInterval;                  //这波得到每个飞机生产间隔
-        this._waveDelayTimer = this._waveData.delay;                     //得到这波与上一波时间间隔
-        this._toSpawn = this._waveData.count;                            //得到这波要生产飞机总数
-        ++this._waveIndex;                                    //波数+1
+        this._waveData = this._levelData.waves[this._waveIndex];         //得到index波数据
+        this._waveDelayTimer = this._waveData.delay;                   //每波间隔
+        this._waveState = WaveState.WAITING;                       //切换为等待这波延迟状态
+        ++this._waveIndex;
     }
 
-    private spawnEnemy() {   
+    private beginSpawning(){
+        this._runningGroups = []; // 正在运行组清零
+        this._waveTime = 0;       // 波次时间轴归零
+        const groups = this._waveData.groups;
+        for(let i=0;i<groups.length;++i){
+            const group = groups[i];
+            this._runningGroups.push({
+                config:group,
+                remain:group.count,
+                timer:0,
+            });
+        }
+
+        this._waveState = WaveState.SPAWNING;
+    }
+
+    private updateSpawning(dt: number){
+        this._waveTime += dt;//波内计时器
+        for(let i=this._runningGroups.length - 1; i>=0 ;--i){//从末尾开始，这样移除就不用担心打乱顺序
+            const group = this._runningGroups[i];
+            if(this._waveTime < group.config.time){ //还未到这组生成时间
+                continue;
+            }
+            group.timer -= dt;//组内计时器
+            if(group.timer <= 0){
+                this.spawnEnemy(group.config);//生成一个敌机
+                group.remain--;
+                if(group.remain <= 0){//这组敌机生成完了，移除生成组
+                    const last = this._runningGroups.length - 1; //找到最后一组
+                    this._runningGroups[i] = this._runningGroups[last];//将这组与最后一组移到这组位置，相当于删除这组                  
+                    this._runningGroups.pop();
+
+                }else{
+                    group.timer += group.config.spawnInterval;
+                }
+            }
+
+        }
+
+        if (this._runningGroups.length === 0) { //这组刷完
+            this._waveState = WaveState.WAITING_CLEAR;//转移到等待玩家清理状态
+        }
+    }
+
+   
+    private spawnEnemy(group:WaveGroup) {   
         let success = false;
         const hpMultiplier = 1 + (this._loopCount * 2); // 每轮回一次，怪物血量增加 200%
-        if(this._waveData.category === GameConstants.ENEMY_CATEGORY.BOSS){
-            success = EnemyManager.instance.spawnBoss(this._waveData.enemyType,hpMultiplier);
+        if(group.category === GameConstants.ENEMY_CATEGORY.BOSS){
+            success = EnemyManager.instance.spawnBoss(group.enemyType,hpMultiplier);
         }else{
-            success = EnemyManager.instance.spawnNormalEnemy(this._waveData.enemyType,hpMultiplier);
+            success = EnemyManager.instance.spawnNormalEnemy(group.enemyType,hpMultiplier);
         }
-       
-        --this._toSpawn;    //还需要生成的飞机-1
+      
         if (success) {
             ++this._aliveEnemies;  //还存活的飞机数量+1
         }
+    }
 
-        this._spawnTimer += this._waveData.spawnInterval; // 重置计时器
+    endWave(){
+        if (this._waveIndex >= this._levelData.waves.length) { //判断是否完成所有波数
+            if (GameData.isEndlessMode) {                     //判断是否无尽模式，是就循环
+                this._waveIndex = 0;
+                this._loopCount++;
+                this.startNextWave();
+            } else {
+                EventBus.dispatchEvent(GameConstants.EVENT_TYPE.GAME_VICTORY);//不是无尽模式，就游戏胜利
+                this._waveState = WaveState.FINISHED;
+                this.enabled = false;
+            }
+        } else { 
+            this.startNextWave();  //没结束就下一波
+        }
     }
 
     private onStateChanged(state:string){
         const isPlaying = (state === GameConstants.GAME_STATE.PLAYING);
 
         if (isPlaying) {
-            this.enabled = true;                 // 恢复 update
-            if(this._waveIndex === 0){           //第一波初始化
+            if(this._waveState === WaveState.IDLE){           //第一波初始化
                 this.startNextWave();
             }
+             this.enabled = true;                 // 恢复 update
         } else {
             this.enabled = false;                // 冻结 update
         }
@@ -113,14 +187,14 @@ export class WaveManager extends Component {
     }
 
     private onGameReset(){
-       this._waveIndex = 0;
-        this._toSpawn = 0;
+        this._waveState = WaveState.IDLE;
+        this._waveIndex = 0;
         this._aliveEnemies = 0;
-        this._spawnTimer = 0;
         this._waveDelayTimer = 0;
+        this._runningGroups = []; 
+        this._waveTime = 0;      
         this.enabled = false; // 关掉自己，等 PLAYING 状态来唤醒
         this._loopCount = 0;
-
     }
 
 

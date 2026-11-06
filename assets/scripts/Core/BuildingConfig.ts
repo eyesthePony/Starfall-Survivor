@@ -1,4 +1,4 @@
-import { Prefab } from "cc";
+
 
 // BuildingConfig.ts
 export interface BuildingData {

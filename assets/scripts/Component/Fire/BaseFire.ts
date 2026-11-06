@@ -7,7 +7,7 @@ export  class BaseFire extends Component {
 
     public interval: number = 1.0;   // 开火间隔（秒）
 
-    public damage:number = 1;
+    public bulletDamage:number = 1;
 
     public bulletSpeed:number = 1;
 

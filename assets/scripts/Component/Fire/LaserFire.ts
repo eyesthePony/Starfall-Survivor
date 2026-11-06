@@ -15,7 +15,7 @@ export class LaserFire extends BaseFire {
 
     protected onLoad(): void {
         this.interval = 1.2; 
-        this.damage = 20;    
+        this.bulletDamage= 1;    
         this._bulletType = GameConstants.BULLET_TYPE.LASER;
         this.weaponType = GameConstants.BULLET_TYPE.LASER; 
 
@@ -25,7 +25,7 @@ export class LaserFire extends BaseFire {
 
     onUpgrade(cardId:string){
         if (cardId === GameConstants.CARD_ID.LASER_DMG) {
-            this.damage *= 1.5;
+            this.bulletDamage *= 1.5;
         }else if(cardId === GameConstants.CARD_ID.LASER_CD){
             this.interval *= 0.8;
             
@@ -41,7 +41,7 @@ export class LaserFire extends BaseFire {
     public applyConfig(params?: Record<string, any>) {
         if (!params) return;
         if (params.bulletType !== undefined) this._bulletType = params.bulletType;
-        if (params.damage !== undefined) this.damage = params.damage;
+        if (params.bulletDamage !== undefined) this.bulletDamage = params.bulletDamage;
         if (params.interval !== undefined) this.interval = params.interval;
         if (params.baseAngle !== undefined) this._baseAngle = params.baseAngle;
         if (params.muzzleNode !== undefined) this._muzzleNode = params.muzzleNode; 
@@ -62,7 +62,7 @@ export class LaserFire extends BaseFire {
             this._isPlayerBullet,               
             spawnPos, 
             this._shootDir, 
-            this.damage, 
+            this.bulletDamage, 
             0 ,                 // 激光速度传 0 即可
             this._muzzleNode,
         );

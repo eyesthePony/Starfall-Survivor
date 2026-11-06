@@ -1,8 +1,7 @@
-import { _decorator, Component, view } from 'cc';
+import { _decorator, Component, } from 'cc';
 import { EventBus } from '../Core/EventBus';
 import { GameConstants } from '../Core/GameConstants';
 import { AudioManager } from '../Core/AudioManager';
-import { GameData } from '../Core/GameData';
 import { DamageStats } from '../Core/DamageStats';
 const { ccclass} = _decorator;
 
@@ -14,9 +13,10 @@ export class GameManager extends Component {
     // 游戏状态
     private _state:string = GameConstants.GAME_STATE.READY;
 
+
+
     onLoad() {
         GameManager.instance = this;
-        GameData.init();
         
         EventBus.on(GameConstants.EVENT_TYPE.GAME_OVER, this.onGameOver, this);
         EventBus.on(GameConstants.EVENT_TYPE.GAME_RESTART, this.onGameRestart, this);

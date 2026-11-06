@@ -1,6 +1,4 @@
 import { _decorator, Button, Component, } from 'cc';
-import { GameConstants } from '../Core/GameConstants';
-import { EventBus } from '../Core/EventBus';
 import { BuildPanel } from './BuildPanel';
 const { ccclass, property } = _decorator;
 

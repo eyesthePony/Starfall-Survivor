@@ -6,8 +6,9 @@ import { BasePlane } from '../Entity/plane/BasePlane';
 import { GameData } from '../Core/GameData';
 import { BOSS_CONFIG } from '../Core/BossConfig';
 import { BaseBoss } from '../Entity/plane/enemy/BaseBoss';
-import { ENEMY_CONFIG } from '../Core/EnemyConfig';
-import { EnemyPlane } from '../Entity/plane/enemy/EnemyPlane';
+import { ENEMY_CONFIG, EnemyData } from '../Core/EnemyConfig';
+import { BaseEnemyPlane } from '../Entity/plane/enemy/BaseEnemyPlane';
+
 const { ccclass, property } = _decorator;
 
 @ccclass('EnemyManager')
@@ -56,6 +57,7 @@ export class EnemyManager extends Component {
         EventBus.on(GameConstants.EVENT_TYPE.ENEMY_ESCAPED,this.onEnemyRecycle,this);
         EventBus.on(GameConstants.EVENT_TYPE.PLAYER_BULLET_HIT, this.onHit, this);
         EventBus.on(GameConstants.EVENT_TYPE.REQUEST_HOMING_TARGET, this.onRequestTarget, this);
+        EventBus.on(GameConstants.EVENT_TYPE.PLAYER_CRASH_ENEMY, this.onCrashEnemy, this);
     }
 
     onDestroy() {
@@ -65,6 +67,7 @@ export class EnemyManager extends Component {
         EventBus.off(GameConstants.EVENT_TYPE.ENEMY_ESCAPED,this.onEnemyRecycle,this);
         EventBus.off(GameConstants.EVENT_TYPE.PLAYER_BULLET_HIT, this.onHit, this);
         EventBus.off(GameConstants.EVENT_TYPE.REQUEST_HOMING_TARGET, this.onRequestTarget, this);
+        EventBus.off(GameConstants.EVENT_TYPE.PLAYER_CRASH_ENEMY, this.onCrashEnemy, this);
     }
 
     static get instance():EnemyManager{
@@ -133,14 +136,6 @@ export class EnemyManager extends Component {
     }
 
     public spawnNormalEnemy(enemyType:string,hpMultiplier:number = 1) {
-
-        //====坐标生成======
-        let spawnX = 0; // 默认 X 坐标为 0（屏幕中间）
-        // 普通怪：随机 X，范围在屏幕内缩一点
-        const halfW = 50;
-        const minX = -GameData.viewW/ 2 + halfW;
-        const maxX = GameData.viewW/ 2 - halfW;
-        spawnX = minX + Math.random() * (maxX - minX);
       
         //通过小怪类型，读取小怪配置信息
         const cfg = ENEMY_CONFIG[enemyType];
@@ -151,12 +146,44 @@ export class EnemyManager extends Component {
         if (!prefab) { console.error("无此小怪预制体", cfg.prefabName); return false; }
 
         const node = PoolManager.instance.getNode(prefab, this.node);
-        const plane = node.getComponent(EnemyPlane);
+        const plane = node.getComponent(BaseEnemyPlane);
         if (!plane) { PoolManager.instance.putNode(node); return false; }
-        const pos = new Vec3(spawnX, this.topY + 100, 0);
+      
+        const pos = this._getSpawnPos(cfg);
         plane.init(cfg, pos, hpMultiplier, this._spriteDict[cfg.spriteName]);
         this._activeEnemies.push(plane);
         return true;
+    }
+
+    private _getSpawnPos(cfg: EnemyData): Vec3 {
+        const halfW = GameData.viewW / 2;
+        const halfH = GameData.viewH / 2;
+        const margin = 60;   // 屏外余量，要大于敌机半宽，避免刚露头
+
+        switch (cfg.prefabName) {
+            // 正弦横穿：屏外一侧，y 走基线
+            case GameConstants.ENEMY_PREFAB.SINE: {
+                const x = -halfW - margin;            // 先固定左进；右进改 +halfW + margin
+                const baseY = -halfH / 4 + Math.random() * (halfH / 2); // 中线上下小区间随机
+                return new Vec3(x, baseY, 0);
+            }
+
+            // 圆弧侧弧：屏外一侧，基线贴中线（受 2R 余量约束）
+            case GameConstants.ENEMY_PREFAB.ARC: {
+                const x = -halfW - margin;            // 先只做左进凸右
+                const baseY = 0;                       // 圆弧 y0 别上下飘太远，见下面余量
+                return new Vec3(x, baseY, 0);
+            }
+
+            // 直飞：顶部随机 X
+            default: {
+                const pad = 50;
+                const minX = -halfW + pad;
+                const maxX = halfW - pad;
+                const spawnX = minX + Math.random() * (maxX - minX);
+                return new Vec3(spawnX, this.topY + 100, 0);
+            }
+        }
     }
 
      // 收到信号，算出敌人，把结果通过 callback 传回去！
@@ -192,7 +219,13 @@ export class EnemyManager extends Component {
         return closestNode;
     }
 
-    
+    onCrashEnemy(enemyNode:Node){
+        const enemy = enemyNode.getComponent(BaseEnemyPlane);
+        if (!enemy || enemy.isDead) return;
+
+        enemy.takeDamage(99999);
+
+    }
 
     
 }

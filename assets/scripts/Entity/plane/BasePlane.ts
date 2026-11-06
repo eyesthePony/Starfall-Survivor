@@ -31,6 +31,8 @@ export class BasePlane extends Component {
 
     public expReward: number = 10; // 击败敌机获取经验，默认给 10 点
 
+    public ramDamage: number = 0;   // 撞击玩家造成的伤害
+
 
     // 公开只读属性，外部可以查但改不了
     public get isDead(): boolean {
@@ -59,8 +61,7 @@ export class BasePlane extends Component {
     }
 
 
-    update(deltaTime: number) {
-       
+    protected tickFire(deltaTime: number){
         this._fireTimer -= deltaTime;
     
         // 自动开火，子类重写 shoot() 就行
@@ -69,6 +70,12 @@ export class BasePlane extends Component {
             this._fireTimer += this.fireCd;
         }
     }
+    
+    update(deltaTime: number) {
+        this.tickFire(deltaTime);
+    }
+       
+        
 }
 
 
