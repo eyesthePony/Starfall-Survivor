@@ -15,7 +15,7 @@ export class GameData  {
     
 
     public static init(){
-       /**
+      
          // 1. 获取引擎的设计逻辑尺寸（通常这里返回 720 x 1280）
         const size = view.getVisibleSize();
 
@@ -30,10 +30,8 @@ export class GameData  {
         }
 
         // 4. 赋值
-        this.viewW = size.width;  */
-         const size = view.getVisibleSize();
-        this.viewW = size.width;
-        this.viewH = size.height;
+        this.viewW = size.width; 
+
     }
 
    
