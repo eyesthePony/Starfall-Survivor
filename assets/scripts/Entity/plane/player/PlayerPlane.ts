@@ -53,6 +53,7 @@ export class PlayerPlane extends  BasePlane {
         this.halfH = ut.height * ut.anchorY;        // 锚点下侧高度
         this._maxX = GameData.viewW / 2 - this.halfW;
         this._maxY = GameData.viewH / 2 - this.halfH;
+        this.node.setPosition(0, -GameData.viewH / 2 + 150, 0);
 
         this._shootDir = new Vec3(0, 1, 0);  // 飞机子弹方向
 

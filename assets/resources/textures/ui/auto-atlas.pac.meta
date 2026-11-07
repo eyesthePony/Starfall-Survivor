@@ -2,7 +2,7 @@
   "ver": "1.0.8",
   "importer": "auto-atlas",
   "imported": true,
-  "uuid": "526f17aa-dc30-436d-b91a-80135c2d098a",
+  "uuid": "03449b12-f6d8-41ad-b12a-6f5f324f1268",
   "files": [
     ".json"
   ],
@@ -27,8 +27,8 @@
     "textureSetting": {
       "wrapModeS": "repeat",
       "wrapModeT": "repeat",
-      "minfilter": "linear",
-      "magfilter": "linear",
+      "minfilter": "nearest",
+      "magfilter": "nearest",
       "mipfilter": "none",
       "anisotropy": 0
     }
