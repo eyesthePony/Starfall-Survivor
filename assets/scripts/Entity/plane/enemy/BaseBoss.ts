@@ -19,6 +19,8 @@ export class BaseBoss extends BasePlane{
     private _currentPhaseData:BossPhaseConfig = null;
     //根据时间执行的组件
     private _delayedTasks: { timer: number, callback: () => void }[] = [];
+    //当前阶段已经开始执行的组件（暂停时和恢复时，避免delay时间没到的组件也一起enable了）
+    private  _pausedSkillState:Map<string, boolean> = new Map();
     //boss配置数据，贴图，弹幕
     private _config:BossConfigData = null;
 
@@ -298,7 +300,13 @@ export class BaseBoss extends BasePlane{
 
     private suspend(){
         if (this._enterMove) this._enterMove.enabled = false;   // 入场停
-        for (const c of this._skillMap.values()) if (c) c.enabled = false;
+        this._pausedSkillState.clear();
+        for (const [name , c] of this._skillMap){
+            if (c){
+                this._pausedSkillState.set(name, c.enabled);//将当前所需组件的enable状态记录下来
+                c.enabled = false;
+            } 
+        } 
 
     }
 
@@ -307,13 +315,11 @@ export class BaseBoss extends BasePlane{
                 if (this._enterMove) this._enterMove.enabled = true; // 入场恢复
             } else {
                 // 精准唤醒：只唤醒当前阶段还在激活状态的组件
-                const phase = this._config.phases[this._phaseIndex];
-                for (const skill of phase.skills) {
-                    const comp = this._skillMap.get(skill.name);
-                    
-                        if (comp) comp.enabled = true;
-                    
+                for (const [name, wasEnabled] of this._pausedSkillState) {
+                    const comp = this._skillMap.get(name);
+                    if (comp && wasEnabled) comp.enabled = true;
                 }
+                this._pausedSkillState.clear();
             }
     }
 
@@ -355,7 +361,7 @@ export class BaseBoss extends BasePlane{
     // 入场结束后
     protected onEnterComplete() {
         this.activatePhase(0);  //开启一阶段
-        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BOSS_SHOW_HP_BAR,this._config.name,this._maxHp);
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BOSS_SHOW_HP_BAR,this._config.name);
     }
 
     
@@ -363,7 +369,7 @@ export class BaseBoss extends BasePlane{
     public takeDamage(damage: number) {
         if (this._isEntering || this._isDead) return;
         this.hp -= damage;
-        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BOSS_HP_CHANGED,this.hp);
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BOSS_HP_CHANGED,this.hp/this._maxHp);
         if (this.hp <= 0) this.onDeath();
         else this.checkPhase();
     }
@@ -378,8 +384,8 @@ export class BaseBoss extends BasePlane{
         } });   
         this._delayedTasks.length = 0;
         this._phaseLoopTimer = 0;
-        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.ENEMY_KILLED, this.node);
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BOSS_HIDE_HP_BAR);
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.ENEMY_KILLED, this.node);
     }
 
 

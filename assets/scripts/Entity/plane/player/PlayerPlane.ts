@@ -253,7 +253,7 @@ export class PlayerPlane extends  BasePlane {
         if (this._invincibleTimer > 0) return;
         if (this.hp <= 0) return; 
         this.hp -= damage;
-        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.PLAYER_HP_CHANGED,this.hp);
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.PLAYER_HP_CHANGED,this.hp/this._maxHp);
         this._invincibleTimer = this.invincibiltyDuration; 
 
         if (this.hp <= 0) {

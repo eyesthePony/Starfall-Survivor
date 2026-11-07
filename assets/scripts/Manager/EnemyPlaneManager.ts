@@ -75,9 +75,8 @@ export class EnemyManager extends Component {
     }
 
     private onGameReset(){
-        const enemies = this.node.children;  
-        for(let i = enemies.length - 1;i >= 0;--i){
-            PoolManager.instance.putNode(enemies[i]);
+        for(let i = this._activeEnemies.length - 1;i >= 0;--i){
+            PoolManager.instance.putNode(this._activeEnemies[i].node);
         }
         this._activeEnemies.length = 0; 
     }

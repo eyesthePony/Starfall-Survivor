@@ -1,4 +1,4 @@
-import { _decorator, Component, Label, Node, ProgressBar, tween, Tween } from 'cc';
+import { _decorator, Component, Label, Node, ProgressBar, } from 'cc';
 import { GameConstants } from '../Core/GameConstants';
 import { EventBus } from '../Core/EventBus';
 const { ccclass, property } = _decorator;
@@ -12,12 +12,16 @@ export class BossHealthUI extends Component {
     @property(ProgressBar)
     progressBar: ProgressBar = null!; 
 
+    @property(ProgressBar)
+    ghostBar: ProgressBar = null!; 
+
     @property(Label)
     bossNameLabel: Label = null!; 
 
-    private _maxHp: number = 1;
+    private readonly GHOST_FALL_SPEED = 2.0;   // 掉血时，白条缩短的速度
+    private readonly GHOST_RISE_SPEED = 8.0;   // 回血/重置时，白条生长的速度
 
-    private _tweenTarget = { p: 1 };
+
 
 
     protected onLoad(): void {
@@ -29,22 +33,33 @@ export class BossHealthUI extends Component {
     }
 
 
-    bossShowHpBar(bossName: string = "冰霜之主", maxHp: number) {
+    bossShowHpBar(bossName: string = "冰霜之主") {
         this.node.active = true;
         this.bossNameLabel.string = bossName;
-        this._maxHp = maxHp;
-        Tween.stopAllByTarget(this._tweenTarget);
-        this._tweenTarget.p = 1;
         this.progressBar.progress = 1;
+        this.ghostBar.progress = 1;
     }
 
-    bossHPChanged(curHp: number) {
-        if (!this.node.active || !this.progressBar) return;
-        const ratio = Math.max(0, Math.min(1, curHp / this._maxHp));
-        Tween.stopAllByTarget(this._tweenTarget);
-        tween(this._tweenTarget).to(0.2, { p: ratio }, {
-            onUpdate: () => { this.progressBar.progress = this._tweenTarget.p; }
-        }).start();
+    bossHPChanged(ratio: number) {
+        ratio = Math.max(0, Math.min(1,ratio));
+        this.progressBar.progress = ratio;
+    }
+
+    protected update(dt: number): void {
+
+        const target = this.progressBar.progress;
+        const ghost = this.ghostBar.progress;
+        const diff = target - ghost;
+
+        if(Math.abs(diff) < 0.001){
+            this.ghostBar.progress = target;
+            return;
+        }
+
+        const speed = diff < 0?this.GHOST_FALL_SPEED:this.GHOST_RISE_SPEED;
+        const t = Math.min(1, dt * speed);
+        this.ghostBar.progress = ghost + diff * t; 
+
     }
 
     bossHideHpBar(){

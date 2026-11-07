@@ -1,7 +1,7 @@
-import { _decorator,  Component,  Node, ProgressBar, tween, Tween } from 'cc';
+import { _decorator,  Component,  Node, ProgressBar,} from 'cc';
 import { EventBus } from '../Core/EventBus';
 import { GameConstants } from '../Core/GameConstants';
-import { GameData } from '../Core/GameData';
+
 const { ccclass, property } = _decorator;
 
 @ccclass('PlayerHealthUI')
@@ -14,14 +14,13 @@ export class PlayerHealthUI extends Component {
     
     @property(ProgressBar)
     progressBar: ProgressBar = null!; 
-    
-    
-    private _tweenTarget = { p: 1 };
 
-    private _maxHp:number = 5;
+    @property(ProgressBar)
+    ghostBar: ProgressBar = null!; 
 
+    private readonly GHOST_FALL_SPEED = 3.5;   
 
- 
+    private readonly GHOST_RISE_SPEED = 5.0;   
 
     protected onLoad(): void {
         EventBus.on(GameConstants.EVENT_TYPE.PLAYER_HP_CHANGED, this.onHpChanged, this);
@@ -30,21 +29,34 @@ export class PlayerHealthUI extends Component {
     }
 
     public init(){
-        this._maxHp = GameData.playerMaxHp;
         this.node.active = true;
-        Tween.stopAllByTarget(this._tweenTarget);
-        this._tweenTarget.p = 1;
         this.progressBar.progress = 1;
+        this.ghostBar.progress = 1;
     }
 
-    onHpChanged(curHp:number){
+    onHpChanged(ratio:number){
         if (!this.node.active || !this.progressBar) return;
-        const ratio = Math.max(0, Math.min(1, curHp / this._maxHp));
-        Tween.stopAllByTarget(this._tweenTarget);
-        tween(this._tweenTarget).to(0.2, { p: ratio }, {
-            onUpdate: () => { this.progressBar.progress = this._tweenTarget.p; }
-        }).start();
+        ratio = Math.max(0, Math.min(1, ratio));
+        this.progressBar.progress = ratio;
     }
+
+    protected update(dt: number): void {
+
+        const target = this.progressBar.progress;
+        const ghost = this.ghostBar.progress;
+        const diff = target - ghost;
+
+        if(Math.abs(diff) < 0.001){
+            this.ghostBar.progress = target;
+            return;
+        }
+
+        const speed = diff < 0?this.GHOST_FALL_SPEED:this.GHOST_RISE_SPEED;
+        const t = Math.min(1, dt * speed);
+        this.ghostBar.progress = ghost + diff * t; 
+
+    }
+
     
 
     protected onDestroy(): void {

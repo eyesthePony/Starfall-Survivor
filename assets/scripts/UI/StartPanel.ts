@@ -1,7 +1,7 @@
 
 import { _decorator, Component, Node, Button, director, assetManager } from 'cc';
 import { GameData } from '../Core/GameData';
-import { LoadingUI } from './LodingUI';
+import { LoadingUI } from './LoadingUI';
 import { GameConstants } from '../Core/GameConstants';
 const { ccclass, property } = _decorator;
 

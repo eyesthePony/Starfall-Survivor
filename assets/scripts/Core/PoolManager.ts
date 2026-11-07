@@ -25,7 +25,7 @@ export class PoolManager {
 
     public getNode(prefab:Prefab, parent:Node){
         let name = prefab.name;
- 
+
         let pool = null;
         let node = null;
         if(this._dictPool.hasOwnProperty(name)){
@@ -50,7 +50,7 @@ export class PoolManager {
 
     public putNode(node:Node){
         if(!node)   return;
-        node.removeFromParent()
+
 
         let name = node.name;
    
@@ -62,7 +62,6 @@ export class PoolManager {
             this._dictPool[name] = pool;
         }
   
-        node.active = false;
         pool.put(node);
     }
 

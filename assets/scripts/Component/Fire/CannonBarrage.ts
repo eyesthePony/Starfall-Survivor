@@ -5,6 +5,8 @@ import { BaseFire } from './BaseFire';
 import{AimMode, FireMode, OrbitCenter, TriggerMode, TurretFormation} from '../../Core/ConfigEnums'
 import { GameData } from '../../Core/GameData';
 import { GameConstants } from '../../Core/GameConstants';
+import { PoolManager } from '../../Core/PoolManager';
+import { EventBus } from '../../Core/EventBus';
 const { ccclass, property } = _decorator;
 
 @ccclass('CannonBarrage')
@@ -82,7 +84,12 @@ export class CannonBarrage extends BaseFire {
 
     
 
+    protected onLoad(): void {
+        EventBus.on(GameConstants.EVENT_TYPE.GAME_RESET, this.clearCannons, this);
+    }
+
     protected onDestroy(): void {
+        EventBus.off(GameConstants.EVENT_TYPE.GAME_RESET, this.clearCannons, this);
         this.clearCannons();   
     }
 
@@ -123,15 +130,22 @@ export class CannonBarrage extends BaseFire {
     private createCannonNodes() {
         if (!this._turretPrefab) return;
         for (let i = 0; i < this._turretCount; i++) {   
-            const cannon = instantiate(this._turretPrefab);
-            cannon.parent = this.node.parent;;                                  
+            const cannon = PoolManager.instance.getNode(this._turretPrefab, this.node.parent);                                
             const script = cannon.getComponent(Turret);
-            if (!script) { console.warn('[CannonBarrage] 缺少 Turret 组件'); cannon.destroy(); continue; }
+            if (!script) { 
+                console.warn('[CannonBarrage] 缺少 Turret 组件'); 
+                PoolManager.instance.putNode(cannon);
+                continue; 
+            }
+            //重置状态
+            cannon.setScale(1, 1, 1);
+            cannon.angle = 0;
             if (this._aimMode === AimMode.FIXED) {
                 cannon.angle = this._fireAngle;
             }
             this._cannonNodes.push(cannon);
             const sprite = cannon.getComponentInChildren(Sprite);
+            if (sprite) sprite.color = CannonBarrage.COLOR_WHITE;
             this._turretSprites.push(sprite);
             this._turretScripts.push(script);
         }
@@ -140,7 +154,9 @@ export class CannonBarrage extends BaseFire {
     private clearCannons() {
         for (let i = 0; i < this._cannonNodes.length; i++) {
             const cannon = this._cannonNodes[i];
-            if (cannon && cannon.isValid) cannon.destroy(); 
+            if (cannon && cannon.isValid) {
+                PoolManager.instance.putNode(cannon);
+            }
         }
         this._cannonNodes.length = 0;
         this._turretScripts.length = 0;

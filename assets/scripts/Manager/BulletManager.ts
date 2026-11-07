@@ -78,7 +78,7 @@ export class BulletManager extends Component {
     }
 
     //bulletType是各中不同贴图的子弹，但逻辑相同，所以使用相同预制体。根据预制体来实例化，然后组装贴图，赋予数值。
-    public spawnBullet(bulletType:string,isPlayerBullet: boolean, spawnPos: Vec3, dir: Vec3, damage: number, speed: number,followTarget: Node = null): void {
+    public spawnBullet(bulletType:string,isPlayerBullet: boolean, spawnPos: Vec3, dir: Vec3, damageOrMultiplier: number, speedOrMultiplier: number,followTarget: Node = null): void {
         
         const baseData = BULLET_CONFIG[bulletType];
         if(!baseData){
@@ -86,11 +86,11 @@ export class BulletManager extends Component {
             return;
         }
 
-        let finalDamage = damage;
-        let finalSpeed = speed;
+        let finalDamage = damageOrMultiplier;
+        let finalSpeed = speedOrMultiplier;
         if(isPlayerBullet){
-            finalDamage = damage * baseData.baseDamage;
-            finalSpeed = speed * baseData.baseSpeed;
+            finalDamage = damageOrMultiplier * baseData.baseDamage;
+            finalSpeed = speedOrMultiplier * baseData.baseSpeed;
         }
         const sf = this._spriteDict[baseData.spriteName];
         let bulletprefab:Prefab = null;
