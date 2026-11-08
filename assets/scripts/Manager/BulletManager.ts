@@ -34,14 +34,17 @@ export class BulletManager extends Component {
     
 
     onLoad() {
+        console.time("BulletManager_Init");
         BulletManager.instance = this; 
         for (let i=0; i < this.bulletFrames.length; ++ i) {
             const bf = this.bulletFrames[i];
             this._spriteDict[bf.name] = bf;
         }
+   
         EventBus.on(GameConstants.EVENT_TYPE.GAME_RESET,this.onGameReset,this);
         EventBus.on(GameConstants.EVENT_TYPE.GAME_STATE_CHANGED,this.onStateChanged,this);
         EventBus.on(GameConstants.EVENT_TYPE.BULLET_KILLED, this.onBulletRecycle, this);
+        console.timeEnd("BulletManager_Init");
     }
 
     private onGameReset(){

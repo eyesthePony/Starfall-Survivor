@@ -97,7 +97,7 @@ export const CARD_CONFIG:CardConfigData[] = [
      },
      { id: GameConstants.CARD_ID.HOMING_UP, 
         name: '奎来66', 
-        desc: '给奎来补两个弹，追踪导弹+1', 
+        desc: '给奎来补个弹，追踪导弹+1', 
         maxLevel: 3, 
         iconIndex:2,
         requireWeapon:GameConstants.CARD_ID.HOMING_MISSILE, 

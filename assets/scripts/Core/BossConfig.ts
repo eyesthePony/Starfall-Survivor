@@ -53,7 +53,7 @@ export interface BossConfigData {
 export const BOSS_CONFIG:Record<string,BossConfigData> = {
    [GameConstants.BOSS_TYPE.WHALE_BOSS]: {
         name: "吴鲸波",
-        maxHp: 12000,
+        maxHp: 3000,
         damage: 15,
         expReward: 400,
         moveSpeed: 1.5,
@@ -183,7 +183,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
     },
     [GameConstants.BOSS_TYPE.MACHINE_BOSS]: {
         name: "胡碟飞飞飞",
-        maxHp: 25000,
+        maxHp: 5000,
         damage: 15,
         expReward: 1000,
         moveSpeed: 1.5,
@@ -257,7 +257,7 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                         params: {
                             triggerMode: TriggerMode.ONCE,
                             fireMode: FireMode.VOLLEY,
-                            spreadCount: 5,
+                            spreadCount: 2,
                             spreadAngle: 60,
                             bulletDamage: 45,
                             bulletSpeed: 300,
@@ -318,9 +318,9 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                             bulletType: GameConstants.BULLET_TYPE.LASER,
                             triggerMode: TriggerMode.CONTINUOUS,
                             fireMode: FireMode.SEQUENCE,
-                            fireInterval: 0.5,       // 每 0.5 秒轮到下个炮台
-                            burstDuration: 0.5,
-                            burstGap: 0.3,
+                            fireInterval: 0.5,     //0.5秒发一个激光
+                            burstDuration: 0.5,    //发射持续0.5秒
+                            burstGap: 0.3,         //发射完后0.3秒下一个炮台发射
                             spreadCount: 1,
                             spreadAngle: 0,
                             bulletDamage: 20,

@@ -294,7 +294,7 @@ export const LEVELS: LevelData[] = [
             },
             // 波次2：两翼圆弧包抄
             {
-                delay: 2.0,
+                delay: 1,
                 groups: [
                     {
                         category: "normal",
@@ -316,7 +316,7 @@ export const LEVELS: LevelData[] = [
             },
             // 波次3：敢死队 + 冲刺冲锋（高速压场）
             {
-                delay: 2.0,
+                delay: 1,
                 groups: [
                     {
                         category: "normal",
@@ -338,7 +338,7 @@ export const LEVELS: LevelData[] = [
             },
             // 波次4：Boss —— 胡碟飞飞飞
             {
-                delay: 3.0,
+                delay: 1.0,
                 groups: [
                     {
                         category: "boss",

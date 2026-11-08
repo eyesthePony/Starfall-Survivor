@@ -40,6 +40,7 @@ export class EnemyManager extends Component {
    
 
     onLoad() {
+        console.time("EnemyManager_Init");
         EnemyManager._instance = this;
 
         //将所有预制体生成字典映射
@@ -61,6 +62,7 @@ export class EnemyManager extends Component {
         EventBus.on(GameConstants.EVENT_TYPE.PLAYER_BULLET_HIT, this.onHit, this);
         EventBus.on(GameConstants.EVENT_TYPE.REQUEST_HOMING_TARGET, this.onRequestTarget, this);
         EventBus.on(GameConstants.EVENT_TYPE.PLAYER_CRASH_ENEMY, this.onCrashEnemy, this);
+         console.timeEnd("EnemyManager_Init");
     }
 
     onDestroy() {

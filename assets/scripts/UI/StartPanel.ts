@@ -80,7 +80,9 @@ export class StartPanel extends Component {
                         if (preErr) console.warn('预载目录失败', dir, preErr);
                         if (done === dirs.length) {
                             this._loadingUI?.finish();
-                            this._loadingUI?.hide();
+                            if (this.loadingPanel) {
+                                director.addPersistRootNode(this.loadingPanel);
+                            }
                             director.loadScene(GameConstants.GAME_SCENE.BATTLE);
                         }
                     });
