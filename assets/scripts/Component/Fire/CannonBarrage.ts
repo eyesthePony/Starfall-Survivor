@@ -46,10 +46,17 @@ export class CannonBarrage extends BaseFire {
    
 
     //=============炮台攻击方式=====================
-    private _seqInterval: number = 0.15;  // 一发间隔
-    private _seqTimer: number = 0;        // 一发开火计时器
+    private _fireInterval: number = 0.15;  // 一发间隔
+    private _fireTimer: number = 0;        // 一发开火计时器
     private _seqIndex:number = -1;        //发射编号
-    private _warnTime: number = -1; // 预警时间。如果小于0则自动计算
+    private _burstDuration: number = 2;    // 每个炮口持续发射几秒
+    private _burstElapsed: number = 0;     // 当前炮口已持续了几秒
+    private _burstGap: number = 0.3;         //喘息时间
+    private _gapTimer: number = 0;         // 喘息计时器,轮流发射间隔
+    private _spreadCount:number = 0;       //一次发射几颗
+    private _spreadAngle:number = 0;       //发射角度
+    private _warnTime: number = -1; 
+
    
 
     private _triggerMode:TriggerMode = TriggerMode.IDLE; // 触发状态：IDLE 停火 / ONCE 打一轮 / CONTINUOUS 持续打
@@ -82,14 +89,16 @@ export class CannonBarrage extends BaseFire {
     private _targetVecs: Vec3[] = [];
     private _tempCenter = new Vec3();
 
-    
+    private _parentNode:Node = null;
 
     protected onLoad(): void {
+        this._parentNode = this.node.parent;
         EventBus.on(GameConstants.EVENT_TYPE.GAME_RESET, this.clearCannons, this);
     }
 
     protected onDestroy(): void {
         EventBus.off(GameConstants.EVENT_TYPE.GAME_RESET, this.clearCannons, this);
+        this._parentNode = null;
         this.clearCannons();   
     }
 
@@ -118,7 +127,7 @@ export class CannonBarrage extends BaseFire {
         if (!boss) { this._isSpawning = false; return; }
         boss.load(this._turretPath, Prefab, (err, prefab) => {
             this._isSpawning = false;
-            if (err || !this.enabled) return;
+            if (err || !this.enabled || !this.node.isValid) return;
             this._turretPrefab = prefab;
             this.createCannonNodes();
             this.setFormation(this._currentFormation, this._orbitCenter, this._radius, this._rotateSpeed);
@@ -129,8 +138,12 @@ export class CannonBarrage extends BaseFire {
 
     private createCannonNodes() {
         if (!this._turretPrefab) return;
+        if(!this._parentNode || !this._parentNode.isValid){
+            console.log('父节点已销毁，无法创建炮台');
+            return;
+        }
         for (let i = 0; i < this._turretCount; i++) {   
-            const cannon = PoolManager.instance.getNode(this._turretPrefab, this.node.parent);                                
+            const cannon = PoolManager.instance.getNode(this._turretPrefab, this._parentNode);                                
             const script = cannon.getComponent(Turret);
             if (!script) { 
                 console.warn('[CannonBarrage] 缺少 Turret 组件'); 
@@ -163,8 +176,10 @@ export class CannonBarrage extends BaseFire {
         this._turretSprites.length = 0;   
         this._isMoving = false;
         this._seqIndex = -1;
-        this._seqTimer = 0;
+        this._fireTimer = 0;
         this._timer = 0;
+        this._burstElapsed = 0;
+        this._gapTimer = 0;
 
        
     }
@@ -174,9 +189,11 @@ export class CannonBarrage extends BaseFire {
        // 只清瞬时运行时计数；阵型/瞄准/子弹类型等配置由 applyConfig 负责
         this._timer = 0;
         this._seqIndex = -1;
-        this._seqTimer = 0;
         this._isMoving = false;
         this._moveTimer = 0;
+        this._burstElapsed = 0;
+        this._gapTimer = 0;
+
     }
 
     public applyConfig(params?: Record<string, any>) {
@@ -210,8 +227,9 @@ export class CannonBarrage extends BaseFire {
             this._triggerMode = params.triggerMode;
             if (params.triggerMode === TriggerMode.CONTINUOUS && prev !== TriggerMode.CONTINUOUS) {
                 this._timer = 0;
-                this._seqIndex = -1;
-                this._seqTimer = 0;
+                this._fireTimer = 0;
+                this._burstElapsed = 0;
+                this._gapTimer = 0;
             }
         }
 
@@ -219,7 +237,9 @@ export class CannonBarrage extends BaseFire {
             this._fireMode = params.fireMode;
             this._timer = 0;
             this._seqIndex = -1;
-            this._seqTimer = 0;
+            this._fireTimer = 0;
+            this._burstElapsed = 0;
+            this._gapTimer = 0;
         }
 
         if (params.bulletDamage!== undefined) this.bulletDamage = params.bulletDamage;
@@ -227,12 +247,16 @@ export class CannonBarrage extends BaseFire {
         if (params.bulletType !== undefined) this._bulletType = params.bulletType;
         if (params.isPlayerBullet !== undefined) this._isPlayerBullet = params.isPlayerBullet;
         if (params.interval !== undefined) this.interval = params.interval;
-        if (params.seqInterval !== undefined) this._seqInterval = params.seqInterval;
+        if (params.fireInterval !== undefined) this._fireInterval = params.fireInterval;
         if (params.aimSpeed !== undefined) this._aimSpeed = params.aimSpeed;
         if (params.oscRange !== undefined) this._oscRange = params.oscRange;
         if (params.fireAngle !== undefined) this._fireAngle = params.fireAngle;
         if (params.moveDuration !== undefined) this._moveDuration = params.moveDuration;
         if (params.warnTime !== undefined) this._warnTime = params.warnTime; 
+        if (params.burstDuration !== undefined) this._burstDuration = params.burstDuration;
+        if (params.burstGap !== undefined) this._burstGap = params.burstGap;
+        if (params.spreadCount !== undefined) this._spreadCount = params.spreadCount;   
+        if (params.spreadAngle !== undefined) this._spreadAngle = params.spreadAngle;   
         
 
         const pathChanged = params.turretPath && params.turretPath !== this._turretPath;
@@ -265,11 +289,11 @@ export class CannonBarrage extends BaseFire {
 
         if (this._triggerMode !== TriggerMode.IDLE && this._fireMode === FireMode.SEQUENCE) {
             let actualWarn = this._warnTime;
-            if (actualWarn < 0) actualWarn = Math.min(0.4, this._seqInterval * 0.5);
+            if (actualWarn < 0) actualWarn = Math.min(0.4, this._fireInterval * 0.5);
 
-            if (this._seqIndex >= 0 && this._seqTimer >= this._seqInterval - actualWarn) {
+            if (actualWarn > 0 && this._seqIndex >= 0 && this._fireTimer >= this._fireInterval - actualWarn) {
                 warningIndex = this._seqIndex;
-                progress = Math.min((this._seqTimer - (this._seqInterval - actualWarn)) / actualWarn, 1);
+                progress = Math.min((this._fireTimer - (this._fireInterval - actualWarn)) / actualWarn, 1);
             }
         }
 
@@ -571,7 +595,10 @@ export class CannonBarrage extends BaseFire {
         }
 
         for(let i=0;i< this._turretScripts.length;++i){
-            this._turretScripts[i].fire(this.bulletDamage,this._bulletType,this.bulletSpeed,this._isPlayerBullet);
+            this._turretScripts[i].fireSpread(
+                this.bulletDamage, this._bulletType, this.bulletSpeed,
+                this._isPlayerBullet, this._spreadCount, this._spreadAngle
+            );
         }
     }
 
@@ -579,33 +606,52 @@ export class CannonBarrage extends BaseFire {
     
 
     //依次发射
-    private updateSequence(dt: number) {
-        if(this._seqIndex < 0) {  //初始化
-            this._seqTimer = 0;
+   private updateSequence(dt: number) {
+        if (this._seqIndex < 0) {   // 初始化,计时器清0
+            this._fireTimer = 0;
             this._seqIndex = 0;
+            this._burstElapsed = 0;
+            this._gapTimer = 0;
         }
 
-        //计时开始
-        this._seqTimer += dt;
-
-        if(this._seqTimer < this._seqInterval) return;
-
-
-        //获取当前要发射的炮台组件，并发射
-        let turret:Turret = this._turretScripts[this._seqIndex];
-        if (turret && turret.isValid) {
-            turret.fire(this.bulletDamage,this._bulletType,this.bulletSpeed,this._isPlayerBullet);
+        // ========== 阶段 A：喘息中 ==========
+        if (this._gapTimer > 0) {
+            this._gapTimer -= dt;
+            if (this._gapTimer > 0) return;      // 还没喘完，本帧啥也不干
+            this._gapTimer = 0;
+            this._burstElapsed = 0;              // 喘完，新一串重新计时
+            this._fireTimer = 0;
         }
-        ++this._seqIndex;
 
-        //判断是否完成一轮发射
-        if(this._seqIndex >= this._turretScripts.length){
-            this._seqIndex = -1;
-            if (this._triggerMode === TriggerMode.ONCE) { //如果是一次开火，则结束开火模式
-                this._triggerMode = TriggerMode.IDLE;
+        // ========== 阶段 B：当前炮口持续发射 ==========
+        this._burstElapsed += dt;//这个炮口持续发射子弹时间累计
+        this._fireTimer += dt;//这个炮口发射一发时间累计
+
+        let guard = 0;
+        while (this._fireTimer >= this._fireInterval && guard++ < 32) {//用while，fireInterval小于一帧时间dt
+            const turret = this._turretScripts[this._seqIndex];
+            if (turret && turret.isValid) {
+                turret.fireSpread(this.bulletDamage, this._bulletType, this.bulletSpeed,
+                    this._isPlayerBullet, this._spreadCount, this._spreadAngle);
             }
-        }else{
-            this._seqTimer -= this._seqInterval;  //重置计时器
+            this._fireTimer -= this._fireInterval;
+        }
+
+        // ========== 持续时间到，切下一个炮口 ==========
+        if (this._burstElapsed >= this._burstDuration) {
+            ++this._seqIndex;
+            if (this._seqIndex >= this._turretScripts.length) {
+                this._seqIndex = 0;
+                if (this._triggerMode === TriggerMode.ONCE) {
+                    this._triggerMode = TriggerMode.IDLE;
+                    this._burstElapsed = 0;
+                    this._fireTimer = 0;
+                    this._gapTimer = 0;
+                    return;
+                }
+            }
+            this._gapTimer = this._burstGap;//喘息倒计时重新开始
+            this._burstElapsed = 0;  
         }
     }
 

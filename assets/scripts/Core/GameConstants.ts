@@ -116,7 +116,9 @@ export class GameConstants {
     public static ENEMY_TYPE = {
         BASIC_DRONE:"basic_drone",
         SINE_DRONE: "sine_drone",     
-        ARC_DRONE: "arc_drone",     
+        ARC_DRONE: "arc_drone",  
+        DIVE_DRONE:"dive_drone",   
+        SPRINT_DRONE:"sprint_drone",
     }
 
     //敌机预制体名字，不同飞机逻辑，value
@@ -124,6 +126,7 @@ export class GameConstants {
         STRAIGHT: "StraightMoveEnemy",
         SINE: "SineEnemy",
         ARC:'ArcEnemy',
+        DIVE:'DiveEnemy',
     }
 
     //boss敌机类型，类型为key，行为逻辑等数据为value

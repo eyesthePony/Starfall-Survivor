@@ -18,16 +18,16 @@ export const BULLET_CONFIG: Record<string, BulletData> = {
        prefab:GameConstants.BULLET_PREFAB.BASE, spriteName: "bluebullet", baseSpeed: 420, baseDamage: 10,
     },
     [GameConstants.BULLET_TYPE.YELLOWBULLET]: {
-        prefab:GameConstants.BULLET_PREFAB.BASE,spriteName: "yellowbullet", baseSpeed: 260, baseDamage: 10,
+        prefab:GameConstants.BULLET_PREFAB.BASE,spriteName: "yellowbullet", baseSpeed: 260, baseDamage: 8,
     },
     [GameConstants.BULLET_TYPE.LASER]: {
-         prefab:GameConstants.BULLET_PREFAB.LASER,spriteName: "laser", baseSpeed: 0, baseDamage: 14,
+         prefab:GameConstants.BULLET_PREFAB.LASER,spriteName: "laser", baseSpeed: 0, baseDamage: 5,
     },
     [GameConstants.BULLET_TYPE.HOMING]: {
          prefab:GameConstants.BULLET_PREFAB.HOMING,spriteName: "homing", baseSpeed: 320, baseDamage: 12,
     },
     [GameConstants.BULLET_TYPE.PARTICLE]: {
-         prefab:GameConstants.BULLET_PREFAB.BASE,spriteName: "particle", baseSpeed: 240, baseDamage: 10,
+         prefab:GameConstants.BULLET_PREFAB.BASE,spriteName: "particle", baseSpeed: 240, baseDamage: 8,
     },
 
 }

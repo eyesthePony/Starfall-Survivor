@@ -104,17 +104,17 @@ export class PlayerPlane extends  BasePlane {
         if (cardData.type === GameConstants.CARD_TYPE.STAT) {
             switch(cardData.id){
                 case GameConstants.CARD_ID.DMG_UP:
-                    this.bulletDamage += 0.5;
+                    this.bulletDamage += 0.3;
                     break;
 
                 case GameConstants.CARD_ID.SPD_UP:
-                    this.fireCd *= 0.5;
+                    this.fireCd *= 0.8;
                     break;
                 case GameConstants.CARD_ID.MOVE_UP:
-                    this.bulletSpeed += 0.5;
+                    this.bulletSpeed += 0.3;
                     break;
                 case GameConstants.CARD_ID.BULLET_UP:
-                    this.bulletCount += 2;
+                    this.bulletCount += 1;
                     break;
 
             }
@@ -129,6 +129,7 @@ export class PlayerPlane extends  BasePlane {
                 if (!laser) { // 防止重复挂载
                     laser = this.addComponent(LaserFire);
                     laser.applyConfig({ muzzleNode: this.muzzle, isPlayerBullet: true });
+                    laser.enabled = this.enabled;
                     this._activeWeapons.push(laser);
                 }
             } 
@@ -137,6 +138,7 @@ export class PlayerPlane extends  BasePlane {
                 if (!homing) {
                     homing = this.addComponent(HomingFire);
                     homing.applyConfig({ muzzleNode: this.muzzle, isPlayerBullet: true });
+                    homing.enabled = this.enabled;
                     this._activeWeapons.push(homing);
                 }
             }

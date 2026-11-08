@@ -31,7 +31,7 @@ export class UpgradeManager extends Component {
         let levelUpCount = 0;
         while (this._exp >= this._maxExp) {
             this._exp -= this._maxExp;
-            this._maxExp += 70; // 下一级需要的经验增多
+            this._maxExp += 50; // 下一级需要的经验增多
             ++this._level;
             ++levelUpCount;
         }

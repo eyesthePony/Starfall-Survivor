@@ -1177,6 +1177,10 @@
       {
         "__uuid__": "402d9802-c3dc-46c5-8a5a-607142c692ab",
         "__expectedType__": "cc.Prefab"
+      },
+      {
+        "__uuid__": "89a9f504-8fc6-480f-8abe-2f64e2006b09",
+        "__expectedType__": "cc.Prefab"
       }
     ],
     "enemyFrames": [
@@ -1190,6 +1194,10 @@
       },
       {
         "__uuid__": "e0fe50d9-d638-480c-892b-aac0a713907d@f9941",
+        "__expectedType__": "cc.SpriteFrame"
+      },
+      {
+        "__uuid__": "964279dc-fe81-4262-8c93-fc0ea153f369@f9941",
         "__expectedType__": "cc.SpriteFrame"
       }
     ],

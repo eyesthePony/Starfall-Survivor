@@ -1,6 +1,6 @@
 
 
-
+//===============turret==========
 
 //====围绕旋转圆心=====
 export enum OrbitCenter {
@@ -39,4 +39,20 @@ export enum AimMode {
 
 
 
+//================levelConfig====================
+//==============敌机阵型==============
+export enum FormationType {
+    NONE = 'none',                //无阵型
+    LINE = "line",               // 一字长蛇
+    VSHAPE = "vshape",           // V字阵
+    RANDOM_SPREAD = "random_spread", // 散开
+}
 
+// ========== 敌机出生位置 ==========
+export enum SpawnPosition {
+    TOP = "top",           // 从顶部
+    LEFT = "left",         // 从左侧
+    RIGHT = "right",       // 从右侧
+    RANDOM = "random",     // 顶部随机X
+    CUSTOM = "custom",     // 完全由 startX/startY 决定
+}

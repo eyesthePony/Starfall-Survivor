@@ -1,4 +1,4 @@
-import { _decorator,  Node, Vec3 ,SpriteFrame} from 'cc';
+import { _decorator, Node, Vec3, SpriteFrame } from 'cc';
 import { BaseBullet } from './BaseBullet';
 import { EventBus } from '../../Core/EventBus';
 import { GameConstants } from '../../Core/GameConstants';
@@ -8,63 +8,73 @@ const { ccclass, property } = _decorator;
 export class HomingMissile extends BaseBullet {
     
     @property({ tooltip: "转向速度" })
-    public turnSpeed: number = 5; 
+    public turnSpeed: number = 8; 
 
     private _targetNode: Node = null;
     private _tempDir: Vec3 = new Vec3();
-
     private _retargetCd: number = 0; 
-    
 
-    // 接收目标，以及一个“没目标时向我求助”的回调函数
-    public init(isPlayerBullet: boolean, dir: Vec3, damage: number, speed: number, startPos: Vec3,sf:SpriteFrame,) {
-        super.init(isPlayerBullet, dir, damage, speed, startPos,sf);
+    public init(isPlayerBullet: boolean, dir: Vec3, damage: number, speed: number, startPos: Vec3, sf: SpriteFrame) {
+        super.init(isPlayerBullet, dir, damage, speed, startPos, sf);
         this._targetNode = null; 
+        this._retargetCd = 0; 
     }
 
-     // 每次需要目标的时候，发个广播
     private requestTarget() {
         if (this.playerBullet) {
-            // 👈 发出请求：我的位置在哪，请把结果通过回调传给我
             EventBus.dispatchEvent(
                 GameConstants.EVENT_TYPE.REQUEST_HOMING_TARGET, 
-                this.node.worldPosition, 
+                this.node.position, 
                 (target: Node) => {
-                    this._targetNode = target;
+                    if (target && target.isValid && target.active) {
+                        this._targetNode = target;
+                    } else {
+                        this._targetNode = null;
+                    }
                 }
             );
         }
     }
 
     update(deltaTime: number) {
+        if (this._isDead) return; 
         super.update(deltaTime);
 
         this._retargetCd -= deltaTime;
 
-        // 1. 如果目标死了，通过回调向 Manager 请求新目标
-        if ((!this._targetNode || !this._targetNode.isValid || !this._targetNode.active) && this._retargetCd <= 0){
-            this.requestTarget(); // 发广播要一个
-            this._retargetCd = 0.2; // 👈 200 毫秒内只允许请求一次
+        if (this._targetNode && (!this._targetNode.isValid || !this._targetNode.active)) {
+            this._targetNode = null;
         }
 
-        // 2. 只要有了目标，就开始追踪
+        if (!this._targetNode && this._retargetCd <= 0) {
+            this.requestTarget(); 
+            this._retargetCd = 0.1; 
+        }
+
         if (this._targetNode) {
-            const pos = this.node.position;
+            const myPos = this.node.position;
             const targetPos = this._targetNode.position;
-            this._tempDir.set(targetPos.x - pos.x, targetPos.y - pos.y, 0);
-            this._tempDir.normalize();
+            
+            this._tempDir.set(targetPos.x - myPos.x, targetPos.y - myPos.y, 0);
 
-            const factor = this.turnSpeed * deltaTime;
-            this._direction.x += (this._tempDir.x - this._direction.x) * factor;
-            this._direction.y += (this._tempDir.y - this._direction.y) * factor;
-            this._direction.normalize();
+    
+            // 如果目标跑到子弹下方去了（哪怕是稍微偏下），立刻无情抛弃！
+            if (this._tempDir.y < 0) {
+                this._targetNode = null;
+            } 
+            else if (this._tempDir.lengthSqr() > 100) {
+                this._tempDir.normalize();
 
-            const angleRad = Math.atan2(this._direction.y, this._direction.x);
-            this.node.angle = (angleRad * 180 / Math.PI) - 90;
+                const factor = Math.min(this.turnSpeed * deltaTime, 1);
+                
+                this._direction.x += (this._tempDir.x - this._direction.x) * factor;
+                this._direction.y += (this._tempDir.y - this._direction.y) * factor;
+            }
         }
-
-     
+        
+        // 子弹保持当前惯性飞行，计算角度
+        this._direction.normalize();
+        const angleRad = Math.atan2(this._direction.y, this._direction.x);
+        this.node.angle = (angleRad * 180 / Math.PI) - 90;
     }
 }
-
-

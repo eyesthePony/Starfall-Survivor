@@ -8,6 +8,7 @@ import { BOSS_CONFIG } from '../Core/BossConfig';
 import { BaseBoss } from '../Entity/plane/enemy/BaseBoss';
 import { ENEMY_CONFIG, EnemyData } from '../Core/EnemyConfig';
 import { BaseEnemyPlane } from '../Entity/plane/enemy/BaseEnemyPlane';
+import { SpawnPosition } from '../Core/ConfigEnums';
 
 const { ccclass, property } = _decorator;
 
@@ -31,6 +32,8 @@ export class EnemyManager extends Component {
     bossPrefab: Prefab = null!;
 
     private _activeEnemies: BasePlane[] = [];//存活的敌人
+
+    private _spawnPosCache = new Vec3();
 
    
     private topY = 0;
@@ -99,8 +102,6 @@ export class EnemyManager extends Component {
         
     }
 
-
-
     private onEnemyRecycle(enemyNode: Node) {
         const plane = enemyNode.getComponent(BasePlane);
         const idx = this._activeEnemies.indexOf(plane);
@@ -120,6 +121,7 @@ export class EnemyManager extends Component {
        plane.takeDamage(damage);
     }
 
+    //=====================生成敌机============================
     public spawnBoss(enemyType:string,hpMultiplier:number = 1){
         const cfg = BOSS_CONFIG[enemyType];
         if(!cfg)  {console.warn(`[EnemyManager] 未知 Boss: ${enemyType}`); return false; }
@@ -129,12 +131,13 @@ export class EnemyManager extends Component {
         const node = PoolManager.instance.getNode(this.bossPrefab, this.node);
         const boss = node.getComponent(BaseBoss);
         if (!boss) { PoolManager.instance.putNode(node); return false; }
-        boss.init(cfg, new Vec3(0, this.topY + 120, 0),hpMultiplier);
-        this._activeEnemies.push(boss); // Boss 也是 BasePlane，直接塞进去！
+        const spawnPos = this._spawnPosCache.set(0, this.topY + 120, 0);
+        boss.init(cfg, spawnPos,hpMultiplier);
+        this._activeEnemies.push(boss);
         return true;   
     }
 
-    public spawnNormalEnemy(enemyType:string,hpMultiplier:number = 1) {
+    public spawnNormalEnemy(enemyType:string,hpMultiplier:number = 1, customPos:Vec3 = null ,spawnType:SpawnPosition = SpawnPosition.TOP) {
       
         //通过小怪类型，读取小怪配置信息
         const cfg = ENEMY_CONFIG[enemyType];
@@ -147,45 +150,76 @@ export class EnemyManager extends Component {
         const node = PoolManager.instance.getNode(prefab, this.node);
         const plane = node.getComponent(BaseEnemyPlane);
         if (!plane) { PoolManager.instance.putNode(node); return false; }
-      
-        const pos = this._getSpawnPos(cfg);
-        plane.init(cfg, pos, hpMultiplier, this._spriteDict[cfg.spriteName]);
+
+        const finalPos: Vec3 = customPos?customPos:this.calculateDefaultPos(cfg,spawnType);
+
+
+        plane.init(cfg, finalPos, hpMultiplier, this._spriteDict[cfg.spriteName]);
         this._activeEnemies.push(plane);
         return true;
     }
 
-    private _getSpawnPos(cfg: EnemyData): Vec3 {
-        const halfW = GameData.viewW / 2;
-        const halfH = GameData.viewH / 2;
-        const margin = 60;   // 屏外余量，要大于敌机半宽，避免刚露头
-
-        switch (cfg.prefabName) {
-            // 正弦横穿：屏外一侧，y 走基线
-            case GameConstants.ENEMY_PREFAB.SINE: {
-                const x = -halfW - margin;            // 先固定左进；右进改 +halfW + margin
-                const baseY = -halfH / 4 + Math.random() * (halfH / 2); // 中线上下小区间随机
-                return new Vec3(x, baseY, 0);
-            }
-
-            // 圆弧侧弧：屏外一侧，基线贴中线（受 2R 余量约束）
-            case GameConstants.ENEMY_PREFAB.ARC: {
-                const x = -halfW - margin;            // 先只做左进凸右
-                const baseY = 0;                       // 圆弧 y0 别上下飘太远，见下面余量
-                return new Vec3(x, baseY, 0);
-            }
-
-            // 直飞：顶部随机 X
-            default: {
-                const pad = 50;
-                const minX = -halfW + pad;
-                const maxX = halfW - pad;
-                const spawnX = minX + Math.random() * (maxX - minX);
-                return new Vec3(spawnX, this.topY + 100, 0);
-            }
+    //=================计算初始坐标====================
+    private calculateDefaultPos(cfg:EnemyData,spawnType:SpawnPosition):Vec3{
+        if (spawnType === SpawnPosition.LEFT) {
+            return this.getSidePos(-1);
+        }else if(spawnType === SpawnPosition.RIGHT){
+            return this.getSidePos(1);
+        }else if(spawnType === SpawnPosition.RANDOM){
+            return this.getRandomEdgePos();
         }
+
+        return this.getTopOrSideFallback(cfg);
     }
 
-     // 收到信号，算出敌人，把结果通过 callback 传回去！
+    private getSidePos(direction:-1|1):Vec3{
+        const halfW = GameData.viewW / 2;
+        const halfH = GameData.viewH / 2;
+        const margin = 60;  
+        const baseY = -halfH / 3 + Math.random() * (halfH * 2 / 3);
+        this._spawnPosCache.set((halfW + margin) * direction, baseY, 0);
+        return this._spawnPosCache;
+
+    }
+
+    private getRandomEdgePos():Vec3{
+        const halfW = GameData.viewW / 2;
+        const halfH = GameData.viewH / 2;
+        const margin = 100;
+        const rand = Math.floor(Math.random() * 4);
+        
+        if (rand === 0)  this._spawnPosCache.set(-halfW - margin, Math.random() * GameData.viewH - halfH, 0); 
+        else if (rand === 1)  this._spawnPosCache.set(halfW + margin, Math.random() * GameData.viewH - halfH, 0); 
+        else if (rand === 2)  this._spawnPosCache.set(Math.random() * GameData.viewW - halfW, -halfH - margin, 0); 
+        else  this._spawnPosCache.set(Math.random() * GameData.viewW - halfW, halfH + margin, 0); 
+        
+        return  this._spawnPosCache;
+    }
+
+    private getTopOrSideFallback(cfg: EnemyData): Vec3 {
+        const halfW = GameData.viewW / 2;
+        const halfH = GameData.viewH / 2;
+        const margin = 100;
+
+        // 正弦和圆弧怪，只能从侧面出
+        if (cfg.prefabName === GameConstants.ENEMY_PREFAB.SINE || cfg.prefabName === GameConstants.ENEMY_PREFAB.ARC) {
+            
+            const baseY = cfg.prefabName === GameConstants.ENEMY_PREFAB.ARC ? 0 : -halfH / 4 + Math.random() * (halfH / 2);
+            const isLeft = Math.random() > 0.5;
+            const spawnX = isLeft ? (-halfW - margin) : (halfW + margin);
+            this._spawnPosCache.set(spawnX, baseY, 0);
+            return this._spawnPosCache;
+        }
+
+        // 剩下的直飞怪，从顶部随机出
+        const pad = 50;
+        const spawnX = -halfW + pad + Math.random() * (GameData.viewW - pad * 2);
+        this._spawnPosCache.set(spawnX, this.topY + 100, 0);
+        return this._spawnPosCache;
+    }
+
+    // ================== 追踪目标相关 ==================
+    // 收到信号，算出敌人，把结果通过 callback 传回去
     private onRequestTarget(pos: Vec3, callback: (target: Node) => void) {
         const closest = this.getClosestEnemy(pos);
         callback(closest); // 回调返回给子弹
@@ -196,6 +230,10 @@ export class EnemyManager extends Component {
         let closestNode: Node | null = null;
         let minDistSqr = Number.MAX_VALUE; 
 
+        const halfW = GameData.viewW / 2;
+        const halfH = GameData.viewH / 2;
+
+
         // 直接遍历我们自己维护的数组
         for (let i = 0; i < this._activeEnemies.length; i++) {
             const plane = this._activeEnemies[i];
@@ -205,7 +243,14 @@ export class EnemyManager extends Component {
                 continue;
             }
 
-            const enemyPos = plane.node.worldPosition;
+            const enemyPos = plane.node.position;
+            if (enemyPos.y > halfH + 50 || enemyPos.y < -halfH - 50 ||
+                enemyPos.x > halfW + 50 || enemyPos.x < -halfW - 50) {
+                continue;
+            }
+             if (enemyPos.y < pos.y - 30) {
+                continue;
+            }
             const dx = enemyPos.x - pos.x;
             const dy = enemyPos.y - pos.y;
             const distSqr = dx * dx + dy * dy;

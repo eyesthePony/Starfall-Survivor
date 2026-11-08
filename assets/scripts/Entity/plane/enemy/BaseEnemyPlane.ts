@@ -5,7 +5,6 @@ import { EventBus } from '../../../Core/EventBus';
 import { GameConstants } from '../../../Core/GameConstants';
 import { EffectManager } from '../../../Core/EffectManager';
 import { AudioManager } from '../../../Core/AudioManager';
-import { GameData } from '../../../Core/GameData';
 import { EnemyData } from '../../../Core/EnemyConfig';
 const { ccclass,property} = _decorator;
 
@@ -43,10 +42,16 @@ export class BaseEnemyPlane extends BasePlane  {
         this.expReward = cfg.expReward;
         this.ramDamage = cfg.damage;
         this.moveSpeed = cfg.speed;
-        this.fireCd = cfg.fireInterval ?? 1;
-        this._bulletType = cfg.bulletType ?? GameConstants.BULLET_TYPE.YELLOWBULLET
-        this._bulletDamage = cfg.bulletDamage ?? 1;
-        this._bulletSpeed = cfg.bulletSpeed ?? 200;
+        if (cfg.bulletType && cfg.fireInterval) {
+            // 只有配置了子弹类型和间隔，才会开火
+            this.fireCd = cfg.fireInterval;
+            this._bulletType = cfg.bulletType;
+            this._bulletDamage = cfg.bulletDamage ?? 1;
+            this._bulletSpeed = cfg.bulletSpeed ?? 200;
+        } else {
+            // 没配子弹，直接变成哑巴
+            this.fireCd = 999999; 
+        }
         const s = cfg.scale ?? 1;
         this.node.setScale(s,s,1);
         if (this._sprite && sf) this._sprite.spriteFrame = sf;
@@ -59,6 +64,7 @@ export class BaseEnemyPlane extends BasePlane  {
 
 
     shoot(){
+        if (!this._bulletType) return; 
         BulletManager.instance.spawnBullet(this._bulletType,false, this.node.worldPosition, this._shootDir, this._bulletDamage,this._bulletSpeed);
     }
 

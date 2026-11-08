@@ -1,4 +1,5 @@
-
+import { FormationType,SpawnPosition } from './ConfigEnums';
+import { GameData } from './GameData';
 
 
 export interface WaveGroup {
@@ -7,7 +8,12 @@ export interface WaveGroup {
     count: number;            //该组敌人生成数量
     spawnInterval?: number;   // 该组每种敌人生成间隔
     time: number;            // 这组怪在这波内出场时间，绝对时间
-    spawnPos?: "top" | "left" | "right" | "random";//初始位置
+    spawnPos?: SpawnPosition;//初始位置
+    startX?: number;         //坐标
+    startY?: number;
+
+    formation?: FormationType; //阵型
+    formationSpacing?: number; //阵型飞机间距
 }
 
 export interface WaveData{
@@ -26,170 +32,550 @@ export interface LevelData {
 
 
 export const LEVELS: LevelData[] = [
+     // ============================================================
+    // 关卡 1：冰原边境 —— 熟悉操作，直飞为主
+    // ============================================================
     {
-        levelId:1,
+        levelId: 1,
         levelName: "冰原边境",
         backgroundRes: '',
         bgmRes: '',
-        // 教学小高潮，约 2~3 分钟，3 波：炮灰热身 → 骚扰引入 → 小 Boss
         waves: [
-            //第1波：炮灰海热身，成群入场一扫一片
+            // 波次1：一字长蛇（认识直飞怪）
             {
                 delay: 1.0,
                 groups: [
-                    { category: "normal", enemyType: 'basic_drone', count: 14, spawnInterval: 0.16, time: 0,   spawnPos: "top" },
+                    {
+                        category: "normal",
+                        enemyType: "basic_drone",
+                        count: 7,
+                        spawnInterval: 0,
+                        time: 0,
+                        formation: FormationType.LINE,
+                        formationSpacing: 80,
+                        startY: GameData.viewH / 2 + 50,
+                    },
                 ],
             },
-            //第2波：直飞补压 + 左侧正弦骚扰
-            {
-                delay: 1.5,
-                groups: [
-                    { category: "normal", enemyType: 'basic_drone', count: 10, spawnInterval: 0.18, time: 0,   spawnPos: "top" },
-                    { category: "normal", enemyType: 'sine_drone',  count: 5,  spawnInterval: 0.45, time: 0.8, spawnPos: "left" },
-                ],
-            },
-            //第3波：小 Boss 高潮，圆弧侧面暖场，错开 Boss 开场
-            {
-                delay: 2.0,
-                groups: [
-                    { category: "boss",   enemyType: 'whale_boss', count: 1, time: 0,   spawnPos: "top" },
-                    { category: "normal", enemyType: 'arc_drone',  count: 3, spawnInterval: 0.70, time: 1.5, spawnPos: "right" },
-                ],
-            },
-        ]
-    },
-    {
-        levelId:2,
-        levelName: "战争",
-        backgroundRes: '',
-        bgmRes: '',
-        // 双侧包围潮水，约 3~4 分钟，3 波：中路压场 → 右路回切 → 收尾混编
-        waves: [
-            //第1波：直飞中路炮灰海 + 左侧正弦骚扰
-            {
-                delay: 1.0,
-                groups: [
-                    { category: "normal", enemyType: 'basic_drone', count: 18, spawnInterval: 0.15, time: 0,   spawnPos: "top" },
-                    { category: "normal", enemyType: 'sine_drone',  count: 6,  spawnInterval: 0.40, time: 0.8, spawnPos: "left" },
-                ],
-            },
-            //第2波：右侧正弦回切 + 直飞增援
+            // 波次2：V 字 + 正弦初登场（认识侧翼）
             {
                 delay: 2.0,
                 groups: [
-                    { category: "normal", enemyType: 'sine_drone',  count: 8,  spawnInterval: 0.40, time: 0,   spawnPos: "right" },
-                    { category: "normal", enemyType: 'basic_drone', count: 12, spawnInterval: 0.16, time: 0.5, spawnPos: "top" },
+                    {
+                        category: "normal",
+                        enemyType: "basic_drone",
+                        count: 9,
+                        spawnInterval: 0,
+                        time: 0,
+                        formation: FormationType.VSHAPE,
+                        formationSpacing: 60,
+                        startY: GameData.viewH / 2 + 50,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "sine_drone",
+                        count: 3,
+                        spawnInterval: 0.5,
+                        time: 1.5,
+                        spawnPos: SpawnPosition.LEFT,
+                    },
                 ],
             },
-            //第3波：直飞收尾压场 + 右侧正弦穿插
+            // 波次3：圆弧首次登场（认识曲线）
             {
                 delay: 2.0,
                 groups: [
-                    { category: "normal", enemyType: 'basic_drone', count: 10, spawnInterval: 0.16, time: 0,   spawnPos: "top" },
-                    { category: "normal", enemyType: 'sine_drone',  count: 6,  spawnInterval: 0.45, time: 1.0, spawnPos: "right" },
+                    {
+                        category: "normal",
+                        enemyType: "arc_drone",
+                        count: 3,
+                        spawnInterval: 0.6,
+                        time: 0,
+                        spawnPos: SpawnPosition.LEFT,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "arc_drone",
+                        count: 3,
+                        spawnInterval: 0.6,
+                        time: 0.3,
+                        spawnPos: SpawnPosition.RIGHT,
+                    },
+                ],
+            },
+            // 波次4：Boss —— 吴鲸波
+            {
+                delay: 3.0,
+                groups: [
+                    {
+                        category: "boss",
+                        enemyType: "whale_boss",
+                        count: 1,
+                        time: 0,
+                    },
                 ],
             },
         ],
     },
+
+
+    // ============================================================
+    // 关卡 2：铁壁合围 —— 纯小怪高压，走位训练（无 Boss）
+    // ============================================================
     {
-        levelId:3,
-        levelName: "冰原边境·深入",
+        levelId: 2,
+        levelName: "铁壁合围",
         backgroundRes: '',
         bgmRes: '',
-        // 贴身切入挑战，约 3~4 分钟，3 波：圆弧左切 → 右侧穿插 → 收尾混编，无 Boss
         waves: [
-            //第1波：圆弧左侧切入 + 直飞压场
+            // 波次1：四面楚歌（随机边缘，四面八方来）
             {
                 delay: 1.0,
                 groups: [
-                    { category: "normal", enemyType: 'arc_drone',   count: 7,  spawnInterval: 0.60, time: 0,   spawnPos: "left" },
-                    { category: "normal", enemyType: 'basic_drone', count: 12, spawnInterval: 0.16, time: 0.5, spawnPos: "top" },
+                    {
+                        category: "normal",
+                        enemyType: "basic_drone",
+                        count: 12,
+                        spawnInterval: 0.2,
+                        time: 0,
+                        spawnPos: SpawnPosition.RANDOM,
+                    },
                 ],
             },
-            //第2波：圆弧右侧切入 + 正弦右侧穿插
+            // 波次2：两翼圆弧 + 中间 V 字（经典包抄）
             {
                 delay: 2.0,
                 groups: [
-                    { category: "normal", enemyType: 'arc_drone',   count: 6, spawnInterval: 0.60, time: 0,   spawnPos: "right" },
-                    { category: "normal", enemyType: 'sine_drone', count: 7, spawnInterval: 0.35, time: 0.8, spawnPos: "right" },
+                    {
+                        category: "normal",
+                        enemyType: "arc_drone",
+                        count: 3,
+                        spawnInterval: 0.6,
+                        time: 0,
+                        spawnPos: SpawnPosition.LEFT,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "arc_drone",
+                        count: 3,
+                        spawnInterval: 0.6,
+                        time: 0.3,
+                        spawnPos: SpawnPosition.RIGHT,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "basic_drone",
+                        count: 5,
+                        spawnInterval: 0,
+                        time: 1.0,
+                        formation: FormationType.VSHAPE,
+                        startY: GameData.viewH / 2 + 50,
+                    },
                 ],
             },
-            //第3波：左侧圆弧 + 直飞 + 右侧正弦收尾混编
+            // 波次3：高速压力（冲刺 + 敢死队）
             {
                 delay: 2.0,
                 groups: [
-                    { category: "normal", enemyType: 'arc_drone',   count: 5,  spawnInterval: 0.55, time: 0,   spawnPos: "left" },
-                    { category: "normal", enemyType: 'basic_drone', count: 10, spawnInterval: 0.18, time: 0.5, spawnPos: "top" },
-                    { category: "normal", enemyType: 'sine_drone',  count: 6,  spawnInterval: 0.40, time: 1.0, spawnPos: "right" },
+                    {
+                        category: "normal",
+                        enemyType: "sprint_drone",
+                        count: 10,
+                        spawnInterval: 0.3,
+                        time: 0,
+                        spawnPos: SpawnPosition.TOP,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "dive_drone",
+                        count: 6,
+                        spawnInterval: 0.4,
+                        time: 1.0,
+                        spawnPos: SpawnPosition.TOP,
+                    },
                 ],
             },
-        ],
-    },
-    {
-        levelId:4,
-        levelName: "机械要塞",
-        backgroundRes: '',
-        bgmRes: '',
-        // 混编大潮 + 终局 Boss，约 5~7 分钟，3 波：大潮压场 → 贴身压制 → Machine 终局战
-        waves: [
-            //第1波：最大炮灰海 + 全方向正弦混编
-            {
-                delay: 1.0,
-                groups: [
-                    { category: "normal", enemyType: 'basic_drone', count: 22, spawnInterval: 0.15, time: 0,   spawnPos: "top" },
-                    { category: "normal", enemyType: 'sine_drone',  count: 8,  spawnInterval: 0.40, time: 0.8, spawnPos: "random" },
-                ],
-            },
-            //第2波：圆弧贴身 + 右侧正弦压制
-            {
-                delay: 2.0,
-                groups: [
-                    { category: "normal", enemyType: 'arc_drone',   count: 8, spawnInterval: 0.55, time: 0,   spawnPos: "left" },
-                    { category: "normal", enemyType: 'sine_drone', count: 6, spawnInterval: 0.45, time: 1.0, spawnPos: "right" },
-                ],
-            },
-            //第3波：Boss 前暖场攒经验，随后 Machine 终局入场
+            // 波次4：精英波次（大量圆弧两翼）—— 本关高潮
             {
                 delay: 2.5,
                 groups: [
-                    { category: "normal", enemyType: 'basic_drone', count: 8, spawnInterval: 0.18, time: 0,   spawnPos: "top" },
-                    { category: "boss",   enemyType: 'machine_boss', count: 1, time: 1.0, spawnPos: "top" },
+                    {
+                        category: "normal",
+                        enemyType: "arc_drone",
+                        count: 5,
+                        spawnInterval: 0.5,
+                        time: 0,
+                        spawnPos: SpawnPosition.LEFT,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "arc_drone",
+                        count: 5,
+                        spawnInterval: 0.5,
+                        time: 0,
+                        spawnPos: SpawnPosition.RIGHT,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "sine_drone",
+                        count: 6,
+                        spawnInterval: 0.3,
+                        time: 0.8,
+                        spawnPos: SpawnPosition.LEFT,
+                    },
+                ],
+            },
+            // 波次5：终局高压（全类型混刷，收尾）
+            {
+                delay: 3.0,
+                groups: [
+                    {
+                        category: "normal",
+                        enemyType: "basic_drone",
+                        count: 15,
+                        spawnInterval: 0.15,
+                        time: 0,
+                        spawnPos: SpawnPosition.TOP,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "dive_drone",
+                        count: 8,
+                        spawnInterval: 0.3,
+                        time: 1.0,
+                        spawnPos: SpawnPosition.TOP,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "sine_drone",
+                        count: 4,
+                        spawnInterval: 0.4,
+                        time: 1.5,
+                        spawnPos: SpawnPosition.RIGHT,
+                    },
                 ],
             },
         ],
     },
+
+
+    // ============================================================
+    // 关卡 3：机械狂潮 —— 全类型混刷 + 机器 Boss
+    // ============================================================
+    {
+        levelId: 3,
+        levelName: "机械狂潮",
+        backgroundRes: '',
+        bgmRes: '',
+        waves: [
+            // 波次1：铁壁排布（9 直飞一字 + 6 正弦骚扰）
+            {
+                delay: 1.0,
+                groups: [
+                    {
+                        category: "normal",
+                        enemyType: "basic_drone",
+                        count: 9,
+                        spawnInterval: 0,
+                        time: 0,
+                        formation: FormationType.LINE,
+                        formationSpacing: 70,
+                        startY: GameData.viewH / 2 + 100,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "sine_drone",
+                        count: 6,
+                        spawnInterval: 0.3,
+                        time: 0,
+                        spawnPos: SpawnPosition.LEFT,
+                    },
+                ],
+            },
+            // 波次2：两翼圆弧包抄
+            {
+                delay: 2.0,
+                groups: [
+                    {
+                        category: "normal",
+                        enemyType: "arc_drone",
+                        count: 4,
+                        spawnInterval: 0.5,
+                        time: 0,
+                        spawnPos: SpawnPosition.LEFT,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "arc_drone",
+                        count: 4,
+                        spawnInterval: 0.5,
+                        time: 0,
+                        spawnPos: SpawnPosition.RIGHT,
+                    },
+                ],
+            },
+            // 波次3：敢死队 + 冲刺冲锋（高速压场）
+            {
+                delay: 2.0,
+                groups: [
+                    {
+                        category: "normal",
+                        enemyType: "dive_drone",
+                        count: 10,
+                        spawnInterval: 0.25,
+                        time: 0,
+                        spawnPos: SpawnPosition.TOP,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "sprint_drone",
+                        count: 12,
+                        spawnInterval: 0.3,
+                        time: 1.0,
+                        spawnPos: SpawnPosition.TOP,
+                    },
+                ],
+            },
+            // 波次4：Boss —— 胡碟飞飞飞
+            {
+                delay: 3.0,
+                groups: [
+                    {
+                        category: "boss",
+                        enemyType: "machine_boss",
+                        count: 1,
+                        time: 0,
+                    },
+                ],
+            },
+        ],
+    },
+
+
+    // ============================================================
+    // 关卡 4：终局审判 —— 双 Boss 连战
+    // ============================================================
+    {
+        levelId: 4,
+        levelName: "终局审判",
+        backgroundRes: '',
+        bgmRes: '',
+        waves: [
+            // 波次1：精英开场（圆弧 + 冲刺）
+            {
+                delay: 1.0,
+                groups: [
+                    {
+                        category: "normal",
+                        enemyType: "arc_drone",
+                        count: 6,
+                        spawnInterval: 0.3,
+                        time: 0,
+                        spawnPos: SpawnPosition.LEFT,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "arc_drone",
+                        count: 6,
+                        spawnInterval: 0.3,
+                        time: 0,
+                        spawnPos: SpawnPosition.RIGHT,
+                    },
+                ],
+            },
+            // 波次2：高压混刷（全类型）
+            {
+                delay: 2.0,
+                groups: [
+                    {
+                        category: "normal",
+                        enemyType: "basic_drone",
+                        count: 15,
+                        spawnInterval: 0,
+                        time: 0,
+                        formation: FormationType.LINE,
+                        formationSpacing: 55,
+                        startY: GameData.viewH / 2 + 80,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "sine_drone",
+                        count: 6,
+                        spawnInterval: 0.3,
+                        time: 1.0,
+                        spawnPos: SpawnPosition.LEFT,
+                    },
+                    {
+                        category: "normal",
+                        enemyType: "sine_drone",
+                        count: 6,
+                        spawnInterval: 0.3,
+                        time: 1.0,
+                        spawnPos: SpawnPosition.RIGHT,
+                    },
+                ],
+            },
+            // 波次3：鲸鱼 —— 第一道门槛
+            {
+                delay: 3.0,
+                groups: [
+                    {
+                        category: "boss",
+                        enemyType: "whale_boss",
+                        count: 1,
+                        time: 0,
+                    },
+                ],
+            },
+            // 波次4：缓冲小波（给玩家回气，方便迎接第二个 Boss）
+            {
+                delay: 4.0,
+                groups: [
+                    {
+                        category: "normal",
+                        enemyType: "dive_drone",
+                        count: 10,
+                        spawnInterval: 0.2,
+                        time: 0,
+                        spawnPos: SpawnPosition.TOP,
+                    },
+                ],
+            },
+            // 波次5：机器 Boss —— 终局
+            {
+                delay: 4.0,
+                groups: [
+                    {
+                        category: "boss",
+                        enemyType: "machine_boss",
+                        count: 1,
+                        time: 0,
+                    },
+                ],
+            },
+        ],
+    },
+   
 ];
 
 
 // ===== 无尽模式：一轮 3 波循环，打完一轮 loopCount++ 再从头刷，难度随轮回递增 =====
 export const ENDLESS_LEVEL: LevelData = {
-    levelId: 0,
+      levelId: 0,
     levelName: "星空回廊",
     backgroundRes: '',
     bgmRes: '',
     waves: [
-        //第1波：炮灰大潮 + 全方向正弦骚扰
+        // 波次1：热身（一字 + 随机散怪）
+        {
+            delay: 1.0,
+            groups: [
+                {
+                    category: "normal",
+                    enemyType: "basic_drone",
+                    count: 10,
+                    spawnInterval: 0,
+                    time: 0,
+                    formation: FormationType.LINE,
+                    formationSpacing: 70,
+                    startY: GameData.viewH / 2 + 30,
+                },
+                {
+                    category: "normal",
+                    enemyType: "basic_drone",
+                    count: 6,
+                    spawnInterval: 0.4,
+                    time: 1.0,
+                    spawnPos: SpawnPosition.RANDOM,
+                },
+            ],
+        },
+        // 波次2：两翼穿插（V 字 + 双翼正弦）
         {
             delay: 1.5,
             groups: [
-                { category: "normal", enemyType: 'basic_drone', count: 16, spawnInterval: 0.16, time: 0,   spawnPos: "top" },
-                { category: "normal", enemyType: 'sine_drone',  count: 6,  spawnInterval: 0.40, time: 0.8, spawnPos: "random" },
+                {
+                    category: "normal",
+                    enemyType: "basic_drone",
+                    count: 9,
+                    spawnInterval: 0,
+                    time: 0,
+                    formation: FormationType.VSHAPE,
+                    formationSpacing: 60,
+                    startY: GameData.viewH / 2 + 50,
+                },
+                {
+                    category: "normal",
+                    enemyType: "sine_drone",
+                    count: 5,
+                    spawnInterval: 0.4,
+                    time: 1.2,
+                    spawnPos: SpawnPosition.LEFT,
+                },
+                {
+                    category: "normal",
+                    enemyType: "sine_drone",
+                    count: 5,
+                    spawnInterval: 0.4,
+                    time: 1.2,
+                    spawnPos: SpawnPosition.RIGHT,
+                },
             ],
         },
-        //第2波：圆弧左侧切入 + 右侧正弦穿插
+        // 波次3：高压压缩（密集中路 + 侧翼骚扰）
         {
             delay: 2.0,
             groups: [
-                { category: "normal", enemyType: 'arc_drone',   count: 6, spawnInterval: 0.60, time: 0,   spawnPos: "left" },
-                { category: "normal", enemyType: 'sine_drone', count: 6, spawnInterval: 0.40, time: 1.0, spawnPos: "right" },
+                {
+                    category: "normal",
+                    enemyType: "basic_drone",
+                    count: 20,
+                    spawnInterval: 0.1,
+                    time: 0,
+                    spawnPos: SpawnPosition.TOP,
+                },
+                {
+                    category: "normal",
+                    enemyType: "sine_drone",
+                    count: 6,
+                    spawnInterval: 0.3,
+                    time: 1.0,
+                    spawnPos: SpawnPosition.LEFT,
+                },
             ],
         },
-        //第3波：暖场小怪 + Boss（Boss 由 WaveManager 按 loopCount 取模轮换 whale / machine）
+        // 波次4：敢死队 + 冲刺（高速压迫）
         {
-            delay: 2.5,
+            delay: 2.0,
             groups: [
-                { category: "normal", enemyType: 'basic_drone', count: 6, spawnInterval: 0.20, time: 0,   spawnPos: "top" },
-                { category: "boss",   enemyType: 'whale_boss', count: 1, time: 1.0, spawnPos: "top" },
+                {
+                    category: "normal",
+                    enemyType: "dive_drone",
+                    count: 15,
+                    spawnInterval: 0.3,
+                    time: 0,
+                    spawnPos: SpawnPosition.TOP,
+                },
+                {
+                    category: "normal",
+                    enemyType: "sprint_drone",
+                    count: 20,
+                    spawnInterval: 0.5,
+                    time: 1.0,
+                    spawnPos: SpawnPosition.TOP,
+                },
+            ],
+        },
+        // 波次5：Boss —— 默认鲸鱼，代码里按 loopCount 轮换
+        {
+            delay: 3.0,
+            groups: [
+                {
+                    category: "boss",
+                    enemyType: "whale_boss",
+                    count: 1,
+                    time: 0,
+                },
             ],
         },
     ],

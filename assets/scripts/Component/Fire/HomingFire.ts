@@ -24,9 +24,9 @@ export class HomingFire extends BaseFire {
 
     onUpgrade(cardId:string){
         if (cardId === GameConstants.CARD_ID.HOMING_DMG) {
-            this.bulletDamage *= 1.5;
+            this.bulletDamage *= 1.3;
         }else if(cardId === GameConstants.CARD_ID.HOMING_UP){
-            this._homingCount += 2;
+            this._homingCount += 1;
         }
     }
 

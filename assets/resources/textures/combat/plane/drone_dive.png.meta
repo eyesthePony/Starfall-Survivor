@@ -11,7 +11,7 @@
     "6c48a": {
       "importer": "texture",
       "uuid": "964279dc-fe81-4262-8c93-fc0ea153f369@6c48a",
-      "displayName": "机械圆球",
+      "displayName": "drone_dive",
       "id": "6c48a",
       "name": "texture",
       "userData": {
@@ -35,7 +35,7 @@
     "f9941": {
       "importer": "sprite-frame",
       "uuid": "964279dc-fe81-4262-8c93-fc0ea153f369@f9941",
-      "displayName": "机械圆球",
+      "displayName": "drone_dive",
       "id": "f9941",
       "name": "spriteFrame",
       "userData": {

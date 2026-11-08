@@ -1,5 +1,5 @@
-
 import { GameConstants } from './GameConstants';
+
 
 export interface EnemyData {
 
@@ -28,33 +28,66 @@ export interface EnemyData {
 }
 
 export const ENEMY_CONFIG: Record<string, EnemyData> = {
+     // 新手炮灰：直飞，低血，偶尔开火
     [GameConstants.ENEMY_TYPE.BASIC_DRONE]: {
         prefabName: GameConstants.ENEMY_PREFAB.STRAIGHT,
         spriteName: "drone_purple",
-        maxHp: 20,
+        maxHp: 15,       // 一枪死
         speed: 100,
-        damage: 30,
-        expReward: 10,
-        fireInterval: 1,
+        damage: 8,      // 撞击掉10血
+        expReward: 15,
+        fireInterval: 2.0, 
         bulletType: GameConstants.BULLET_TYPE.YELLOWBULLET,
-        bulletDamage: 15,
-        bulletSpeed: 220,
-        dropRate: 0.1,
+        bulletDamage: 6, 
+        bulletSpeed: 200,
     },
 
+    // 游击兵：正弦横向切入，速度快
     [GameConstants.ENEMY_TYPE.SINE_DRONE]: {
         prefabName: GameConstants.ENEMY_PREFAB.SINE,
         spriteName: "middle",
-        maxHp: 24, speed: 130, damage: 40, expReward: 15,
-        fireInterval: 1.2, bulletType: GameConstants.BULLET_TYPE.YELLOWBULLET,
-        bulletDamage: 18, bulletSpeed: 260, dropRate: 0.12,
+        maxHp: 25, 
+        speed: 180,      // 速度极快，抓不住
+        damage: 10, 
+        expReward: 25,
+        fireInterval: 1.5, 
+        bulletType: GameConstants.BULLET_TYPE.YELLOWBULLET,
+        bulletDamage: 8, 
+        bulletSpeed: 240, 
     },
+
+    // 重装护卫：圆弧侧切，血厚
     [GameConstants.ENEMY_TYPE.ARC_DRONE]: {
         prefabName: GameConstants.ENEMY_PREFAB.ARC,
         spriteName: "big",
-        maxHp: 30, speed: 120, damage: 60, expReward: 20,
-        fireInterval: 1.5, bulletType: GameConstants.BULLET_TYPE.YELLOWBULLET,
-        bulletDamage: 20, bulletSpeed: 300, dropRate: 0.15,
+        maxHp: 50,       // 需要打好几枪
+        speed: 80,       // 慢悠悠
+        damage: 15, 
+        expReward: 40,
+        fireInterval: 2.5, 
+        bulletType: GameConstants.BULLET_TYPE.YELLOWBULLET,
+        bulletDamage: 10, 
+        bulletSpeed: 200, 
     },
+    //冲刺队
+    [GameConstants.ENEMY_TYPE.SPRINT_DRONE]: {
+        prefabName: GameConstants.ENEMY_PREFAB.STRAIGHT,
+        spriteName: "drone_purple",
+        maxHp: 15,       // 一枪死
+        speed: 500,
+        damage: 10,      // 撞击掉10血
+        expReward: 20,
+    },
+    // 敢死队
+    [GameConstants.ENEMY_TYPE.DIVE_DRONE]: {
+        prefabName: GameConstants.ENEMY_PREFAB.DIVE, 
+        spriteName: "drone_dive",
+        maxHp: 10, 
+        speed: 300,      // 疯狗速度
+        damage: 30,      // 撞到巨痛
+        expReward: 25,
+        // 不填 bulletType，代码里禁言
+    },
+    
     
 };

@@ -1,9 +1,10 @@
-import { _decorator, Component, Node } from 'cc';
+import { _decorator, Component, Node, Vec3 } from 'cc';
 import { ENDLESS_LEVEL, LevelData, LEVELS, WaveData, WaveGroup } from '../Core/LevelConfig';
 import { GameData } from '../Core/GameData';
 import { EventBus } from '../Core/EventBus';
 import { GameConstants } from '../Core/GameConstants';
 import { EnemyManager } from './EnemyPlaneManager';
+import { FormationType, SpawnPosition } from '../Core/ConfigEnums';
 const { ccclass, property } = _decorator;
 
 // 运行时状态
@@ -38,6 +39,8 @@ export class WaveManager extends Component {
     private _aliveEnemies: number = 0;  // 场上活着几架
   
     private _loopCount: number = 0; //轮回次数
+
+    private _spawnPosCache = new Vec3();
 
 
 
@@ -119,16 +122,28 @@ export class WaveManager extends Component {
             }
             group.timer -= dt;//组内计时器
             if(group.timer <= 0){
-                this.spawnEnemy(group.config);//生成一个敌机
-                group.remain--;
-                if(group.remain <= 0){//这组敌机生成完了，移除生成组
+                if(group.config.spawnInterval === 0){//没有间隔
+                    while(group.remain > 0) { //一次性生成完
+                        this.spawnEnemy(group);
+                        group.remain--;
+                    }
                     const last = this._runningGroups.length - 1; //找到最后一组
                     this._runningGroups[i] = this._runningGroups[last];//将这组与最后一组移到这组位置，相当于删除这组                  
                     this._runningGroups.pop();
 
                 }else{
-                    group.timer += group.config.spawnInterval;
+                    this.spawnEnemy(group);//生成一个敌机
+                    group.remain--;
+                    if(group.remain <= 0){//这组敌机生成完了，移除生成组
+                        const last = this._runningGroups.length - 1; //找到最后一组
+                        this._runningGroups[i] = this._runningGroups[last];//将这组与最后一组移到这组位置，相当于删除这组                  
+                        this._runningGroups.pop();
+
+                    }else{
+                        group.timer += group.config.spawnInterval;
+                    }
                 }
+                
             }
 
         }
@@ -139,18 +154,65 @@ export class WaveManager extends Component {
     }
 
    
-    private spawnEnemy(group:WaveGroup) {   
+    private spawnEnemy(group:RunningGroup) {   
         let success = false;
-        const hpMultiplier = 1 + (this._loopCount * 2); // 每轮回一次，怪物血量增加 200%
-        if(group.category === GameConstants.ENEMY_CATEGORY.BOSS){
-            success = EnemyManager.instance.spawnBoss(group.enemyType,hpMultiplier);
+        const hpMultiplier = 1 + (this._loopCount * 0.6); // 每轮回一次，怪物血量增加
+        const spawnPos = this.calculateFormationPos(group);//计算出的结果存入_spawnPosCache
+        if(group.config.category === GameConstants.ENEMY_CATEGORY.BOSS){
+            let bossType = group.config.enemyType;
+            if (GameData.isEndlessMode) {
+                const bossPool = [
+                    GameConstants.BOSS_TYPE.WHALE_BOSS,
+                    GameConstants.BOSS_TYPE.MACHINE_BOSS,
+                    GameConstants.BOSS_TYPE.WHALE_BOSS,   // 双 Boss 后再回鲸鱼
+                ];
+                bossType = bossPool[this._loopCount % bossPool.length];
+            }
+            success = EnemyManager.instance.spawnBoss(group.config.enemyType,hpMultiplier);
         }else{
-            success = EnemyManager.instance.spawnNormalEnemy(group.enemyType,hpMultiplier);
+            success = EnemyManager.instance.spawnNormalEnemy(group.config.enemyType,hpMultiplier, spawnPos,group.config.spawnPos);
         }
       
         if (success) {
             ++this._aliveEnemies;  //还存活的飞机数量+1
         }
+    }
+
+    private calculateFormationPos(group: RunningGroup):Vec3 | null{
+        //总数 - 还未生成数，从而获得现在是第几个要生成的
+        const config = group.config;
+        const index = config.count - group.remain; 
+        
+        // 如果配置了阵型，优先计算阵型坐标
+        if (config.formation && config.formation !== FormationType.NONE) {
+            //初始位置
+            const baseX = config.startX ?? 0;
+            const baseY = config.startY ?? (GameData.viewH / 2 + 100); 
+            //间隔
+            const spacing = config.formationSpacing ?? 80; 
+
+            //一字排开
+            if (config.formation === FormationType.LINE) {
+                //每个飞机距离 basex间隔offset，从index=0开始，从左向右排
+                const offset = (index - (config.count - 1) / 2) * spacing;
+                this._spawnPosCache.set(baseX + offset, baseY, 0);
+            } 
+            //v型阵
+            else if (config.formation === FormationType.VSHAPE) {
+                //offsetx和一字型一样排开
+                const offsetX = (index - (config.count - 1) / 2) * spacing;
+                //offsety，从左到右先高后低再高
+                const offsetY = Math.abs(index - (config.count - 1) / 2) * spacing; 
+                this._spawnPosCache.set(baseX + offsetX, baseY + offsetY, 0);
+            }
+        }else if(config.spawnPos === SpawnPosition.CUSTOM) {
+             // 如果没有配阵型，根据 spawnPos 枚举来判断兜底坐标
+            this._spawnPosCache.set(config.startX ?? 0, config.startY ?? 0, 0);
+        }else{
+            return null;
+        }
+        return this._spawnPosCache;
+
     }
 
     endWave(){

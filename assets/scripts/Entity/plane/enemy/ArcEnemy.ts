@@ -19,6 +19,8 @@ export class ArcEnemy extends BaseEnemyPlane {
 
     init(cfg: EnemyData, position: Vec3, hpMultiplier: number, sf: SpriteFrame){
         super.init(cfg,position,hpMultiplier,sf);
+        const isRight = position.x > 0;
+        const FLIP = isRight ? 1 : -1; // 右边出生则圆弧向下凹，左边出生则向上凸
         this._center.set(position.x, position.y - FLIP * RADIUS, 0);          // 圆心(x,y加减半径);
         this._theta = FLIP*Math.PI / 2;                  // 向下飞一开始角度是90度，向上飞一开始是-90度
         this._omega = -(this.moveSpeed / RADIUS)*FLIP ;       //角速度，movespeed线速度除以半径获得，向上飞角速度正数，下负数

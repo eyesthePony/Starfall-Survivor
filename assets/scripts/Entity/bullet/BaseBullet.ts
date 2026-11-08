@@ -66,24 +66,33 @@ export class BaseBullet extends Component {
         this.enabled = true; 
     }
 
-    update(deltaTime: number) {
-        if(this._isDead) return;
-         /**
-         * 这里使用局部坐标position来判断出界
-         * 由于吧ullet是bulletmanger子节点，position就是相对于bulletmanger的坐标
-         * 不过由于bulletmanger对齐了canvas的坐标，所以相当于相对于canavs的坐标
-         * 目前能用
-         */
+    protected move(deltaTime:number){
         const pos = this.node.position;
         const nx = pos.x + this._direction.x * this.speed * deltaTime;
         const ny = pos.y + this._direction.y * this.speed * deltaTime;
         this.node.setPosition(nx, ny, pos.z);
+    }
+
+    /**
+         * 这里使用局部坐标position来判断出界
+         * 由于bullet是bulletmanger子节点，position就是相对于bulletmanger的坐标
+         * 不过由于bulletmanger对齐了canvas的坐标，所以相当于相对于canavs的坐标
+         * 目前能用
+    */
+    protected checkOutOfBounds(){
         const MARGIN = 30;   // 按子弹贴图半径取 20~40
-        if (nx < -this._halfW - MARGIN || nx > this._halfW + MARGIN ||
-            ny < -this._halfH - MARGIN || ny > this._halfH + MARGIN) { 
+        const pos = this.node.position;
+        if (pos.x < -this._halfW - MARGIN || pos.x > this._halfW + MARGIN ||
+            pos.y < -this._halfH - MARGIN || pos.y > this._halfH + MARGIN) { 
                 this._isDead = true;
                 EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BULLET_KILLED, this.node);
-            }     
+            }   
+    }
+
+    update(deltaTime: number) {
+        if(this._isDead) return;
+        this.move(deltaTime);
+        this.checkOutOfBounds();
     }
 
     onBeginContact(selfCollider: Collider2D, otherCollider: Collider2D) {
@@ -106,15 +115,14 @@ export class BaseBullet extends Component {
         }
 
         this._isDead = true;
-        // 1. 先发战斗事件（GameManager 用）
+        //  先发回收子弹事件，再发命中事件
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BULLET_KILLED, this.node);
         if (isSelf) {
             EventBus.dispatchEvent(GameConstants.EVENT_TYPE.PLAYER_BULLET_HIT, otherCollider.node, this.damage);
-            
         } else {
             EventBus.dispatchEvent(GameConstants.EVENT_TYPE.ENEMY_BULLET_HIT, otherCollider.node, this.damage);
         }
  
-         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BULLET_KILLED, this.node);
     }
 
   

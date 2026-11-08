@@ -25,9 +25,9 @@ export class LaserFire extends BaseFire {
 
     onUpgrade(cardId:string){
         if (cardId === GameConstants.CARD_ID.LASER_DMG) {
-            this.bulletDamage *= 1.5;
+            this.bulletDamage *= 1.3;
         }else if(cardId === GameConstants.CARD_ID.LASER_CD){
-            this.interval *= 0.8;
+            this.interval *= 0.85;
             
         }
     }

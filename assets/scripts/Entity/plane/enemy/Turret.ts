@@ -49,5 +49,44 @@ export class Turret extends Component {
         );
     }
 
+
+    /**
+     * 扇形散射：以当前炮口朝向为中心，向左右均匀散开 count 颗子弹
+     * @param count       每次散射几颗（<=1 时退化成普通 fire）
+     * @param spreadAngle 扇形总角度（度），如 30 表示左右各 15°
+     */
+    public fireSpread(
+        damage: number,
+        bulletType: string,
+        speed: number,
+        isPlayerBullet: boolean = false,
+        count: number = 1,
+        spreadAngle: number = 0
+    ) {
+        // 单发 / 无角度 → 直接走老逻辑
+        if (count <= 1 || spreadAngle <= 0) {
+            this.fire(damage, bulletType, speed, isPlayerBullet);
+            return;
+        }
+
+        const myPos = this.node.worldPosition;
+        // 与 fire() 保持一致：炮口朝向 = node.angle + 180
+        const baseDeg = this.node.angle + 180;
+        const start = baseDeg - spreadAngle / 2;
+        const step = spreadAngle / (count - 1);
+
+        for (let i = 0; i < count; i++) {
+            let deg = Math.round(start + step * i);
+            deg = ((deg % 360) + 360) % 360;   // 归一到 0~359
+            const d = DirTable[deg];
+            this._tempDir.set(d.x, d.y, 0);
+
+            BulletManager.instance.spawnBullet(
+                bulletType, isPlayerBullet, myPos,
+                this._tempDir, damage, speed, this.node
+            );
+        }
+    }
+
     
 }

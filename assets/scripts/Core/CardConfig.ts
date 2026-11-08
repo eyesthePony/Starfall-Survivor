@@ -19,7 +19,7 @@ export const CARD_CONFIG:CardConfigData[] = [
     {
         id:  GameConstants.CARD_ID.DMG_UP,
         name: '强力大来',
-        desc: '由于昊天帮助，奎来唐奎伤害 +50%',
+        desc: '由于昊天帮助，奎来唐奎伤害 +30%',
         maxLevel:5,
         iconIndex:0,
         type: GameConstants.CARD_TYPE.STAT,
@@ -28,7 +28,7 @@ export const CARD_CONFIG:CardConfigData[] = [
     {
         id: GameConstants.CARD_ID.SPD_UP,
         name: '快速奎来肘击',
-        desc: '由于胡碟的帮忙，奎来肘击间隔 -50%',
+        desc: '由于胡碟的帮忙，奎来肘击间隔  -20%',
         maxLevel: 3, 
         iconIndex:1,
         type: GameConstants.CARD_TYPE.STAT,
@@ -36,7 +36,7 @@ export const CARD_CONFIG:CardConfigData[] = [
     {
         id: GameConstants.CARD_ID.BULLET_UP,
         name: '奎子充足',
-        desc: '奎来得到羊风翼帮助，每次多发射2奎子',
+        desc: '奎来得到羊风翼帮助，每次多发射1奎子',
         maxLevel: 4, 
         iconIndex:2,
         type: GameConstants.CARD_TYPE.STAT,
@@ -44,7 +44,7 @@ export const CARD_CONFIG:CardConfigData[] = [
     {
         id: GameConstants.CARD_ID.MOVE_UP,
         name: '兵奎神速',
-        desc: '奎来得到武金箔帮助，奎子飞行速度+50%',
+        desc: '奎来得到武金箔帮助，奎子飞行速度+30%',
         maxLevel: 5,
         iconIndex:3,
         type: GameConstants.CARD_TYPE.STAT,
@@ -70,7 +70,7 @@ export const CARD_CONFIG:CardConfigData[] = [
      // ============== 激光强化卡 ==============
     { id: GameConstants.CARD_ID.LASER_DMG, 
         name: '激光增幅', 
-        desc: '激光伤害 +50%', 
+        desc: '激光伤害 +30%', 
         maxLevel: 3, 
         requireWeapon: GameConstants.CARD_ID.LASER, 
         type: GameConstants.CARD_TYPE.UPGRADE,
@@ -78,7 +78,7 @@ export const CARD_CONFIG:CardConfigData[] = [
     },
     { id: GameConstants.CARD_ID.LASER_CD, 
         name: '光速冷却', 
-        desc: '激光开火间隔 -20%', 
+        desc: '激光开火间隔-15%', 
         maxLevel: 3, 
         iconIndex:1,
         requireWeapon: GameConstants.CARD_ID.LASER, 
@@ -89,7 +89,7 @@ export const CARD_CONFIG:CardConfigData[] = [
     // ============== 追踪弹强化卡 ==============
     { id: GameConstants.CARD_ID.HOMING_DMG, 
         name: '高爆弹头', 
-        desc: '追踪导弹伤害 +50%', 
+        desc: '追踪导弹伤害 +30%', 
         maxLevel: 3, 
         requireWeapon:GameConstants.CARD_ID.HOMING_MISSILE, 
         type: GameConstants.CARD_TYPE.UPGRADE,
@@ -97,7 +97,7 @@ export const CARD_CONFIG:CardConfigData[] = [
      },
      { id: GameConstants.CARD_ID.HOMING_UP, 
         name: '奎来66', 
-        desc: '给奎来补两个弹，追踪导弹+2', 
+        desc: '给奎来补两个弹，追踪导弹+1', 
         maxLevel: 3, 
         iconIndex:2,
         requireWeapon:GameConstants.CARD_ID.HOMING_MISSILE, 
