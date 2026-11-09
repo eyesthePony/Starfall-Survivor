@@ -73,7 +73,7 @@ All TypeScript source lives under `assets/scripts`, split into `Core / Component
 ### 1. Combat & Stats Model
 *   **Player**: Base HP 100, 1-second invincibility frame after taking damage. Base DPS is around 50.
 *   **Bullet Math**: Player bullets scale with base stats; enemy bullets use absolute values from config.
-*   **Enemies**: HP 10~50, EXP 15~40. Fast enemies are configured as "silent" (ram damage only).
+*   **Enemies**: HP 10\~50, EXP 15\~40. Fast enemies are configured as "silent" (ram damage only).
 *   **Bosses**: Whale Boss (12,000 HP), Machine Boss (25,000 HP). Designed for 60~90 second tense fights.
 
 ### 2. Data-Driven Boss System
