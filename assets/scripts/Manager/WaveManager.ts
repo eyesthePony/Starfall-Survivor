@@ -168,7 +168,7 @@ export class WaveManager extends Component {
                 ];
                 bossType = bossPool[this._loopCount % bossPool.length];
             }
-            success = EnemyManager.instance.spawnBoss(group.config.enemyType,hpMultiplier);
+            success = EnemyManager.instance.spawnBoss(bossType,hpMultiplier);
         }else{
             success = EnemyManager.instance.spawnNormalEnemy(group.config.enemyType,hpMultiplier, spawnPos,group.config.spawnPos);
         }

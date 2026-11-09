@@ -1,4 +1,4 @@
-import { _decorator, assetManager, Color, instantiate, Node, Prefab,  Sprite, Vec3} from 'cc';
+import { _decorator, assetManager, Color, Node, Prefab,  Sprite, Vec3} from 'cc';
 
 import { Turret } from '../../Entity/plane/enemy/Turret';//引入士兵（小飞机）
 import { BaseFire } from './BaseFire';
@@ -64,7 +64,7 @@ export class CannonBarrage extends BaseFire {
 
 
     //===========炮口旋转模式==============================
-    private _aimMode: AimMode = AimMode.FIXED;  //炮口旋转模式
+    private _aimMode: AimMode = AimMode.FIXED;  //炮口旋转模式,FIXED表示炮口固定在 _fireAngle角度,LOCK表述保持当前角度不动
     private _aimSpeed: number = 90;      // SPIN/OSCILLATE 的角速度
     private _oscRange: number = 45;      // OSCILLATE 的摆幅（±度）
     private _oscPhase: number = 0;       // OSCILLATE 的相位
@@ -92,7 +92,6 @@ export class CannonBarrage extends BaseFire {
     private _parentNode:Node = null;
 
     protected onLoad(): void {
-        this._parentNode = this.node.parent;
         EventBus.on(GameConstants.EVENT_TYPE.GAME_RESET, this.clearCannons, this);
     }
 
@@ -119,7 +118,7 @@ export class CannonBarrage extends BaseFire {
         this._isSpawning = true;
         this.clearCannons();  
         if (!this._turretPath) {
-            this._isSpawning = false;     // ← 没有路径也要重置
+            this._isSpawning = false;     //  没有路径也要重置
             return;
         }
 
@@ -127,7 +126,7 @@ export class CannonBarrage extends BaseFire {
         if (!boss) { this._isSpawning = false; return; }
         boss.load(this._turretPath, Prefab, (err, prefab) => {
             this._isSpawning = false;
-            if (err || !this.enabled || !this.node.isValid) return;
+            if (err || !this.node.isValid) return;
             this._turretPrefab = prefab;
             this.createCannonNodes();
             this.setFormation(this._currentFormation, this._orbitCenter, this._radius, this._rotateSpeed);
@@ -138,6 +137,7 @@ export class CannonBarrage extends BaseFire {
 
     private createCannonNodes() {
         if (!this._turretPrefab) return;
+        this._parentNode = this.node.parent; 
         if(!this._parentNode || !this._parentNode.isValid){
             console.log('父节点已销毁，无法创建炮台');
             return;
@@ -152,7 +152,7 @@ export class CannonBarrage extends BaseFire {
             }
             //重置状态
             cannon.setScale(1, 1, 1);
-            cannon.angle = 0;
+            cannon.angle = 180;
             if (this._aimMode === AimMode.FIXED) {
                 cannon.angle = this._fireAngle;
             }
@@ -180,6 +180,7 @@ export class CannonBarrage extends BaseFire {
         this._timer = 0;
         this._burstElapsed = 0;
         this._gapTimer = 0;
+        this._isSpawning = false;
 
        
     }
@@ -497,11 +498,11 @@ export class CannonBarrage extends BaseFire {
 
     //=========炮口旋转===========
     private updateAim(dt: number) {
-        if(this._aimMode === AimMode.FIXED) return;
+        if(this._aimMode === AimMode.FIXED || this._aimMode === AimMode.LOCK) return;
         if (this._aimMode === AimMode.SPIN) {
             this.updateSpin(dt);
         } else if (this._aimMode === AimMode.TARGET) {
-            this.updateAimAtTarget();
+            this.updateAimAtTarget(dt);
         }else if(this._aimMode === AimMode.OSCILLATE){
             this.updateOscillate(dt);
         } else if (this._aimMode === AimMode.CENTER) { // 👈 新增
@@ -526,13 +527,12 @@ export class CannonBarrage extends BaseFire {
         return (t && t.isValid) ? t : null;
     }
 
-    updateAimAtTarget(){
+    updateAimAtTarget(dt: number){
         const target = this.getAimTarget();
         if (!target ) return;   // 没目标不瞄，也不切 FIXED
         for(let i=0;i< this._turretScripts.length;++i){
-            this._turretScripts[i].aimAt(target.worldPosition); 
+            this._turretScripts[i].aimAt(target.worldPosition,dt,this._aimSpeed); 
         }
-        this._aimMode = AimMode.FIXED;
     }
 
     private updateOscillate(dt: number) {

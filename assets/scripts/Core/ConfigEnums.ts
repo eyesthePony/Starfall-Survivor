@@ -33,6 +33,7 @@ export enum AimMode {
     SPIN = 2,     // 持续旋转扫描
     OSCILLATE = 3,  // 来回摆动
     CENTER = 4, //屏幕中心
+    LOCK = 5, //锁定当前方向
 }
 
 

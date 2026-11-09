@@ -83,17 +83,26 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                             triggerMode: TriggerMode.IDLE,
                         },
                     },
-                    // 2 秒后开火：左串 → 喘 → 右串 → 循环
+                    //1.9秒后瞄准
                     {
                         name: GameConstants.BOSS_SKILL.CANNON_BARRAGE,
                         params: {
-                            triggerMode: TriggerMode.CONTINUOUS,
-                            fireMode: FireMode.SEQUENCE,
-                            fireInterval: 0.03,
-                            burstDuration: 2,       // 每炮口打 2 秒
-                            burstGap: 1.2,          // 停 1.2 秒换口
-                            spreadCount: 3,
-                            spreadAngle: 36,
+                            aimMode: AimMode.TARGET,
+                        },
+                        delay: 1.9,
+                    },
+                    // 2 秒固定当前炮口角度，然后开火：左串 → 喘 → 右串 → 循环
+                    {
+                        name: GameConstants.BOSS_SKILL.CANNON_BARRAGE,
+                        params: {
+                            aimMode: AimMode.LOCK,//锁定当前角度
+                            triggerMode: TriggerMode.CONTINUOUS,//持续开火
+                            fireMode: FireMode.SEQUENCE,//每个炮口交替开火
+                            fireInterval: 0.1,     //每波子弹间隔0.1秒
+                            burstDuration: 4,       // 每炮口打 4秒
+                            burstGap: 3,          // 停 3 秒换炮口
+                            spreadCount: 3,      //每波子弹同时发射3发
+                            spreadAngle: 36,    //这波子弹分散在36度扇形中
                             bulletSpeed: 240,
                             bulletDamage: 30,
                             bulletType: GameConstants.BULLET_TYPE.YELLOWBULLET,
@@ -101,10 +110,6 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                             warnTime: 0.001,
                         },
                         delay: 2,
-                    },
-                    {
-                        name: GameConstants.BOSS_SKILL.SINE_MOVE,
-                        params: { amplitude: 180, frequency: 0.2 },
                     },
                 ],
             },
@@ -125,23 +130,27 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                             isPlayerBullet: false,
                         },
                     },
-                    // 散射提速：5 发扇形，1.5 秒一串，停 0.8 秒
                     {
                         name: GameConstants.BOSS_SKILL.CANNON_BARRAGE,
                         params: {
-                            fireInterval: 0.025,
-                            burstDuration: 1.5,
-                            burstGap: 0.8,
-                            spreadCount: 5,
+                            aimMode: AimMode.TARGET,
+                            aimSpeed:5,
+                            triggerMode: TriggerMode.CONTINUOUS,
+                            fireMode: FireMode.VOLLEY,
+                            interval:0.1,
+                            spreadCount: 3,
                             spreadAngle: 50,
                             bulletSpeed: 240,
                             bulletDamage: 25,
                         },
                     },
-                    // 横移加速
                     {
-                        name: GameConstants.BOSS_SKILL.SINE_MOVE,
-                        params: { amplitude: 250, frequency: 0.35 },
+                        name: GameConstants.BOSS_SKILL.CANNON_BARRAGE,
+                        params: {
+                            aimMode: AimMode.LOCK,
+                            aimSpeed:0,
+                        },
+                        delay: 2,
                     },
                 ],
             },
@@ -164,18 +173,12 @@ export const BOSS_CONFIG:Record<string,BossConfigData> = {
                     {
                         name: GameConstants.BOSS_SKILL.CANNON_BARRAGE,
                         params: {
-                            fireInterval: 0.02,
-                            burstDuration: 1.2,
-                            burstGap: 0.5,
+                            interval:2,
                             spreadCount: 7,
                             spreadAngle: 60,
                             bulletSpeed: 220,
                             bulletDamage: 25,
                         },
-                    },
-                    {
-                        name: GameConstants.BOSS_SKILL.SINE_MOVE,
-                        params: { amplitude: 300, frequency: 0.5 },
                     },
                 ],
             },

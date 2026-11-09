@@ -9,18 +9,41 @@ export class Turret extends Component {
     // 性能缓存：防止在计算时频繁 new Vec3
     private _tempDir: Vec3 = new Vec3();
 
+
     /**
      * 指令 1：转动炮管，瞄准某个世界坐标
      * @param targetPos 目标的世界坐标（比如玩家位置）
      */
-    public aimAt(targetPos: Vec3) {
+    public aimAt(targetPos: Vec3,dt: number = 0,aimSpeed: number = 0) {
         const myPos = this.node.worldPosition;
         // 计算指向目标的单位向量
         this._tempDir.set(targetPos.x - myPos.x, targetPos.y - myPos.y, 0).normalize();
         
         // 计算角度：atan2 算出来是数学角，减去 90 度适配美术素材默认朝上
-        const angle = Math.atan2(this._tempDir.y, this._tempDir.x) * 180 / Math.PI;
-        this.node.angle = angle - 90;
+        const  targetAngle = Math.atan2(this._tempDir.y, this._tempDir.x) * 180 / Math.PI - 90;
+        if (aimSpeed <= 0 || dt === 0) {
+            this.node.angle = targetAngle;
+            return;
+        }
+
+        // --- 以下为平滑旋转逻辑 ---
+        let currentAngle = this.node.angle;
+        
+        // 1. 算出当前角度和目标角度的差值
+        let diff = targetAngle - currentAngle;
+        
+        // 2. 将差值归一化到 [-180, 180] 之间，保证走最短路线（防止 359 度直接转回 1 度）
+        diff = ((diff + 180) % 360 + 360) % 360 - 180;
+        
+        // 3. 算出这一帧最多能转多少度
+        const maxStep = aimSpeed * dt;
+        
+        // 4. 如果差值在允许的步长内，直接对准；否则只转 maxStep 的幅度
+        if (Math.abs(diff) <= maxStep) {
+            this.node.angle = targetAngle;
+        } else {
+            this.node.angle += Math.sign(diff) * maxStep;
+        }
     }
 
     /**

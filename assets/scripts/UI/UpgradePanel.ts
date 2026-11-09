@@ -31,8 +31,8 @@ export class UpgradePanel extends Component {
         this._isSelecting = false; 
         this.node.active = true;  
         this._pendingCount = count;
-        
-        // 向经理请求抽卡
+        this.setAllButtonsInteractable(false);
+        // 请求抽卡
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.REQUEST_DRAW_CARDS, 3);
     }
 
@@ -49,8 +49,10 @@ export class UpgradePanel extends Component {
             this.hide();
             return;
         }
+        this.setAllButtonsInteractable(true);
+        this._isSelecting = false; 
 
-        // 👈 只负责渲染，不负责抽卡
+        // 只负责渲染，不负责抽卡
         this.renderCardsUI();
     }
 
@@ -59,12 +61,13 @@ export class UpgradePanel extends Component {
         const selectedCard = this._currentCards[index];
         if (!selectedCard) return;
 
-        this._isSelecting = true; 
+        this._isSelecting = true;
+        this.setAllButtonsInteractable(false);
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.CARD_SELECTED, selectedCard); 
         
         this._pendingCount--;
         if (this._pendingCount > 0) {
-            // 👈 核心修复：如果还能选（连升多级），再次向经理请求新的卡！
+            // 如果还能选（连升多级），再请求新的卡
             EventBus.dispatchEvent(GameConstants.EVENT_TYPE.REQUEST_DRAW_CARDS, 3);
             
             // 延迟解锁，防止连点
@@ -79,7 +82,7 @@ export class UpgradePanel extends Component {
         this.hide();
     }
 
-    // 👈 改名为 renderCardsUI，因为现在它只负责画图了
+
     private renderCardsUI() {
         for (let i = 0; i < this.cardButtons.length; i++){
             const card = this._currentCards[i];  
@@ -104,6 +107,14 @@ export class UpgradePanel extends Component {
                 }
             }else{
                 buttonNode.active = false;
+            }
+        }
+    }
+
+    private setAllButtonsInteractable(active: boolean) {
+        for (let i = 0; i < this.cardButtons.length; i++) {
+            if (this.cardButtons[i]) {
+                this.cardButtons[i].interactable = active;
             }
         }
     }

@@ -361,63 +361,9 @@ export const LEVELS: LevelData[] = [
         backgroundRes: '',
         bgmRes: '',
         waves: [
-            // 波次1：精英开场（圆弧 + 冲刺）
-            {
-                delay: 1.0,
-                groups: [
-                    {
-                        category: "normal",
-                        enemyType: "arc_drone",
-                        count: 6,
-                        spawnInterval: 0.3,
-                        time: 0,
-                        spawnPos: SpawnPosition.LEFT,
-                    },
-                    {
-                        category: "normal",
-                        enemyType: "arc_drone",
-                        count: 6,
-                        spawnInterval: 0.3,
-                        time: 0,
-                        spawnPos: SpawnPosition.RIGHT,
-                    },
-                ],
-            },
-            // 波次2：高压混刷（全类型）
+
             {
                 delay: 2.0,
-                groups: [
-                    {
-                        category: "normal",
-                        enemyType: "basic_drone",
-                        count: 15,
-                        spawnInterval: 0,
-                        time: 0,
-                        formation: FormationType.LINE,
-                        formationSpacing: 55,
-                        startY: GameData.viewH / 2 + 80,
-                    },
-                    {
-                        category: "normal",
-                        enemyType: "sine_drone",
-                        count: 6,
-                        spawnInterval: 0.3,
-                        time: 1.0,
-                        spawnPos: SpawnPosition.LEFT,
-                    },
-                    {
-                        category: "normal",
-                        enemyType: "sine_drone",
-                        count: 6,
-                        spawnInterval: 0.3,
-                        time: 1.0,
-                        spawnPos: SpawnPosition.RIGHT,
-                    },
-                ],
-            },
-            // 波次3：鲸鱼 —— 第一道门槛
-            {
-                delay: 3.0,
                 groups: [
                     {
                         category: "boss",
@@ -427,23 +373,9 @@ export const LEVELS: LevelData[] = [
                     },
                 ],
             },
-            // 波次4：缓冲小波（给玩家回气，方便迎接第二个 Boss）
+        
             {
-                delay: 4.0,
-                groups: [
-                    {
-                        category: "normal",
-                        enemyType: "dive_drone",
-                        count: 10,
-                        spawnInterval: 0.2,
-                        time: 0,
-                        spawnPos: SpawnPosition.TOP,
-                    },
-                ],
-            },
-            // 波次5：机器 Boss —— 终局
-            {
-                delay: 4.0,
+                delay: 2.0,
                 groups: [
                     {
                         category: "boss",

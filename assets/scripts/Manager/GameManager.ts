@@ -26,7 +26,7 @@ export class GameManager extends Component {
         EventBus.on(GameConstants.EVENT_TYPE.GAME_PAUSE,this.onGamePause,this);
         EventBus.on(GameConstants.EVENT_TYPE.GAME_VICTORY,this.onGameVictory,this);
         EventBus.on(GameConstants.EVENT_TYPE.LEVEL_UP, this.onPlayerLevelUp, this); // ... 你的逻辑 ...
-    console.timeEnd("GameManager_Start")
+     console.timeEnd("GameManager_load");  
     }
 
     start(){

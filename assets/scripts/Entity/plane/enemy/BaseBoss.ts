@@ -46,13 +46,17 @@ export class BaseBoss extends BasePlane{
 
     public init(cfg:BossConfigData , pos: Vec3,hpMultiplier:number = 1) {
         if(!cfg){console.warn(`cfg为空`);return;}; 
-         this._skillMap.forEach(c => 
+        // 1. 清理旧状态
+        this.disableColliders(); 
+        this._skillMap.forEach(c => 
         {  if (c) {
             c.enabled = false;
             (c as any).clear?.();
         } });
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BOSS_HIDE_HP_BAR);
         if (this._enterMove) this._enterMove.enabled = false; //避免入场时重开，进入pool，为true
+
+        // 2. 初始化属性
         this._config = cfg;
         this.node.setPosition(pos);//设置初始位置
         const s = cfg.scale ?? 1;   //设置节点放缩
@@ -66,16 +70,16 @@ export class BaseBoss extends BasePlane{
         this.ramDamage = cfg.damage;
         this.expReward = cfg.expReward ?? 1000;
 
-         // 重置时间轴状态
+        // 3. 重置时间轴
         this._delayedTasks.length = 0;
         this._phaseLoopTimer = 0;
 
-        this.assemble();          //组装贴图
-        this.setupCollider();     // ←挂碰撞
+        // 4. 异步加载并入场
+        this.assemble().then(() => {//组装贴图
+            if (!this.node.isValid) return; 
+            this.enterScreen();//开启入场动画
+        });
         this.ensureSkills();      //获取弹幕组件
-        
-        this.enterScreen();      //开启入场动画
-        
     }
 
     //构建碰撞体
@@ -99,68 +103,95 @@ export class BaseBoss extends BasePlane{
             circle.offset.set(hitBox.offsetX ?? 0, hitBox.offsetY ?? 0);
             circle.group = GameConstants.ITEM_GROUP.ENEMY_PLANE;
             circle.sensor = true;
-            circle.enabled = true; // 👈 激活
+            circle.enabled = true; 
         } else {
             box.size.set(hitBox.width ?? 100, hitBox.height ?? 100);
             box.offset.set(hitBox.offsetX ?? 0, hitBox.offsetY ?? 0);
             box.group = GameConstants.ITEM_GROUP.ENEMY_PLANE;
             box.sensor = true;
-            box.enabled = true; // 👈 激活
+            box.enabled = true; 
         }
     }
 
 
     //组装贴图
-    assemble(){
-        const parts:BossPartConfig[] = this._config.parts;
-        this.node.destroyAllChildren();
-
-        let length = parts.length;
-        for(let i=0;i<length;++i){
-            //创建贴图节点
-            const part = parts[i];
-            const node = new Node(part.name);
-            //设置父节点为baseboss
-            node.parent = this.node;
-            //设置贴图初始位置
-            node.setPosition(part.x ?? 0, part.y ?? 0, 0);  
-            //放缩贴图
-            const ps = part.scale ?? 1;
-            node.setScale(ps, ps, 1);      
-            //将图片组件加入贴图节点           
-            const sp = node.addComponent(Sprite);
-            //设置大小模式
-            sp.sizeMode = Sprite.SizeMode.TRIMMED;
-        
-            const boss = assetManager.getBundle('boss');
-            if (!boss) { console.error('boss 分包未加载'); node.destroy(); return; }
-            //加载贴图并赋予节点
-            if (!part.animClipPath) {
-                boss.load(`${part.texture}/spriteFrame`, SpriteFrame, (err, sf) => {
-                    if (err) { console.error(`加载失败: ${part.texture}`, err); node.destroy(); return; }
-                    if (!node.isValid) return;
-                    sp.spriteFrame = sf;
-                });
-            }
-            
-            //赋予贴图动画
-        if (part.animClipPath) {
-            // 走序列帧动画：不 load 单张图，直接挂 Animation 播循环 Clip
-            boss.load(part.animClipPath, AnimationClip, (err, clip) => {
-                if (err) { console.error(`加载动画失败: ${part.animClipPath}`, err); node.destroy(); return; }
-                if (!node.isValid) return;
-                const anim = node.addComponent(Animation);
-                anim.defaultClip = clip;
-                anim.playOnLoad = true;
-                anim.play();
-            });
-        }else if (part.animation) {
-                const Cls = AnimatorMap[part.animation];
-                if (Cls) node.addComponent(Cls);
-                else console.warn(`[BaseBoss] 未知动画: ${part.animation}`);
-            }       
-            
+        //组装贴图
+    assemble(): Promise<void> {
+        const boss = assetManager.getBundle('boss');
+        if (!boss) { 
+            console.error('❌ boss 分包未加载'); 
+                return Promise.resolve();
         }
+
+        const parts: BossPartConfig[] = this._config.parts;
+        this.node.destroyAllChildren();
+        
+        if (parts.length === 0) {
+            console.error('未配置身体');
+            return Promise.resolve();
+        }
+
+        return new Promise((resolve) => {
+            let loadedCount = 0;
+            const checkDone = () => {
+                loadedCount++;
+                if (loadedCount >= parts.length) {
+                    resolve(); // 所有部件加载完毕，才 resolve
+                }
+            };
+            
+
+            for (let i = 0; i < parts.length; ++i) {
+                const part = parts[i];
+                const node = new Node(part.name);
+                node.parent = this.node;
+                node.setPosition(part.x ?? 0, part.y ?? 0, 0);
+                const ps = part.scale ?? 1;
+                node.setScale(ps, ps, 1);
+                const sp = node.addComponent(Sprite);
+                sp.sizeMode = Sprite.SizeMode.TRIMMED;
+
+                if (part.animation) {
+                    const Cls = AnimatorMap[part.animation];
+                    if (Cls) node.addComponent(Cls);
+                }
+
+                if (part.animClipPath) {
+                    // 1. 优先加载序列帧动画 (会耗时)
+                    boss.load(part.animClipPath, AnimationClip, (err, clip) => {
+                        if (!this.node.isValid || !node.isValid) {
+                            checkDone();
+                            return;
+                        }
+                        if (err) {
+                            console.error(`❌ 加载动画失败 [${part.animClipPath}]`, err);
+                        }else if (node.isValid) {
+                            const anim = node.addComponent(Animation);
+                            anim.defaultClip = clip;
+                            anim.playOnLoad = true;
+                            anim.play();
+                        }
+                        checkDone();
+                    });
+                } else if (part.texture) {
+                    if (!this.node.isValid || !node.isValid) {
+                            checkDone();
+                            return;
+                    }
+                    // 2. 其次加载静态贴图 (会耗时)
+                    boss.load(`${part.texture}/spriteFrame`, SpriteFrame, (err, sf) => {
+                        if (err) {
+                            console.error(`❌ 加载贴图失败 [${part.texture}]`, err);
+                        } 
+                        else if (node.isValid && sp) sp.spriteFrame = sf;
+                        checkDone();
+                    });
+                } else {
+                    // 3. 兜底：如果既没动画又没贴图，直接算它加载完
+                    checkDone();
+                }
+            }
+        });
     }
 
     //加载所有弹幕、移动组件，存放到缓存
@@ -209,7 +240,7 @@ export class BaseBoss extends BasePlane{
         this._phaseIndex = index;
         this._currentPhaseData = phase; 
 
-        // 👈 调用统一重置方法
+        // 调用统一重置方法
         this.resetPhaseTimeline(phase);
     }
 
@@ -360,6 +391,7 @@ export class BaseBoss extends BasePlane{
     
     // 入场结束后
     protected onEnterComplete() {
+        this.setupCollider();     // 挂碰撞
         this.activatePhase(0);  //开启一阶段
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BOSS_SHOW_HP_BAR,this._config.name);
     }
@@ -374,6 +406,13 @@ export class BaseBoss extends BasePlane{
         else this.checkPhase();
     }
 
+    private disableColliders() {
+        const box = this.getComponent(BoxCollider2D);
+        if (box) box.enabled = false;
+        const circle = this.getComponent(CircleCollider2D);
+        if (circle) circle.enabled = false;
+    }
+
     //boss死亡，停掉所有组件
     protected onDeath(): void {
         if(this._isDead) return;
@@ -384,6 +423,7 @@ export class BaseBoss extends BasePlane{
         } });   
         this._delayedTasks.length = 0;
         this._phaseLoopTimer = 0;
+        this.disableColliders();
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.BOSS_HIDE_HP_BAR);
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.ENEMY_KILLED, this.node);
     }

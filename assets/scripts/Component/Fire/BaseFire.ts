@@ -41,9 +41,7 @@ export  class BaseFire extends Component {
 
     }
 
-    public onPhaseChanged(phaseIndex: number) {
-        // 默认什么都不做
-    }
+  
 }
 
 
