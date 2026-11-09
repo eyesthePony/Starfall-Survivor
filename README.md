@@ -1,6 +1,8 @@
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-# Starfall Survivor
+# Starfall: March Again
+
+> *"Iron-clad barriers stretch far and wide; we'll step over them, from the very start."*
 
 A portrait (720×1280) **Roguelike auto-fire bullet-hell shooter** built with **Cocos Creator 3.8 (TypeScript)**.
 
