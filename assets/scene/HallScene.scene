@@ -2720,7 +2720,7 @@
     },
     "_enabled": true,
     "__prefab": null,
-    "_alignFlags": 21,
+    "_alignFlags": 45,
     "_target": null,
     "_left": 0,
     "_right": 0,
@@ -2738,7 +2738,7 @@
     "_originalHeight": 1280,
     "_alignMode": 2,
     "_lockFlags": 0,
-    "_id": "c5V1EV8IpMtrIvY1OE9t2u"
+    "_id": "ac1tK1eoJBUI0dRbqcJ2FY"
   },
   {
     "__type__": "cc.PrefabInfo",

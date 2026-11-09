@@ -18,8 +18,8 @@ export const CARD_CONFIG:CardConfigData[] = [
     // 伤害强化
     {
         id:  GameConstants.CARD_ID.DMG_UP,
-        name: '强力大来',
-        desc: '由于昊天帮助，奎来唐奎伤害 +30%',
+        name: '强力大奎',
+        desc: '由于昊天帮助，奎来伤害 +30%',
         maxLevel:5,
         iconIndex:0,
         type: GameConstants.CARD_TYPE.STAT,
