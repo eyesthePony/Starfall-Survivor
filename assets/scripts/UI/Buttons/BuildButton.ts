@@ -1,5 +1,5 @@
 import { _decorator, Button, Component, } from 'cc';
-import { BuildPanel } from '../Build/BuildPanel';
+import { BuildPanel } from '../Building/BuildPanel';
 const { ccclass, property } = _decorator;
 
 @ccclass('Build')

@@ -5,8 +5,8 @@ const { ccclass, property } = _decorator;
 export class MapManager extends Component {
     @property(Prefab) grassPrefab: Prefab = null!; 
 
-    private tileWidth: number = 0;
-    private tileHeight: number = 0;
+    public tileWidth: number = 0;
+    public tileHeight: number = 0;
 
     private mapCols: number = 10; 
     private mapRows: number = 10;

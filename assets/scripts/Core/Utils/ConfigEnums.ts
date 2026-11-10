@@ -37,9 +37,6 @@ export enum AimMode {
 }
 
 
-
-
-
 //================levelConfig====================
 //==============敌机阵型==============
 export enum FormationType {
@@ -56,4 +53,19 @@ export enum SpawnPosition {
     RIGHT = "right",       // 从右侧
     RANDOM = "random",     // 顶部随机X
     CUSTOM = "custom",     // 完全由 startX/startY 决定
+}
+
+
+
+
+// ================= 经济与资源系统 =================
+export enum ResourceType {
+    GOLD = 'gold',
+}
+
+// ================= 建筑系统 =================
+export enum BuildingCategory {
+    PRODUCER = 'producer', // 生产建筑（农田、矿场）
+    HOUSE = 'house',       // 住房/主基地
+    DECOR = 'decor',       // 装饰物
 }

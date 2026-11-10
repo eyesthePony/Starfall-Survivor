@@ -1,12 +1,13 @@
-import { _decorator, Camera, Color, Component, EventMouse, EventTouch, Input, input, instantiate, Node, Prefab, resources, Sprite, sys, Vec3 } from 'cc';
+import { _decorator, Camera, Color, Component, EventMouse, EventTouch, Input, input, instantiate, Node, Prefab, resources, Sprite, SpriteFrame, sys, UITransform, Vec3 } from 'cc';
 import { BuildingData, BUILDINGS } from '../Core/Config/BuildingConfig';
 import { EventBus } from '../Core/Event/EventBus';
 import { GameConstants} from '../Core/Event/GameConstants';
-import { BuildActionPanel } from '../UI/Build/BuildActionPanel';
 import { EconomyManager } from '../Core/Manager/EconomyManager';
 import { MapManager } from './MapManager';
 import { SavedBuildingData } from '../Core/Data/PlayerSaveData';
 import { SaveManager } from '../Core/Manager/SaveManager';
+import { BuildingCategory } from '../Core/Utils/ConfigEnums';
+import { ProductionBuilding } from '../Entity/building/ProductionBuilding';
 const { ccclass, property } = _decorator;
 
 @ccclass('BuildManager')
@@ -18,15 +19,15 @@ export class BuildManager extends Component {
     @property(MapManager) 
     public mapManager: MapManager = null!;
 
-    @property(BuildActionPanel) 
-    public buildActionPanel: BuildActionPanel = null!;
-
     private _builtList: SavedBuildingData[] = []; 
 
-    @property({ type: [Prefab], tooltip: "所有建筑预制体，name 要和配置 prefabName 一致" })
-    buildingPrefabs: Prefab[] = [];
+    @property({ type: [SpriteFrame], tooltip: "所有建筑图片" })
+    public buildingIcons: SpriteFrame[] = [];
 
-    private _prefabDict: Record<string, Prefab> = {};
+    private _iconDict: Record<string, SpriteFrame> = {};
+
+    @property(Prefab)
+    baseBuildingPrefab: Prefab = null;
 
     private _currentGhost: Node = null!;
     private _isPlacing: boolean = false; 
@@ -38,10 +39,12 @@ export class BuildManager extends Component {
     // 标记当前是否正在按压（按住鼠标/手指）
     private _isPressing: boolean = false; 
 
+
+
     protected onLoad(): void {
-        for (let i = 0; i < this.buildingPrefabs.length; ++i) {
-            const p = this.buildingPrefabs[i];
-            if (p) this._prefabDict[p.name] = p;
+        for (let i = 0; i < this.buildingIcons.length; ++i) {
+            const sf = this.buildingIcons[i];
+            this._iconDict[sf.name] = sf;
         }
     }
 
@@ -61,28 +64,44 @@ export class BuildManager extends Component {
                 console.warn(`[BuildManager] 未知建筑配置: ${built.id}`);
                 continue;
             }
-            const prefab = this._prefabDict[config.prefabName];
-            if (!prefab) {
-                console.warn(`[BuildManager] 缺少建筑预制体: ${config.prefabName}`);
-                continue;
-            }
 
-            this.mapManager.setBuildingOccupy(built.col, built.row, config.width, config.height);
-            
-            const realBuilding = instantiate(prefab);
-            realBuilding.parent = this.node;
-            
-            // 恢复位置（注意 2.5D 的中心点偏移）
-            const worldPos = this.mapManager.getWorldPosByGrid(
-                built.col + (config.width - 1) / 2,
-                built.row + (config.height - 1) / 2);
-            realBuilding.setWorldPosition(worldPos);
-            
-            // 恢复名字，方便以后点击
-            realBuilding.name = `${built.id}_${built.col}_${built.row}`;    
-            
-            
+            const realBuilding = instantiate(this.baseBuildingPrefab);
+            this._finalizeBuilding(realBuilding, config, built.col, built.row, built);
         }    
+    }
+
+    private _finalizeBuilding(node: Node, data: BuildingData, col: number, row: number, saved: SavedBuildingData) {
+        node.name = `${data.id}_${col}_${row}`;
+        node.parent = this.node;
+
+        // 1. 挂载图标（在节点下body节点上挂图标）
+        const bodyNode = node.getChildByName("body") || node;
+        const sprite = bodyNode.getComponent(Sprite) || bodyNode.addComponent(Sprite);
+        if (sprite && this._iconDict[data.icon]) {
+            sprite.spriteFrame = this._iconDict[data.icon];
+        }
+
+        // 2.尺寸调整（2x2 或 1x1 的建筑）
+        const ut = node.getComponent(UITransform);
+        if (ut && this.mapManager.tileWidth > 0) {
+            ut.width = data.width * this.mapManager.tileWidth;
+            ut.height = data.height * this.mapManager.tileHeight;
+        }
+
+        // 3. 设置占格与定位
+        this.mapManager.setBuildingOccupy(col, row, data.width, data.height);
+        const worldPos = this.mapManager.getWorldPosByGrid(
+            col + (data.width - 1) / 2, 
+            row + (data.height - 1) / 2
+        );
+        node.setWorldPosition(worldPos);
+
+        // 4. 挂载建筑逻辑（生产、居住）
+        if (data.category === BuildingCategory.PRODUCER && data.levels) {
+            let producer = node.getComponent(ProductionBuilding);
+            if (!producer) producer = node.addComponent(ProductionBuilding);
+            producer.init(data, saved.level || 1, saved.lastProduceTime || Date.now());
+        }
     }
 
     protected onEnable() {
@@ -120,24 +139,34 @@ export class BuildManager extends Component {
             this._currentGhost = null;
         }
 
-        const prefab = this._prefabDict[data.prefabName];
-        if (!prefab) {
-            console.warn(`[BuildManager] 缺少建筑预制体: ${data.prefabName}`);
+  
+         if (!this.baseBuildingPrefab) {
+            console.warn(`[BuildManager] 缺少建筑预制体`);
             return;
         }
 
         this._currentData = data;
         this._isPlacing = true;
 
-        this._currentGhost = instantiate(prefab);
+        this._currentGhost = instantiate(this.baseBuildingPrefab);
         this._currentGhost.parent = this.node;
+
+        const bodyNode = this._currentGhost.getChildByName("body") || this._currentGhost;
+        const sprite = bodyNode.getComponent(Sprite) || bodyNode.addComponent(Sprite);
+        if (sprite && this._iconDict[data.icon]) {
+            sprite.spriteFrame = this._iconDict[data.icon];
+        }
+
+        const ut = this._currentGhost.getComponent(UITransform);
+        if (ut && this.mapManager.tileWidth > 0) {
+            ut.width = data.width * this.mapManager.tileWidth;
+            ut.height = data.height * this.mapManager.tileHeight;
+        }
 
         const sprites = this._currentGhost.getComponentsInChildren(Sprite);
         for (let i = 0; i < sprites.length; ++i) {
             sprites[i].color = new Color(255, 255, 255, 150);
         }
-
-        if (this.buildActionPanel) this.buildActionPanel.hide();
         
     }
 
@@ -149,11 +178,13 @@ export class BuildManager extends Component {
         this._isPlacing = false;
         this._currentData = null;
         this._isPressing = false;
-        if (this.buildActionPanel) this.buildActionPanel.hide();
+
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.HIDE_BUILD_ACTION_PANEL);
     }
 
     // 1. 按下时（左键或手指按下）
     private onPressStart(event: EventMouse | EventTouch) {
+
         if (!this._isPlacing || !this._currentGhost) return;
         
         // 电脑端：如果不是左键，无视
@@ -164,7 +195,7 @@ export class BuildManager extends Component {
         this.updateGhost(event.getLocation().x, event.getLocation().y);
         
         // 拖拽时，隐藏底部UI，把视野让出来
-        if (this.buildActionPanel) this.buildActionPanel.hide();
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.HIDE_BUILD_ACTION_PANEL);
     }
 
     // 2. 移动时
@@ -185,10 +216,7 @@ export class BuildManager extends Component {
         this.updateGhost(event.getLocation().x, event.getLocation().y);
         
         // 弹出底部确认/取消面板
-        if (this.buildActionPanel) {
-            this.buildActionPanel.show();
-            this.buildActionPanel.setConfirmState(this._canPlaceNow);
-        }
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.SHOW_BUILD_ACTION_PANEL, this._canPlaceNow);
     }
 
     private updateGhost(screenX: number, screenY: number) {
@@ -220,24 +248,26 @@ export class BuildManager extends Component {
             return; 
         }
 
-        this.mapManager.setBuildingOccupy(this._currentCol, this._currentRow, this._currentData.width, this._currentData.height);
+        
 
         const sprites = this._currentGhost.getComponentsInChildren(Sprite);
         for (const sprite of sprites) {
             sprite.color = new Color(255, 255, 255, 255); 
         }
-        this._currentGhost.name = `${this._currentData.id}_${this._currentCol}_${this._currentRow}`;
-
-
-        this._builtList.push({
+        const saved: SavedBuildingData = {
             id: this._currentData.id,
             col: this._currentCol,
-            row: this._currentRow
-        });
-        // 写入本地存储
+            row: this._currentRow,
+            level: 1,
+            lastProduceTime: Date.now()
+        };
+
+        this._finalizeBuilding(this._currentGhost, this._currentData, this._currentCol, this._currentRow, saved);
+
+        this._builtList.push(saved);
         this.saveBuildings();
         
-        if (this.buildActionPanel) this.buildActionPanel.hide();
+        EventBus.dispatchEvent(GameConstants.EVENT_TYPE.HIDE_BUILD_ACTION_PANEL);
 
         this._currentGhost = null;
         this._currentData = null;

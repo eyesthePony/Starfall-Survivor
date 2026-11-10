@@ -1,18 +1,30 @@
+import { BuildingCategory, ResourceType } from "../Utils/ConfigEnums";
 
+export interface BuildingLevelData {
+    upgradeCost: number;       // 升级花费
+    productionCycle: number;   // 生产周期（几秒产一次）
+    productionAmount: number;  // 生产数量（每次产多少）
+    productionType: ResourceType; // 生产种类（产什么资源）
+}
 
-// BuildingConfig.ts
 export interface BuildingData {
     id: string;
     name: string;
     width: number;
     height: number;
     cost: number;
-    prefabName: string;  
     icon: string;
+    category: BuildingCategory;
+    levels?: BuildingLevelData[];
 }
 
 export const BUILDINGS: BuildingData[] = [
-    { id: 'base', name: '主基地', width: 2, height: 2, cost: 1000,prefabName: 'base' ,icon: 'base'},
-    { id: 'farm', name: '农田', width: 1, height: 1, cost: 100,prefabName: 'farm', icon: 'farm' },
+    { id: 'base', name: '主基地', width: 2, height: 2, cost: 1000,  icon: 'base', category: BuildingCategory.HOUSE },
+    { 
+        id: 'farm', name: '农田', width: 1, height: 1, cost: 100,  icon: 'farm', category: BuildingCategory.PRODUCER,
+        levels: [
+            { upgradeCost: 150, productionCycle: 3, productionAmount: 10, productionType: ResourceType.GOLD },
+        ]
+    },
   
 ];
