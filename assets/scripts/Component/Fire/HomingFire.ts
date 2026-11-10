@@ -1,7 +1,7 @@
 import { _decorator, Node, Vec3 } from 'cc';
-import { BaseFire } from './BaseFire';
-import { GameConstants } from '../../Core/GameConstants';
+import { GameConstants } from '../../Core/Event/GameConstants';
 import { BulletManager } from '../../Manager/BulletManager';
+import { BaseFire } from './BaseFire';
 const { ccclass, property } = _decorator;
 
 @ccclass('HomingFire')

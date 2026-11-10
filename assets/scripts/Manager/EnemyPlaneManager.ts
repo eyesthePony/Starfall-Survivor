@@ -1,14 +1,14 @@
-import { _decorator, Component, Node, Prefab,  SpriteFrame,  Vec3 } from 'cc';
-import { PoolManager } from '../Core/PoolManager';
-import { EventBus } from '../Core/EventBus';
-import { GameConstants } from '../Core/GameConstants';
+import { _decorator, Component, Node, Prefab, SpriteFrame, Vec3 } from 'cc';
+import { BOSS_CONFIG } from '../Core/Config/BossConfig';
+import { SpawnPosition } from '../Core/Utils/ConfigEnums';
+import { ENEMY_CONFIG, EnemyData } from '../Core/Config/EnemyConfig';
+import { EventBus } from '../Core/Event/EventBus';
+import { GameConstants } from '../Core/Event/GameConstants';
+import { GameData } from '../Core/Data/GameData';
+import { PoolManager } from '../Core/Manager/PoolManager';
 import { BasePlane } from '../Entity/plane/BasePlane';
-import { GameData } from '../Core/GameData';
-import { BOSS_CONFIG } from '../Core/BossConfig';
 import { BaseBoss } from '../Entity/plane/enemy/BaseBoss';
-import { ENEMY_CONFIG, EnemyData } from '../Core/EnemyConfig';
 import { BaseEnemyPlane } from '../Entity/plane/enemy/BaseEnemyPlane';
-import { SpawnPosition } from '../Core/ConfigEnums';
 
 const { ccclass, property } = _decorator;
 

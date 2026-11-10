@@ -1,11 +1,11 @@
-import { _decorator, AnimationClip, BoxCollider2D, CircleCollider2D, Animation, Component, Node, Sprite, SpriteFrame, Vec3, assetManager,} from 'cc';
-import { BasePlane } from '../BasePlane';
-import { EventBus } from '../../../Core/EventBus';
-import { GameConstants } from '../../../Core/GameConstants';
-import { GameData } from '../../../Core/GameData';
-import { BossConfigData, BossHitBoxConfig, BossPartConfig, BossPhaseConfig, SkillConfig } from '../../../Core/BossConfig';
-import { AnimatorMap, SkillMap } from '../../../Core/SkillMap';
+import { _decorator, Animation, AnimationClip, assetManager, BoxCollider2D, CircleCollider2D, Component, Node, Sprite, SpriteFrame, Vec3, } from 'cc';
 import { BossEnterMove } from '../../../Component/Move/BossEnterMove';
+import { BossConfigData, BossHitBoxConfig, BossPartConfig, BossPhaseConfig, SkillConfig } from '../../../Core/Config/BossConfig';
+import { EventBus } from '../../../Core/Event/EventBus';
+import { GameConstants } from '../../../Core/Event/GameConstants';
+import { GameData } from '../../../Core/Data/GameData';
+import { AnimatorMap, SkillMap } from '../../../Core/SkillMap';
+import { BasePlane } from '../BasePlane';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseBoss')

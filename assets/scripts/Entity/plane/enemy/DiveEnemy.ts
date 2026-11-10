@@ -1,7 +1,7 @@
-import { _decorator, Vec3, SpriteFrame } from 'cc';
+import { _decorator, SpriteFrame, Vec3 } from 'cc';
+import { EnemyData } from '../../../Core/Config/EnemyConfig';
+import { GameData } from '../../../Core/Data/GameData';
 import { BaseEnemyPlane } from './BaseEnemyPlane';
-import { GameData } from '../../../Core/GameData';
-import { EnemyData } from '../../../Core/EnemyConfig';
 const { ccclass } = _decorator;
 
 @ccclass('DiveEnemy')

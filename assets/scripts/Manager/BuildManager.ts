@@ -1,19 +1,32 @@
 import { _decorator, Camera, Color, Component, EventMouse, EventTouch, Input, input, instantiate, Node, Prefab, resources, Sprite, sys, Vec3 } from 'cc';
+import { BuildingData, BUILDINGS } from '../Core/Config/BuildingConfig';
+import { EventBus } from '../Core/Event/EventBus';
+import { GameConstants} from '../Core/Event/GameConstants';
+import { BuildActionPanel } from '../UI/Build/BuildActionPanel';
+import { EconomyManager } from '../Core/Manager/EconomyManager';
 import { MapManager } from './MapManager';
-import { GameConstants, SavedBuildingData } from '../Core/GameConstants';
-import { EventBus } from '../Core/EventBus';
-import { BuildingData, BUILDINGS } from '../Core/BuildingConfig';
-import { BuildActionPanel } from '../UI/BuildActionPanel';
+import { SavedBuildingData } from '../Core/Data/PlayerSaveData';
+import { SaveManager } from '../Core/Manager/SaveManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('BuildManager')
 export class BuildManager extends Component {
     
-    @property(Camera) public mainCamera: Camera = null!;
-    @property(MapManager) public mapManager: MapManager = null!;
-    @property(BuildActionPanel) public buildActionPanel: BuildActionPanel = null!;
+    @property(Camera) 
+    public mainCamera: Camera = null!;
+
+    @property(MapManager) 
+    public mapManager: MapManager = null!;
+
+    @property(BuildActionPanel) 
+    public buildActionPanel: BuildActionPanel = null!;
 
     private _builtList: SavedBuildingData[] = []; 
+
+    @property({ type: [Prefab], tooltip: "所有建筑预制体，name 要和配置 prefabName 一致" })
+    buildingPrefabs: Prefab[] = [];
+
+    private _prefabDict: Record<string, Prefab> = {};
 
     private _currentGhost: Node = null!;
     private _isPlacing: boolean = false; 
@@ -25,47 +38,50 @@ export class BuildManager extends Component {
     // 标记当前是否正在按压（按住鼠标/手指）
     private _isPressing: boolean = false; 
 
-    protected start() {
-        // 延迟一小会儿，确保 MapManager 的草地已经生成完毕
-        this.scheduleOnce(() => {
-            this.loadBuildings();
-        }, 0.1); 
+    protected onLoad(): void {
+        for (let i = 0; i < this.buildingPrefabs.length; ++i) {
+            const p = this.buildingPrefabs[i];
+            if (p) this._prefabDict[p.name] = p;
+        }
     }
 
-    private loadBuildings() {
-        const saveStr = sys.localStorage.getItem('BUILDINGS_SAVE_KEY');
-        if (!saveStr) return; // 如果没有存档，直接返回
+    public init(buildingsData: SavedBuildingData[]) {
+        this.loadBuildings(buildingsData);
+    }
 
-        //id,col,row
-        this._builtList = JSON.parse(saveStr);
+    private loadBuildings(buildingsData: SavedBuildingData[]) {
+        
+        this._builtList = buildingsData || [];
         
         // 遍历存档，把建筑重新加载出来
         for(let i=this._builtList.length - 1; i >= 0;--i){
             const built = this._builtList[i];
             const config = BUILDINGS.find(b => b.id === built.id);
-            if (config) {
-                this.mapManager.setBuildingOccupy(built.col, built.row, config.width, config.height);
-            
-
-                // 加载预制体并实例化
-                resources.load(config.prefabPath, Prefab, (err, prefab) => {
-                    if (err) return;
-
-                    const realBuilding = instantiate(prefab);
-                    realBuilding.parent = this.node;
-                    
-                    // 恢复位置（注意 2.5D 的中心点偏移）
-                    const worldPos = this.mapManager.getWorldPosByGrid(built.col + (config.width - 1) / 2, built.row + (config.height - 1) / 2);
-                    realBuilding.setWorldPosition(worldPos);
-                    
-                    // 恢复名字，方便以后点击
-                    realBuilding.name = `${built.id}_${built.col}_${built.row}`;
-                    
-                    console.log(`恢复建筑: ${realBuilding.name}`);
-                    
-                
-                });
+            if (!config) {
+                console.warn(`[BuildManager] 未知建筑配置: ${built.id}`);
+                continue;
             }
+            const prefab = this._prefabDict[config.prefabName];
+            if (!prefab) {
+                console.warn(`[BuildManager] 缺少建筑预制体: ${config.prefabName}`);
+                continue;
+            }
+
+            this.mapManager.setBuildingOccupy(built.col, built.row, config.width, config.height);
+            
+            const realBuilding = instantiate(prefab);
+            realBuilding.parent = this.node;
+            
+            // 恢复位置（注意 2.5D 的中心点偏移）
+            const worldPos = this.mapManager.getWorldPosByGrid(
+                built.col + (config.width - 1) / 2,
+                built.row + (config.height - 1) / 2);
+            realBuilding.setWorldPosition(worldPos);
+            
+            // 恢复名字，方便以后点击
+            realBuilding.name = `${built.id}_${built.col}_${built.row}`;    
+            
+            
         }    
     }
 
@@ -99,29 +115,30 @@ export class BuildManager extends Component {
     }
 
     public startPlacing(data: BuildingData) {
-        if (this._currentGhost) this._currentGhost.destroy();
+        if (this._currentGhost) {
+            this._currentGhost.destroy();
+            this._currentGhost = null;
+        }
+
+        const prefab = this._prefabDict[data.prefabName];
+        if (!prefab) {
+            console.warn(`[BuildManager] 缺少建筑预制体: ${data.prefabName}`);
+            return;
+        }
 
         this._currentData = data;
         this._isPlacing = true;
 
-        resources.load(data.prefabPath, Prefab, (err, prefab) => {
-            if (err) return;
-            if (!this._isPlacing || this._currentData !== data) return;
+        this._currentGhost = instantiate(prefab);
+        this._currentGhost.parent = this.node;
 
-            this._currentGhost = instantiate(prefab);
-            this._currentGhost.parent = this.node;
-           
+        const sprites = this._currentGhost.getComponentsInChildren(Sprite);
+        for (let i = 0; i < sprites.length; ++i) {
+            sprites[i].color = new Color(255, 255, 255, 150);
+        }
 
-            const sprites = this._currentGhost.getComponentsInChildren(Sprite);
-            for (const sprite of sprites) {
-                sprite.color = new Color(255, 255, 255, 150);
-            }
-
-            // 刚点完 UI 列表时，底部确认面板隐藏，等玩家找好位置再显示
-            if (this.buildActionPanel) {
-                this.buildActionPanel.hide();
-            }
-        });
+        if (this.buildActionPanel) this.buildActionPanel.hide();
+        
     }
 
     public cancelPlacing() {
@@ -152,7 +169,7 @@ export class BuildManager extends Component {
 
     // 2. 移动时
     private onPressMove(event: EventMouse | EventTouch) {
-        // 👈 核心防御：如果没按下（在裸移鼠标），或者没在建造模式，直接返回！建筑绝不跟随！
+        //  核心防御：如果没按下（在裸移鼠标），或者没在建造模式，直接返回！建筑绝不跟随！
         if (!this._isPlacing || !this._isPressing || !this._currentGhost) return;
         
         this.updateGhost(event.getLocation().x, event.getLocation().y);
@@ -196,6 +213,12 @@ export class BuildManager extends Component {
     private onConfirmBuild() {
         if (!this._isPlacing || !this._currentGhost || !this._currentData) return;
         if (!this._canPlaceNow) return;
+        
+        const cost = this._currentData.cost;
+        if (!EconomyManager.instance.spendGold(cost)) {
+            console.log(`金币不足！建造需要 ${cost}，当前只有 ${EconomyManager.instance.gold}`);
+            return; 
+        }
 
         this.mapManager.setBuildingOccupy(this._currentCol, this._currentRow, this._currentData.width, this._currentData.height);
 
@@ -224,8 +247,7 @@ export class BuildManager extends Component {
 
     // 保存数据到本地
     private saveBuildings() {
-        // 将数组转成 JSON 字符串存起来
-        sys.localStorage.setItem('BUILDINGS_SAVE_KEY', JSON.stringify(this._builtList));
-        console.log("建筑数据已保存！");
+        SaveManager.instance.data.buildings = this._builtList;
+        SaveManager.instance.save();
     }
 }

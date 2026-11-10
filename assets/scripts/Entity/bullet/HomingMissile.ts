@@ -1,7 +1,7 @@
-import { _decorator, Node, Vec3, SpriteFrame } from 'cc';
+import { _decorator, Node, SpriteFrame, Vec3 } from 'cc';
+import { EventBus } from '../../Core/Event/EventBus';
+import { GameConstants } from '../../Core/Event/GameConstants';
 import { BaseBullet } from './BaseBullet';
-import { EventBus } from '../../Core/EventBus';
-import { GameConstants } from '../../Core/GameConstants';
 const { ccclass, property } = _decorator;
 
 @ccclass('HomingMissile')

@@ -1,9 +1,9 @@
-import { _decorator, Node, SpriteFrame,  Vec3 } from 'cc';
+import { _decorator, SpriteFrame, Vec3 } from 'cc';
+import { EnemyData } from '../../../Core/Config/EnemyConfig';
+import { EventBus } from '../../../Core/Event/EventBus';
+import { GameConstants } from '../../../Core/Event/GameConstants';
+import { GameData } from '../../../Core/Data/GameData';
 import { BaseEnemyPlane } from './BaseEnemyPlane';
-import { EnemyData } from '../../../Core/EnemyConfig';
-import { EventBus } from '../../../Core/EventBus';
-import { GameConstants } from '../../../Core/GameConstants';
-import { GameData } from '../../../Core/GameData';
 const { ccclass, property } = _decorator;
 
 const RADIUS = 300;        // 固定半径

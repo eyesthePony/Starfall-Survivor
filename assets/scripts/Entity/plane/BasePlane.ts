@@ -1,4 +1,4 @@
-import { _decorator, Component, Vec3} from 'cc';
+import { _decorator, Component, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('BasePlane')

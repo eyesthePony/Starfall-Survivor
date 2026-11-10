@@ -1,12 +1,12 @@
-import { _decorator, assetManager, Color, Node, Prefab,  Sprite, Vec3} from 'cc';
+import { _decorator, assetManager, Color, Node, Prefab, Sprite, Vec3 } from 'cc';
 
-import { Turret } from '../../Entity/plane/enemy/Turret';//引入士兵（小飞机）
+import { AimMode, FireMode, OrbitCenter, TriggerMode, TurretFormation } from '../../Core/Utils/ConfigEnums';
+import { EventBus } from '../../Core/Event/EventBus';
+import { GameConstants } from '../../Core/Event/GameConstants';
+import { GameData } from '../../Core/Data/GameData';
+import { PoolManager } from '../../Core/Manager/PoolManager';
+import { Turret } from '../../Entity/plane/enemy/Turret'; //引入士兵（小飞机）
 import { BaseFire } from './BaseFire';
-import{AimMode, FireMode, OrbitCenter, TriggerMode, TurretFormation} from '../../Core/ConfigEnums'
-import { GameData } from '../../Core/GameData';
-import { GameConstants } from '../../Core/GameConstants';
-import { PoolManager } from '../../Core/PoolManager';
-import { EventBus } from '../../Core/EventBus';
 const { ccclass, property } = _decorator;
 
 @ccclass('CannonBarrage')

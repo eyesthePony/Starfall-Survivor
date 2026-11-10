@@ -1,10 +1,10 @@
 import { _decorator, Component, Node } from 'cc';
-import { EventBus } from '../Core/EventBus';
-import { GameConstants } from '../Core/GameConstants';
+import { AudioManager } from '../Core/Manager/AudioManager';
+import { CARD_CONFIG, CardConfigData } from '../Core/Config/CardConfig';
+import { EventBus } from '../Core/Event/EventBus';
+import { GameConstants } from '../Core/Event/GameConstants';
 import { BasePlane } from '../Entity/plane/BasePlane';
 import { PlayerPlane } from '../Entity/plane/player/PlayerPlane';
-import { CARD_CONFIG, CardConfigData } from '../Core/CardConfig';
-import { AudioManager } from '../Core/AudioManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('UpgradeManager')

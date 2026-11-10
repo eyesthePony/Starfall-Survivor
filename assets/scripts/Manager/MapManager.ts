@@ -1,4 +1,4 @@
-import { _decorator, Component,Node, Prefab, instantiate, Vec3, UITransform } from 'cc';
+import { _decorator, Component, instantiate, Prefab, UITransform, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('MapManager')
@@ -15,7 +15,7 @@ export class MapManager extends Component {
 
     public mapData: number[][] = []; //记录格子占用状态
 
-    protected start() {
+    public init() {
         this.generateGround();
     }
 
@@ -28,10 +28,8 @@ export class MapManager extends Component {
         const spriteUT = tempNode.getComponentInChildren(UITransform);
         
         if (spriteUT) {
-      
             this.tileWidth = (spriteUT.width * this.SCALE) - this._gap; 
             this.tileHeight = (spriteUT.height * this.SCALE) - this._gap; 
-            console.log("真实间距:", this.tileWidth, this.tileHeight);
         }
         tempNode.destroy();
 

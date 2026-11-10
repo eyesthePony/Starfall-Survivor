@@ -1,12 +1,12 @@
-import { RingFire } from "../Component/Fire/RingFire";
-import { SineMove } from "../Component/Move/SineMove";
-import { SpiralFire } from "../Component/Fire/SpiralFire";
-import { GameConstants } from "./GameConstants";
 import { FloatAnimator } from "../Component/Animator/FloatAnimator";
 import { PulseAnimator } from "../Component/Animator/PulseAnimator";
 import { SpinAnimator } from "../Component/Animator/SpinAnimator";
 import { CannonBarrage } from "../Component/Fire/CannonBarrage";
+import { RingFire } from "../Component/Fire/RingFire";
+import { SpiralFire } from "../Component/Fire/SpiralFire";
 import { BossMoveTo } from "../Component/Move/BossMoveTo";
+import { SineMove } from "../Component/Move/SineMove";
+import { GameConstants } from "./Event/GameConstants";
 
 
 

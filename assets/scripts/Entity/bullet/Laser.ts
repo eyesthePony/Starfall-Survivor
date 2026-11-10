@@ -1,7 +1,7 @@
-import { _decorator, Component, Collider2D, Contact2DType, UITransform, Vec3, UIOpacity, BoxCollider2D, Node, SpriteFrame, Sprite } from 'cc';
-import { EventBus } from '../../Core/EventBus';
-import { GameConstants } from '../../Core/GameConstants';
-import { BasePlane } from '../../Entity/plane/BasePlane';
+import { _decorator, BoxCollider2D, Collider2D, Component, Contact2DType, Node, Sprite, SpriteFrame, UIOpacity, UITransform, Vec3 } from 'cc';
+import { EventBus } from '../../Core/Event/EventBus';
+import { GameConstants } from '../../Core/Event/GameConstants';
+import { BasePlane } from '../plane/BasePlane';
 
 const { ccclass, property } = _decorator;
 

@@ -1,11 +1,11 @@
-import { _decorator,Sprite,SpriteFrame,UITransform, Vec3,  } from 'cc';
-import { BasePlane } from '../BasePlane';
+import { _decorator, Sprite, SpriteFrame, Vec3 } from 'cc';
+import { AudioManager } from '../../../Core/Manager/AudioManager';
+import { EffectManager } from '../../../Core/Manager/EffectManager';
+import { EnemyData } from '../../../Core/Config/EnemyConfig';
+import { EventBus } from '../../../Core/Event/EventBus';
+import { GameConstants } from '../../../Core/Event/GameConstants';
 import { BulletManager } from '../../../Manager/BulletManager';
-import { EventBus } from '../../../Core/EventBus';
-import { GameConstants } from '../../../Core/GameConstants';
-import { EffectManager } from '../../../Core/EffectManager';
-import { AudioManager } from '../../../Core/AudioManager';
-import { EnemyData } from '../../../Core/EnemyConfig';
+import { BasePlane } from '../BasePlane';
 const { ccclass,property} = _decorator;
 
 @ccclass('BaseEnemyPlane')

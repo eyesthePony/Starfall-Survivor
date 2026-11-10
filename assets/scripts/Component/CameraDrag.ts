@@ -1,4 +1,4 @@
-import { _decorator, Component, EventTouch, EventMouse, input, Input, Vec3, Camera } from 'cc';
+import { _decorator, Camera, Component, EventMouse, EventTouch, input, Input, Vec3 } from 'cc';
 const { ccclass, property } = _decorator;
 
 @ccclass('CameraDrag')

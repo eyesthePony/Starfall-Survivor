@@ -1,7 +1,7 @@
-import { _decorator,  Component, Node, UITransform, } from 'cc';
-import { EventBus } from '../../Core/EventBus';
-import { GameConstants } from '../../Core/GameConstants';
-import { GameData } from '../../Core/GameData';
+import { _decorator, Component, Node, UITransform, } from 'cc';
+import { EventBus } from '../../Core/Event/EventBus';
+import { GameConstants } from '../../Core/Event/GameConstants';
+import { GameData } from '../../Core/Data/GameData';
 const { ccclass, property } = _decorator;
 
 @ccclass('BackgroundScroll')

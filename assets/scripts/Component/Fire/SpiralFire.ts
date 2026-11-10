@@ -1,7 +1,7 @@
-import { _decorator,} from 'cc';
-import { BaseFire } from './BaseFire';
+import { _decorator, } from 'cc';
+import { DirTable } from '../../Core/Utils/MathUtils';
 import { BulletManager } from '../../Manager/BulletManager';
-import { DirTable } from '../../Core/MathUtils';
+import { BaseFire } from './BaseFire';
 const { ccclass, property } = _decorator;
 
 @ccclass('SpiralFire')

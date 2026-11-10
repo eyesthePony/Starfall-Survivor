@@ -1,10 +1,10 @@
-import { _decorator, Component, Node, Vec3 } from 'cc';
-import { ENDLESS_LEVEL, LevelData, LEVELS, WaveData, WaveGroup } from '../Core/LevelConfig';
-import { GameData } from '../Core/GameData';
-import { EventBus } from '../Core/EventBus';
-import { GameConstants } from '../Core/GameConstants';
+import { _decorator, Component, Vec3 } from 'cc';
+import { FormationType, SpawnPosition } from '../Core/Utils/ConfigEnums';
+import { EventBus } from '../Core/Event/EventBus';
+import { GameConstants } from '../Core/Event/GameConstants';
+import { GameData } from '../Core/Data/GameData';
+import { ENDLESS_LEVEL, LevelData, LEVELS, WaveData, WaveGroup } from '../Core/Config/LevelConfig';
 import { EnemyManager } from './EnemyPlaneManager';
-import { FormationType, SpawnPosition } from '../Core/ConfigEnums';
 const { ccclass, property } = _decorator;
 
 // 运行时状态

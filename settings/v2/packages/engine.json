@@ -68,7 +68,7 @@
         "_value": false
       },
       "profiler": {
-        "_value": false
+        "_value": true
       },
       "occlusion-query": {
         "_value": false
@@ -134,6 +134,7 @@
       "gfx-webgl2",
       "intersection-2d",
       "physics-2d-builtin",
+      "profiler",
       "tween",
       "ui"
     ],

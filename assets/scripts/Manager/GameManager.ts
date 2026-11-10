@@ -1,7 +1,7 @@
 import { _decorator, Component, director, tween, UIOpacity, } from 'cc';
-import { EventBus } from '../Core/EventBus';
-import { GameConstants } from '../Core/GameConstants';
-import { AudioManager } from '../Core/AudioManager';
+import { AudioManager } from '../Core/Manager/AudioManager';
+import { EventBus } from '../Core/Event/EventBus';
+import { GameConstants } from '../Core/Event/GameConstants';
 
 const { ccclass} = _decorator;
 

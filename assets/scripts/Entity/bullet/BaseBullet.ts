@@ -1,8 +1,8 @@
-import { EventBus } from '../../Core/EventBus';
-import { GameConstants } from '../../Core/GameConstants';
-import { _decorator, Collider2D, Component, Contact2DType, SpriteFrame,Sprite, Vec3 } from 'cc';
+import { _decorator, Collider2D, Component, Contact2DType, Sprite, SpriteFrame, Vec3 } from 'cc';
+import { EventBus } from '../../Core/Event/EventBus';
+import { GameConstants } from '../../Core/Event/GameConstants';
+import { GameData } from '../../Core/Data/GameData';
 import { BasePlane } from '../plane/BasePlane';
-import { GameData } from '../../Core/GameData';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseBullet')

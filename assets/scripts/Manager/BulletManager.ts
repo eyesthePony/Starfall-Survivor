@@ -1,11 +1,11 @@
-import { _decorator, Component,  Node, Prefab, SpriteFrame, Vec3 } from 'cc';
+import { _decorator, Component, Node, Prefab, SpriteFrame, Vec3 } from 'cc';
+import { BULLET_CONFIG } from '../Core/Config/BulletConfig';
+import { EventBus } from '../Core/Event/EventBus';
+import { GameConstants } from '../Core/Event/GameConstants';
+import { PoolManager } from '../Core/Manager/PoolManager';
 import { BaseBullet } from '../Entity/bullet/BaseBullet';
-import{PoolManager} from '../Core/PoolManager';
-import { EventBus } from '../Core/EventBus';
-import { GameConstants } from '../Core/GameConstants';
-import { Laser } from '../Entity/bullet/Laser';
-import { BULLET_CONFIG } from '../Core/BulletConfig';
 import { HomingMissile } from '../Entity/bullet/HomingMissile';
+import { Laser } from '../Entity/bullet/Laser';
 const { ccclass, property } = _decorator;
 
 @ccclass('BulletManager')

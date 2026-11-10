@@ -1,5 +1,5 @@
-import { _decorator, Component, Node, Vec3 } from 'cc';
-import { GameConstants } from '../../Core/GameConstants';
+import { _decorator, Component, Vec3 } from 'cc';
+import { GameConstants } from '../../Core/Event/GameConstants';
 const { ccclass, property } = _decorator;
 
 @ccclass('BaseFire')

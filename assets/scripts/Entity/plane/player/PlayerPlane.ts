@@ -1,15 +1,15 @@
 
-import { _decorator, Node, EventTouch, UITransform, Vec3, Collider2D, Contact2DType } from 'cc';
-import { BasePlane } from '../BasePlane';
-import{BulletManager} from '../../../Manager/BulletManager';
-import { EventBus } from '../../../Core/EventBus';
-import { GameConstants } from '../../../Core/GameConstants';
-import { GameData } from '../../../Core/GameData';
-import { LaserFire } from '../../../Component/Fire/LaserFire';
+import { _decorator, Collider2D, Contact2DType, EventTouch, Node, UITransform, Vec3 } from 'cc';
 import { BaseFire } from '../../../Component/Fire/BaseFire';
 import { HomingFire } from '../../../Component/Fire/HomingFire';
-import { CardConfigData } from '../../../Core/CardConfig';
-import { AudioManager } from '../../../Core/AudioManager';
+import { LaserFire } from '../../../Component/Fire/LaserFire';
+import { AudioManager } from '../../../Core/Manager/AudioManager';
+import { CardConfigData } from '../../../Core/Config/CardConfig';
+import { EventBus } from '../../../Core/Event/EventBus';
+import { GameConstants } from '../../../Core/Event/GameConstants';
+import { GameData } from '../../../Core/Data/GameData';
+import { BulletManager } from '../../../Manager/BulletManager';
+import { BasePlane } from '../BasePlane';
 const { ccclass, property} = _decorator;
 
 @ccclass('PlayerPlane')
@@ -23,7 +23,7 @@ export class PlayerPlane extends  BasePlane {
     private halfH = 0;      // 飞机半高
     private isSelected = false;
        // 默认1秒无敌，子类可以覆盖
-    protected invincibiltyDuration:number = 1;
+    protected invincibilityDuration:number = 1;
        //飞机无敌时间倒计时
     protected _invincibleTimer: number = 0;
 
@@ -247,7 +247,7 @@ export class PlayerPlane extends  BasePlane {
     }
 
     onHit(playerNode: Node, damage:number){
-        // 事件里传的 otherCollider.node 就是玩家节点，判断一下是不是自己
+        // 事件里传的 otherCollider.node判断一下是不是自己，可能以后会加其他友方节点？
         if (playerNode !== this.node) return;
         this.takeDamage(damage);
     }
@@ -257,7 +257,7 @@ export class PlayerPlane extends  BasePlane {
         if (this.hp <= 0) return; 
         this.hp -= damage;
         EventBus.dispatchEvent(GameConstants.EVENT_TYPE.PLAYER_HP_CHANGED,this.hp/this._maxHp);
-        this._invincibleTimer = this.invincibiltyDuration; 
+        this._invincibleTimer = this.invincibilityDuration; 
 
         if (this.hp <= 0) {
             this.onDeath();
