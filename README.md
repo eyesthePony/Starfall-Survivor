@@ -2,8 +2,6 @@
 
 # Starfall: March Again
 
-> *"Iron-clad barriers stretch far and wide; we'll step over them, from the very start."*
-
 A portrait (720×1280) **Roguelike auto-fire bullet-hell shooter** built with **Cocos Creator 3.8 (TypeScript)**.
 
 The player drags the ship to dodge dense patterns while the ship fires automatically. Kills grant EXP; on level-up, the player picks 1 of 3 upgrade cards to progressively build their firepower. Core loop: **waves → kills for EXP → level-up draft → phase bosses → victory/defeat**.

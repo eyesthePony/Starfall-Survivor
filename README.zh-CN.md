@@ -1,8 +1,6 @@
 [English](README.md) | [简体中文](README.zh-CN.md)
 
-# Starfall: March Again 星陨从头越
-
-> *"雄关漫道真如铁，而今迈步从头越。"*
+# 星陨从头越
 
 基于 **Cocos Creator 3.8（TypeScript）** 的竖屏（720×1280）**Roguelike 自动开火弹幕射击游戏**。
 
