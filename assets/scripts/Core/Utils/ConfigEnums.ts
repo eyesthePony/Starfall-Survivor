@@ -70,3 +70,10 @@ export enum BuildingCategory {
     DECOR = 'decor',       // 装饰物
     ROAD = 'road',
 }
+
+// 拖拽铺路的状态机
+export enum RoadState {
+    IDLE = 0,           // 未激活/普通建筑放置状态
+    SELECTING_START,    // 阶段1：选起点，幽灵格子跟随鼠标
+    DRAGGING,           // 阶段2：已定起点，正在拖拽画直线并显示预览
+}
