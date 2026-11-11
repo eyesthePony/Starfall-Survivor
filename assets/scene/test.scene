@@ -418,7 +418,11 @@
         "__expectedType__": "cc.SpriteFrame"
       },
       {
-        "__uuid__": "6ede8dc3-3c4b-4d5b-af99-f11733211409@f9941",
+        "__uuid__": "4bd52830-08fa-4c4c-a24a-de584ff22f03@f9941",
+        "__expectedType__": "cc.SpriteFrame"
+      },
+      {
+        "__uuid__": "4449266e-617f-4627-9367-04ed59fb890d@f9941",
         "__expectedType__": "cc.SpriteFrame"
       }
     ],
@@ -1142,7 +1146,11 @@
         "__expectedType__": "cc.SpriteFrame"
       },
       {
-        "__uuid__": "6ede8dc3-3c4b-4d5b-af99-f11733211409@f9941",
+        "__uuid__": "4bd52830-08fa-4c4c-a24a-de584ff22f03@f9941",
+        "__expectedType__": "cc.SpriteFrame"
+      },
+      {
+        "__uuid__": "4449266e-617f-4627-9367-04ed59fb890d@f9941",
         "__expectedType__": "cc.SpriteFrame"
       }
     ],

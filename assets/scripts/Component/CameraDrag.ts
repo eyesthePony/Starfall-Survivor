@@ -10,7 +10,7 @@ export class CameraDrag extends Component {
     @property minY = -3000;
     @property maxY = 3000;
 
-    // ✅ 缩放限制（正交相机高度，值越小画面越大）
+    // 缩放限制（正交相机高度，值越小画面越大）
     @property minOrthoHeight = 200;  // 最大放大极限
     @property maxOrthoHeight = 2000; // 最大缩小极限
 

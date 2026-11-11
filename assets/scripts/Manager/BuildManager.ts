@@ -39,6 +39,9 @@ export class BuildManager extends Component {
     // 标记当前是否正在按压（按住鼠标/手指）
     private _isPressing: boolean = false; 
 
+    
+
+
 
 
     protected onLoad(): void {
@@ -52,9 +55,13 @@ export class BuildManager extends Component {
         this.loadBuildings(buildingsData);
     }
 
+
+
     private loadBuildings(buildingsData: SavedBuildingData[]) {
         
         this._builtList = buildingsData || [];
+
+        
         
         // 遍历存档，把建筑重新加载出来
         for(let i=this._builtList.length - 1; i >= 0;--i){
@@ -74,29 +81,37 @@ export class BuildManager extends Component {
         node.name = `${data.id}_${col}_${row}`;
         node.parent = this.node;
 
-        // 1. 挂载图标（在节点下body节点上挂图标）
         const bodyNode = node.getChildByName("body") || node;
         const sprite = bodyNode.getComponent(Sprite) || bodyNode.addComponent(Sprite);
+        
         if (sprite && this._iconDict[data.icon]) {
-            sprite.spriteFrame = this._iconDict[data.icon];
-        }
+            const sf = this._iconDict[data.icon];
+            sprite.spriteFrame = sf;
+            sprite.sizeMode = Sprite.SizeMode.TRIMMED;
 
-        // 2.尺寸调整（2x2 或 1x1 的建筑）
-        const ut = node.getComponent(UITransform);
-        if (ut && this.mapManager.tileWidth > 0) {
-            ut.width = data.width * this.mapManager.tileWidth;
-            ut.height = data.height * this.mapManager.tileHeight;
-        }
+            // 读取裁切后的真实宽度
+            const imgWidth = sf.rect.width;           
 
-        // 3. 设置占格与定位
+            if (imgWidth > 0) {
+                // 1. 宽度强制对齐格子宽度
+                const targetWidth = data.width * this.mapManager.tileWidth;
+                const scale = targetWidth / imgWidth;
+                node.setScale(scale, scale, 1);
+
+                // 2. 获取纯网格的绝对正中心点
+                const worldPos = this.mapManager.getWorldPosByGrid(
+                    col + (data.width - 1) / 2, 
+                    row + (data.height - 1) / 2
+                );
+
+                worldPos.y -= (data.height * this.mapManager.tileHeight) / 2;
+              
+                node.setWorldPosition(worldPos);
+            }
+        }
+        
         this.mapManager.setBuildingOccupy(col, row, data.width, data.height);
-        const worldPos = this.mapManager.getWorldPosByGrid(
-            col + (data.width - 1) / 2, 
-            row + (data.height - 1) / 2
-        );
-        node.setWorldPosition(worldPos);
 
-        // 4. 挂载建筑逻辑（生产、居住）
         if (data.category === BuildingCategory.PRODUCER && data.levels) {
             let producer = node.getComponent(ProductionBuilding);
             if (!producer) producer = node.addComponent(ProductionBuilding);
@@ -134,40 +149,36 @@ export class BuildManager extends Component {
     }
 
     public startPlacing(data: BuildingData) {
-        if (this._currentGhost) {
-            this._currentGhost.destroy();
-            this._currentGhost = null;
-        }
-
-  
-         if (!this.baseBuildingPrefab) {
-            console.warn(`[BuildManager] 缺少建筑预制体`);
-            return;
-        }
+        if (this._currentGhost) { this._currentGhost.destroy(); this._currentGhost = null; }
+        if (!this.baseBuildingPrefab) { console.warn(`[BuildManager] 缺少建筑预制体`); return; }
 
         this._currentData = data;
         this._isPlacing = true;
+        this._isPressing = false;   
+        this._canPlaceNow = false;
 
         this._currentGhost = instantiate(this.baseBuildingPrefab);
         this._currentGhost.parent = this.node;
 
         const bodyNode = this._currentGhost.getChildByName("body") || this._currentGhost;
         const sprite = bodyNode.getComponent(Sprite) || bodyNode.addComponent(Sprite);
-        if (sprite && this._iconDict[data.icon]) {
-            sprite.spriteFrame = this._iconDict[data.icon];
-        }
 
-        const ut = this._currentGhost.getComponent(UITransform);
-        if (ut && this.mapManager.tileWidth > 0) {
-            ut.width = data.width * this.mapManager.tileWidth;
-            ut.height = data.height * this.mapManager.tileHeight;
+
+
+        if (sprite && this._iconDict[data.icon]) {
+            const sf = this._iconDict[data.icon];
+            sprite.spriteFrame = sf;
+            sprite.sizeMode = Sprite.SizeMode.TRIMMED;
+
+            if (sf.rect.width > 0) {
+                const targetWidth = data.width * this.mapManager.tileWidth;
+                const scale = targetWidth / sf.rect.width;
+                this._currentGhost.setScale(scale, scale, 1);
+            }
         }
 
         const sprites = this._currentGhost.getComponentsInChildren(Sprite);
-        for (let i = 0; i < sprites.length; ++i) {
-            sprites[i].color = new Color(255, 255, 255, 150);
-        }
-        
+        for (let i = 0; i < sprites.length; ++i) sprites[i].color = new Color(255, 255, 255, 150);
     }
 
     public cancelPlacing() {
@@ -225,18 +236,22 @@ export class BuildManager extends Component {
         const worldPos = this.mainCamera.screenToWorld(new Vec3(screenX, screenY, 0));
         const snapData = this.mapManager.getSnappedPosition(worldPos, this._currentData.width, this._currentData.height);
 
-        this._currentGhost.setWorldPosition(snapData.pos);
-        this._currentCol = snapData.col;
-        this._currentRow = snapData.row;  
 
-        this._canPlaceNow = this.mapManager.checkCanPlace(this._currentCol, this._currentRow, this._currentData.width, this._currentData.height);
-        
+        const finalPos = snapData.pos;
+        finalPos.y -= (this._currentData.height * this.mapManager.tileHeight) / 2;
+        this._currentGhost.setWorldPosition(finalPos);
+
+        this._currentCol = snapData.col;
+        this._currentRow = snapData.row;
+        this._canPlaceNow = this.mapManager.checkCanPlace(
+            this._currentCol, this._currentRow,
+            this._currentData.width, this._currentData.height
+        );
+
         const sprites = this._currentGhost.getComponentsInChildren(Sprite);
         const targetColor = this._canPlaceNow ? new Color(255, 255, 255, 200) : new Color(255, 50, 50, 200);
-        for (const sprite of sprites) {
-            sprite.color = targetColor;
-        }
-    }     
+        for (const s of sprites) s.color = targetColor;
+    }
 
     private onConfirmBuild() {
         if (!this._isPlacing || !this._currentGhost || !this._currentData) return;

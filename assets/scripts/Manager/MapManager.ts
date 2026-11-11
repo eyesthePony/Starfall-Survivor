@@ -1,19 +1,22 @@
 import { _decorator, Component, instantiate, Prefab, UITransform, Vec3 } from 'cc';
+import { GameData } from '../Core/Data/GameData';
 const { ccclass, property } = _decorator;
 
 @ccclass('MapManager')
 export class MapManager extends Component {
     @property(Prefab) grassPrefab: Prefab = null!; 
 
-    public tileWidth: number = 0;
-    public tileHeight: number = 0;
+    public tileWidth: number = 134;
+    public tileHeight: number = 67;
 
     private mapCols: number = 10; 
     private mapRows: number = 10;
     private readonly SCALE = 1; 
-    private _gap = 0;
+
 
     public mapData: number[][] = []; //记录格子占用状态
+
+    public tileVisualOffsetY: number = 7.5;
 
     public init() {
         this.generateGround();
@@ -28,8 +31,9 @@ export class MapManager extends Component {
         const spriteUT = tempNode.getComponentInChildren(UITransform);
         
         if (spriteUT) {
-            this.tileWidth = (spriteUT.width * this.SCALE) - this._gap; 
-            this.tileHeight = (spriteUT.height * this.SCALE) - this._gap; 
+            this.tileWidth = spriteUT.width * this.SCALE; 
+            this.tileHeight = this.tileWidth / 2; 
+            this.tileVisualOffsetY = (spriteUT.height - this.tileHeight) / 2;
         }
         tempNode.destroy();
 
@@ -43,13 +47,16 @@ export class MapManager extends Component {
                 // 缩放空节点，里面的图会跟着缩
                 tile.setScale(this.SCALE, this.SCALE, 1);
 
+                //从左上向右下铺
+                //posx，从0到col，然后从-1到col-1，
                 const posX = (col - row) * (this.tileWidth / 2);
+                //posy从0到-col，然后从-1到-（col+1）
                 const posY = -(col + row) * (this.tileHeight / 2);
                 tile.setPosition(new Vec3(posX, posY, 0));
             }
         }
         
-        this.node.setPosition(0, 200, 0); 
+        this.node.setPosition(0, GameData.viewH / 4, 0);
     }
 
         // 检查某个区域能不能放
@@ -98,7 +105,7 @@ export class MapManager extends Component {
         const centerRow = roundRow + (height - 1) / 2;
 
         const snapX = (centerCol - centerRow) * (this.tileWidth / 2);
-        const snapY = -(centerCol + centerRow) * (this.tileHeight / 2);
+        const snapY = -(centerCol + centerRow) * (this.tileHeight / 2) + this.tileVisualOffsetY;
 
         const snapLocalPos = new Vec3(snapX, snapY, 0);
     
@@ -113,7 +120,7 @@ export class MapManager extends Component {
     getWorldPosByGrid(centerCol: number, centerRow: number):Vec3{
 
         const snapX = (centerCol - centerRow) * (this.tileWidth / 2);
-        const snapY = -(centerCol + centerRow) * (this.tileHeight / 2);
+        const snapY = -(centerCol + centerRow) * (this.tileHeight / 2) + this.tileVisualOffsetY;
 
         const snapLocalPos = new Vec3(snapX, snapY, 0);
     

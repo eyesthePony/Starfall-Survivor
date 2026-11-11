@@ -68,4 +68,5 @@ export enum BuildingCategory {
     PRODUCER = 'producer', // 生产建筑（农田、矿场）
     HOUSE = 'house',       // 住房/主基地
     DECOR = 'decor',       // 装饰物
+    ROAD = 'road',
 }

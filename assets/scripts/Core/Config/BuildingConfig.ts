@@ -19,9 +19,10 @@ export interface BuildingData {
 }
 
 export const BUILDINGS: BuildingData[] = [
+     { id: 'road', name: '道路', width: 1, height: 1, cost: 10, icon: 'road', category: BuildingCategory.ROAD},
     { id: 'base', name: '主基地', width: 2, height: 2, cost: 1000,  icon: 'base', category: BuildingCategory.HOUSE },
     { 
-        id: 'farm', name: '农田', width: 1, height: 1, cost: 100,  icon: 'farm', category: BuildingCategory.PRODUCER,
+        id: 'field', name: '农田', width: 1, height: 1, cost: 100,  icon: 'field', category: BuildingCategory.PRODUCER,
         levels: [
             { upgradeCost: 150, productionCycle: 3, productionAmount: 10, productionType: ResourceType.GOLD },
         ]

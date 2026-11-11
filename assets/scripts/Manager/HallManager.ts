@@ -15,6 +15,7 @@ export class HallManager extends Component {
     buildManager: BuildManager = null!;
     
     start() {
+        SaveManager.instance.clear();
         const saveData = SaveManager.instance.data;
         EconomyManager.instance.init(saveData.gold);
         this.mapManager.init();
